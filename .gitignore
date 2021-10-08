@@ -1,3 +1,6 @@
 /astk.egg-info
+dist/*
+build/*
+output/*
 astk/ChromHMM/*
 *.pyc
