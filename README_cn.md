@@ -51,7 +51,7 @@
 ## 创建环境，以及安装Python和R
 $ conda create -n astk -c conda-forge r-base=4.1 python=3.8 -y
 ## 安装 astk
-$ pip install bio-astk
+$ pip install astk
 ```
 
 安装完**astk**, 需要安装一些**astk**所依赖的其余软件，使用**astk**子命令即可安装:
