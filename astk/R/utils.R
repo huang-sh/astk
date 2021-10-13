@@ -237,7 +237,7 @@ my_enrichKEGG <- function(gene, organism = "hsa", keyType = "kegg", pvalueCutoff
     return(res)
 }
 
-download_keggdata <- function(organism, ){
+download_keggdata <- function(organism){
     kegg_data.file <- paste(organism, lubridate::today(),"kegg","RData", sep = ".")
     if (file.exists(kegg_data.file)){
         print("load local catch")
@@ -249,17 +249,3 @@ download_keggdata <- function(organism, ){
     }
 }
 
-load("/home/huangshenghui/project/asla/hsa.2021-09-30.kegg.RData")
-load("/home/huangshenghui/project/asla/mmu.2021-09-02.kegg.RData")
-load("/home/huangshenghui/project/asla/hsa.2021-10-05.kegg.RData")
-
-my_enrichKEGG
-
-names(KEGG_DATA)
-
-object.size(KEGG_DATA)
-
-object.size(KEGG_DATA$EXTID2PATHID)
-
-
-my_enrichKEGG()

@@ -3,4 +3,5 @@ dist/*
 build/*
 output/*
 astk/ChromHMM/*
-*.pyc
+*/__pycache__/*.pyc
+*/*/__pycache__/*.pyc

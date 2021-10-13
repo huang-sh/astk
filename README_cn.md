@@ -412,10 +412,8 @@ data/peak/H3K27me3.e16.5.fb.bed.gz  data/peak/H3K4me1.e16.5.fb.bed.gz   data/pea
 
 先生成软件需要的mark 文件
 ```bash
-$ astk mark -o fb_e11.mark.txt -sep "." -mi 1 -mn 8 -ct e11 \
-    -bed data/peak/*.e11.5.fb.bed.gz 
-$ astk mark -o fb_e16.mark.txt -sep "." -mi 1 -mn 8 -ct e16 \
-     -bed data/peak/*.e16.5.fb.bed.gz 
+$ astk mark -o fb_e11.mark.txt -sep "." -mi 1 -mn 8 -ct e11 -bed data/peak/*.e11.5.fb.bed.gz 
+$ astk mark -o fb_e16.mark.txt -sep "." -mi 1 -mn 8 -ct e16 -bed data/peak/*.e16.5.fb.bed.gz 
 $ cat fb_e11.mark.txt
 e11     H3K27ac data/peak/H3K27ac.e11.5.fb.bed.gz
 e11     H3K27me3        data/peak/H3K27me3.e11.5.fb.bed.gz
@@ -482,9 +480,12 @@ fb_e11_e16/epi/SE/fb_e11_ss_state/webpage_6_e11.html  fb_e11_e16/epi/SE/fb_e16_s
 ```
 这里选取html里的部分图片进行展示.
 ![emissions.png](demo/img/emmisions.png)
+
 上图，分别为e11.5, e16.5 的组蛋白修饰Chromatin state分类
 ![overlap.png](demo/img/overlap.png)
+
 上图，为自定义的坐标范围（SE AS事件的四个剪切位点上，下游250bp范围）内的组蛋白富集情况
+
 ![neighborhood.png](demo/img/neighborhood.png)
 上图，为预先设置好锚点（0点）观察锚点上下游的组蛋白修饰富集情况
 

@@ -77,7 +77,7 @@ def ioe_event(gtf, event_type, edge_exon_len):
     # setToolsLoggerLevel(mode)
 
     home = Path.home()
-    laas_dir = home / f".laas"
+    laas_dir = home / f".astk"
     laas_dir.mkdir(exist_ok=True)
 
     ref_dir = laas_dir / "ref"
@@ -90,7 +90,11 @@ def ioe_event(gtf, event_type, edge_exon_len):
         output_dir.mkdir(exist_ok=True)
         my_genome = Genome()
         logger.info("Reading input data.")
-        fetched_exons = gtf_reader(gtf, logger)
+        try:
+            fetched_exons = gtf_reader(gtf, logger)
+        except UnicodeDecodeError as e:
+            print(e)
+            sys.exit(1)
 
         if len(fetched_exons) == 0:
             logger.info("No exons found. Check format and content of your GTF file.")
@@ -138,11 +142,13 @@ def df_generate(path, rep, group, group_name):
         print("group name number is not consistent with group number, laas will using default value")
         groups = list(chain(*[repeat(i, r) for r,i in zip(reps, range(1, group+1))]))
     elif len(group_name) == group:
+        
         groups = list(chain(*[repeat(i, r) for r,i in zip(reps, range(1, group+1))]))
+        groups = [group_name[i-1] for i in groups]
     
     names = [Path(i).parent.name for i in paths] 
     df = pd.DataFrame({
-        "group": groups,
+        "group": groups,                                                                                                                                                                                                                                                                               
         "replicate": rep_ls,
         "name": names,
         "path": paths
@@ -325,7 +331,11 @@ class DiffSplice:
         tpm_col = 4
         self.meta_file = meta
         with open(meta, "r") as f:
-            meta_dic = json.load(f)
+            try:
+                meta_dic = json.load(f)
+            except json.decoder.JSONDecodeError:
+                print("ERROR: JSON file is excepted!")
+                sys.exit()
             self.meta = meta_dic
         read_tpm = partial(self.read_tpm, tpm_col=tpm_col)
         for gn, gdic in meta_dic.items():
@@ -470,6 +480,7 @@ class DiffSplice:
         self.update_meta()
 
 
+#TODO: generate psi files according dpsi(+,-)
 class SigFilter:
     def __init__(self, dpsi_file, out, dpsi, pval, 
                 abs_dpsi, psi_file, fmt) -> None:
@@ -489,7 +500,7 @@ class SigFilter:
         dpsi_df.columns = ["dpsi", "pval"]
         filter_df = sig_filter(dpsi_df, dpsi=self.dpsi, abs_dpsi=self.abs_dpsi, pval=self.pval)
 
-        if self.abs_dpsi >= 0:
+        if self.abs_dpsi > 0:
             pos_df = filter_df.loc[filter_df["dpsi"] > 0, ]
 
             neg_df = filter_df.loc[filter_df["dpsi"] < 0, ]
@@ -569,30 +580,75 @@ def check_kegg_RData(org):
         return False
 
 
-def get_coor(event_id, start, end, r_start, r_end):
+def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
     eid = fl.EventID(event_id)
-    if not any([start, end, r_start, r_end]):
-        s, e = eid.alter_element_coor
+    if eid.strand == "-" and strand_sp:
+        coordinates = eid.coordinates[::-1]
     else:
-        try:
-            if eid.AS_type in ["A5", "A3", "AF", "AL"] and eid.strand == "-":
-                if all([r_start, r_end]):
-                    s, e = eid.coordinates[r_start-1], eid.coordinates[r_end-1]
-                else:
-                    # print("WARNING: -rs/-rs is missing,  -s/-e is using")
-                    s, e = eid.coordinates[start-1], eid.coordinates[end-1]
-            else:
-                s, e = eid.coordinates[start-1], eid.coordinates[end-1]
-        except IndexError:
-            print("IndexError")
-            sys.exit()
+        coordinates = eid.coordinates
+    if not any([start, end]) and not anchor:
+        s, e = eid.alter_element_coor
+    elif all([start, end]):
+        s, e = sorted([coordinates[start-1], coordinates[end-1]])
+    elif anchor:
+        anchor_coor = coordinates[anchor-1]
+        if eid.strand == "-" and strand_sp:
+            e = anchor_coor + upstream_w
+            s = anchor_coor - downstream_w
+        else:
+            s = anchor_coor - upstream_w             
+            e = anchor_coor + downstream_w
+    else:
+        print("param error")
+        sys.exit()
     return eid.Chr, s, e, eid.gene_id
 
-def get_coor_bed(dpsi_file, out, start, end, r_start, r_end):
-    wget_coor_coor = partial(get_coor, start=start, end=end, r_start=r_start, r_end=r_end)
+
+def get_coor_bed(dpsi_file, out, start, end, strand_sp, anchor, upstream_w, downstream_w):
+    wget_coor_coor = partial(get_coor, start=start, end=end, strand_sp=strand_sp,
+                    anchor=anchor, upstream_w=upstream_w, downstream_w=downstream_w)
     dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
     dpsi_df["event_id"] = dpsi_df.index
     coors = dpsi_df["event_id"].apply(wget_coor_coor)
+    coor_df = pd.DataFrame(coors.tolist())
+    coor_df.drop_duplicates(inplace=True)
+    coor_df.to_csv(out, index=False, header=False, sep="\t")
+
+
+def get_anchor_coor(event_id, index, sideindex, offset5, offset3, strand_sp):
+    eid = fl.EventID(event_id)
+    if eid.strand == "-" and strand_sp:
+        coordinates = eid.coordinates[::-1]
+    else:
+        coordinates = eid.coordinates
+
+    if index is None and sideindex is None:
+        s, e = eid.alter_element_coor
+        anchor =  s + round((e - s) / 2)
+    elif index:
+        anchor = coordinates[index-1]
+    elif sideindex:
+        s, e = sorted([coordinates[i-1] for i in sideindex])
+        anchor =  s + round((e - s) / 2)
+
+    if eid.strand == "-" and strand_sp:
+        new_anchor = anchor + offset5 - offset3
+    else:
+        new_anchor = anchor - offset5 + offset3
+
+    return eid.Chr, new_anchor, eid.strand
+
+
+def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp):
+    import pandas as pd
+    from functools import partial
+
+    wget_anchor_coor = partial(get_anchor_coor, index=index, 
+            sideindex=sideindex, offset5=offset5, offset3=offset3, 
+            strand_sp=strand_sp)
+    dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
+    dpsi_df["event_id"] = dpsi_df.index
+    coors = dpsi_df["event_id"].apply(wget_anchor_coor)
     coor_df = pd.DataFrame(coors.tolist())
     coor_df.drop_duplicates(inplace=True)
     coor_df.to_csv(out, index=False, header=False, sep="\t")
