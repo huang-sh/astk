@@ -7,6 +7,7 @@ setup(
     author='huangsh',
     author_email='hsh-me@outlook.com',
     packages = ["astk"],
+    package_dir = {"astk": "astk"},
     include_package_data=True,
     install_requires=[
         "click>=8.0.0",
