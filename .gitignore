@@ -5,3 +5,6 @@ output/*
 astk/ChromHMM/*
 */__pycache__/*.pyc
 */*/__pycache__/*.pyc
+
+demo/*
+!demo/img/*
