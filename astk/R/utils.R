@@ -249,3 +249,11 @@ download_keggdata <- function(organism){
     }
 }
 
+## from  GOSemSim
+load_OrgDb <- function(OrgDb) {
+    if (is(OrgDb, "character")) {
+        suppressMessages(require(OrgDb, character.only = TRUE))
+        OrgDb <- eval(parse(text=OrgDb))
+    }
+    return(OrgDb)
+}    

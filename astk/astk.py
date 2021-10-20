@@ -222,7 +222,7 @@ def enrich_cmp(infiles, outdir, cluster, database,
                 default="GO", help="enrich database")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-gene_id', '-gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'REFSEQ', 'SYMBOL']), 
+@click.option('-gene_id', '--geneId', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")                      
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
@@ -497,23 +497,38 @@ def motif_enrich(fasta, outdir, meme):
     info.wait()
 
 
-# @cli.command(help="Gene Set Enrichment Analysis")
-# @click.option('-i', '--input', 'infile',  type=click.Path(exists=True), required=True, help="dpsi file")
-# @click.option('-od', '--outdir', default=".", help="outdir")
-# @click.option('-n', '--name', default="", help="output name prefix")
-# @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
-# @click.option('-db', '--database', type=click.Choice(['GO', 'KEGG']), 
-#                 default="GO", help="enrich database")
-# @click.option('-gt', '--geneType', type=click.Choice(['ENSEMBL', 'ENTREZID', 'REFSEQ', 'SYMBOL']), 
-#                 default="ENSEMBL", help="gene ID type")                      
-# @click.option('-orgdb', '--orgdb', required=True,
-#                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
-#                     run 'astk ls -org' to view more ")
-# @click.option('-kegg_org', '--kegg_organism', 
-#                 help="required for kegg, KEGG organism short alias.This is required if -db is KEGG.\
-#                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")      
-def gesa(infile, outdir, orgdb):
-    pass
+@cli.command(["gseGO", "gsego"], help="GO Gene Set Enrichment Analysis")
+@click.option('-i', '--input', 'infile',  type=click.Path(exists=True), required=True, help="input dpsi file")
+@click.option('-od', '--outdir', default=".", help="outdir")
+@click.option('-n', '--name', default="", help="output name prefix")
+@click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
+@click.option('-gt', '--geneId', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
+                default="ENSEMBL", help="gene ID type")                      
+@click.option('-orgdb', '--orgdb', required=True,
+                help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
+                    run 'astk ls -org' to view more ")
+@click.option('-ont', type=click.Choice(['BP', 'MF', 'CC']), 
+                default="BP", help="one of 'BP', 'MF', and 'CC' subontologies.")          
+def gseGO(infile, outdir, name, pvalue, geneid, orgdb, ont):
+    Path(outdir).mkdir(exist_ok=True)
+    if not (org_db := ul.select_OrgDb(orgdb)):
+        print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
+
+    rscript = Path(__file__).parent / "R" / "gseGO.R"
+    params = [outdir, str(pvalue), org_db, ont, geneid, name, infile]
+    info = subprocess.Popen(["Rscript", str(rscript), *params])
+    info.wait()
+
+
+@cli.command(help="Gene Set Enrichment Analysis ploting")
+@click.option('-id', '--id', "keyid", required=True, help="key id")
+@click.option('-o', '--output', help="output figure path")
+@click.option('-rd', '--RData', help="output figure path")        
+def gseplot(keyid, output, rdata):
+    rscript = Path(__file__).parent / "R" / "gsea_plot.R"
+    params = [keyid, output, rdata]
+    info = subprocess.Popen(["Rscript", str(rscript), *params])
+    info.wait()
 
 
 if __name__ == '__main__':
