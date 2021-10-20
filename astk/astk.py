@@ -405,8 +405,6 @@ def anchor(infile, output, index, sideindex, offset5, offset3, strand_sp):
 @click.option('-o', '--output', required=True, help="file output path")
 @click.option('-s', '--start', type=int, help="start index")
 @click.option('-e', '--end', type=int, help="end index")
-# @click.option('-rs', '--reverseStart', "r_start", type=int, help="start index of reverse strands")
-# @click.option('-re', '--reverseEnd', "r_end", type=int, help="end index of reverse strands")
 @click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
 @click.option('-anchor', '--anchor', type=int, help="element index")
 @click.option('-u', '--upstreamWidth', "upstream_w", type=int, default=150, help="width of right flank")
@@ -441,8 +439,10 @@ genomes = [i.stem for i in CHROMSIZES_dir.glob("*.txt")]
             help="This flag replaces the mark entry with an entry of the form cell_mark.")
 @click.option('--nostrand', is_flag=True, 
             help="This flag is present then strand information is not used in the enrichment calculations.")
+@click.option('-DC', '--defaultCoor', is_flag=True, 
+            help="This flag is present then default is used in the enrichment calculations.")            
 def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, genome, 
-                mx, processor, anchordir, coordir, no_binary, name, stacked, nostrand):
+                mx, processor, anchordir, coordir, no_binary, name, stacked, nostrand,defaultcoor):
     ChromHMM_dir = Path(__file__).parent / "ChromHMM"
     ChromHMM_jar = f"java -mx{mx} -jar {ChromHMM_dir/'ChromHMM.jar'}"
     
@@ -450,13 +450,17 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
     if coordir:
         p_coordir = Path(coordir)
         uv_params += f"-u {p_coordir.absolute()} "
-        shutil.copytree(ChromHMM_dir/f"COORDS/{genome}", p_coordir/f"{genome}", dirs_exist_ok=True)
+        (p_coordir / f"{genome}").mkdir(exist_ok=True)
+        if defaultcoor:
+            shutil.copytree(ChromHMM_dir/f"COORDS/{genome}", p_coordir/f"{genome}", dirs_exist_ok=True)
         for file in p_coordir.glob("*"):
             if file.is_file(): shutil.copy(file, p_coordir/f"{genome}")
     if anchordir:
         p_anchordir = Path(anchordir)
         uv_params += f"-v {p_anchordir.absolute()}"
-        shutil.copytree(ChromHMM_dir/f"ANCHORFILES/{genome}", p_anchordir/f"{genome}", dirs_exist_ok=True)
+        (p_anchordir / f"{genome}").mkdir(exist_ok=True)
+        if defaultcoor:
+            shutil.copytree(ChromHMM_dir/f"ANCHORFILES/{genome}", p_anchordir/f"{genome}", dirs_exist_ok=True)
         for file in p_anchordir.glob("*"):
             if file.is_file(): shutil.copy(file, p_anchordir/f"{genome}")
     
@@ -466,12 +470,18 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
     name_param = f"-i {name}"
 
     ChromHMM_bin = f"BinarizeBed {stacked_param} -peaks -b {binsize} {chrom_len} {directory} {markfile} {binarydir}"
-    ChromHMM_lm = f"LearnModel {uv_params} {strand_param} {name_param} -p {processor} -b {binsize} {binarydir} {outdir} {numstates} {genome}"
+    ChromHMM_lm = f"LearnModel {uv_params} {strand_param} {name_param} -p {processor} \
+                    -b {binsize} {binarydir} {outdir} {numstates} {genome}"
     if not no_binary:
         print(ChromHMM_bin)
         subprocess.call([*ChromHMM_jar.split(), *ChromHMM_bin.split()])
     print(ChromHMM_lm)
     subprocess.call([*ChromHMM_jar.split(), *ChromHMM_lm.split()])
+
+    rscript = Path(__file__).parent / "R" / "ChromHMM_hm.R"
+    for of in Path(outdir).glob("*_overlap.txt"):
+        info = subprocess.Popen(["Rscript", str(rscript), of])
+    info.wait()
 
 
 @cli.command(["motifEnrich", "me"], help = "motif enrichment")
