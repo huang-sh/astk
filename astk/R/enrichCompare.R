@@ -21,17 +21,6 @@ script_path  <- str_split(args[4], "=")[[1]][2]
 source(file.path(dirname(script_path), "utils.R"))
 
 
-# source("/home/huangshenghui/project/asla/laas/R/enrich.R")
-# cluster <- "/home/huangshenghui/project/asla/output/hb/cs3_cls_info.csv"
-# dpsi_files <- c("/home/huangshenghui/project/asla/output/fb/sig/1_SE.sig-.dpsi",
-# "/home/huangshenghui/project/asla/output/fb/sig/2_SE.sig-.dpsi",
-# "/home/huangshenghui/project/asla/output/fb/sig/3_SE.sig-.dpsi",
-# "/home/huangshenghui/project/asla/output/fb/sig/4_SE.sig-.dpsi",
-# "/home/huangshenghui/project/asla/output/fb/sig/5_SE.sig-.dpsi")
-
-# cluster_file <- "/home/huangshenghui/project/asla/output/fb/mm27_c3_cls_info.csv"
-# pval <- 0.1
-# qval <- 0.1
 
 filenames <- unlist(lapply(dpsi_files, function(file){
                             tools::file_path_sans_ext(basename(file))

@@ -18,16 +18,6 @@ suppressMessages(library(org_db, character.only = T))
 script_path  <- str_split(args[4], "=")[[1]][2]
 source(file.path(dirname(script_path), "utils.R"))
 
-# dpsi_file <- "output/fb_e10/sig/2_SE.sig.dpsi"
-# out.dir <- "output/fb_e10/enrich/1_SE.sig"
-# org_db <- org.Mm.eg.db
-# pval <- 0.1
-# qval <- 0.1
-# gene_type <- "ENSEMBL"
-# source("/home/huangshenghui/project/asla/laas/R/utils.R")
-
-
-
 
 dpsi <- read_tsv(dpsi_file, skip =1, col_names = F,
                 col_types = cols("c", "d", "d"))

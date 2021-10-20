@@ -11,30 +11,6 @@ cluster_file <- args[7]
 psi_files <- args[8:length(args)]
 
 
-
-# cluster_file <- "/home/huangshenghui/project/asla/output/fb_e10/mm27_w3_cls_info.csv"
-
-
-# library(httpgd)
-# hgd()
-
-# files <- list.files("/home/huangshenghui/project/asla/output/fb_e10/psi", pattern = "*_SE_c2.psi",
-#         full.names = T)
-
-# psi_file1 <- "/home/huangshenghui/project/asla/output/fb_e10/sig/5_SE_c2.sig.psi"
-# psi_file2 <- "/home/huangshenghui/project/asla/output/fb_e10/sig/6_SE_c2.sig.psi"
-# psi_file3 <- "/home/huangshenghui/project/asla/output/fb_e10/sig/7_SE_c2.sig.psi"
-
-
-# psi_files <- c(psi_file1, psi_file2, psi_file3)
-
-# psi_file1 <- "/home/huangshenghui/project/asla/output/fb_e10/sig/6_SE_c1.sig.psi"
-# psi_file2 <- "/home/huangshenghui/project/asla/output/fb_e10/sig/6_SE_c2.sig.psi"
-# psi_files <- c(psi_file1, psi_file2)
-
-
-
-
 psi_df_ls <- lapply(psi_files, function(file){
     psi_df <- read_tsv(file, col_types = cols("c", "d", "d"))
     return(psi_df)

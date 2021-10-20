@@ -19,8 +19,6 @@ suppressMessages(library(org_db, character.only = T))
 script_path  <- str_split(args[4], "=")[[1]][2]
 source(file.path(dirname(script_path), "utils.R"))
 
-# cluster <- "/home/huangshenghui/project/asla/output/hb/cs3_cls_info.csv"
-
 
 cls_ext <- tools::file_ext(cluster)
 
