@@ -162,14 +162,16 @@ def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organ
         kegg_organism = "0"
 
     Path(outdir).mkdir(exist_ok=True)
+    if database == "KEGG":
+        ul.check_kegg_RData(kegg_organism)
+
     for file in infiles:
         out = Path(outdir) / Path(file).stem
         out.mkdir(exist_ok=True)
         params = [str(out), str(pvalue), str(qvalue), database,
                  gene_id, org_db , kegg_organism, file]
         info = subprocess.Popen(["Rscript", str(rscript), *params])
-        if database == "KEGG" and not ul.check_kegg_RData(kegg_organism):
-             info.wait()
+
     else:
         info.wait()
 
@@ -195,10 +197,12 @@ def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organ
 def enrich_cmp(infiles, outdir, cluster, database,
                 pvalue, qvalue, gene_id, orgdb, kegg_organism):
     if not (org_db := ul.select_OrgDb(orgdb)):
-        print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")                
-    if database == "KEGG" and not kegg_organism:
-        print("Error: --kegg_organism is required!")
-        exit()
+        print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")
+    if database == "KEGG":
+        ul.check_kegg_RData(kegg_organism)
+        if not kegg_organism:
+            print("Error: --kegg_organism is required!")
+            exit()
     else:
         kegg_organism = "0"
     rscript = Path(__file__).parent / "R" / "enrichCompare.R"
@@ -235,6 +239,7 @@ def enrich_lc(infiles, outdir, cluster, merge, database, pvalue, qvalue,
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")                
     if database == "KEGG":
+        ul.check_kegg_RData(kegg_organism)
         if not kegg_organism:
             print("Error: --kegg_organism is required!")
             exit()
@@ -521,12 +526,13 @@ def gseGO(infile, outdir, name, pvalue, geneid, orgdb, ont):
 
 
 @cli.command(help="Gene Set Enrichment Analysis ploting")
-@click.option('-id', '--id', "keyid", required=True, help="key id")
+@click.option('-id', '--id', "keyid", cls=OptionEatAll, type=tuple, 
+                required=True, help="key id")
 @click.option('-o', '--output', help="output figure path")
 @click.option('-rd', '--RData', help="output figure path")        
 def gseplot(keyid, output, rdata):
     rscript = Path(__file__).parent / "R" / "gsea_plot.R"
-    params = [keyid, output, rdata]
+    params = [output, rdata, *keyid]
     info = subprocess.Popen(["Rscript", str(rscript), *params])
     info.wait()
 

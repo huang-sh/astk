@@ -38,8 +38,6 @@ enrichGOSep <- function(gene, output, OrgDb, name="GO",
 
     out.pdf <- sprintf(outputf, ont.i, qval, pval)
 
-
-    
     if (ont.i == "ALL"){
       p <- dotplot(ego, split="ONTOLOGY", showCategory = 15, title = p_title) + 
                 facet_grid(ONTOLOGY~., scale="free") + 
@@ -124,7 +122,6 @@ compareClusterSep <- function(gene_ls, output, OrgDb, name="GO",
           dev.off()
   }
 }
-
 
 
 compareKEGGCluster <- function(gene_ls, output, OrgDb, 
@@ -215,17 +212,9 @@ my_enrichKEGG <- function(gene, organism = "hsa", keyType = "kegg", pvalueCutoff
         KEGG_DATA <- clusterProfiler:::get_data_from_KEGG_db(species)
     }
     else {
-        kegg_data.file <- paste(organism, lubridate::today(),"kegg","RData", sep = ".")
-        if (file.exists(kegg_data.file)){
-            print("load local catch")
-            load(kegg_data.file)
-        }else {
-          print("online downloading... ")
-          KEGG_DATA <- clusterProfiler:::prepare_KEGG(species, "KEGG", keyType)
-          save(KEGG_DATA, file = kegg_data.file) 
+        KEGG_DATA <- download_keggdata(organism)
         }
         
-    }
     res <- clusterProfiler:::enricher_internal(gene, pvalueCutoff = pvalueCutoff, 
         pAdjustMethod = pAdjustMethod, universe = universe, minGSSize = minGSSize, 
         maxGSSize = maxGSSize, qvalueCutoff = qvalueCutoff, USER_DATA = KEGG_DATA)
@@ -238,15 +227,22 @@ my_enrichKEGG <- function(gene, organism = "hsa", keyType = "kegg", pvalueCutoff
 }
 
 download_keggdata <- function(organism){
-    kegg_data.file <- paste(organism, lubridate::today(),"kegg","RData", sep = ".")
-    if (file.exists(kegg_data.file)){
+    astk_dir <- file.path(path.expand('~'), ".astk", "kegg")  
+    if (!dir.exists(astk_dir)){
+      dir.create(astk_dir, recursive=T)
+    }
+    kegg_data_name <- paste(organism, lubridate::today(),"kegg","RData", sep = ".")
+    kegg_data_path <- file.path(astk_dir, kegg_data_name)
+    print(kegg_data_path)
+    if (file.exists(kegg_data_path)){
         print("load local catch")
-        load(kegg_data.file)
+        load(kegg_data_path)
     }else {
       print("online downloading... ")
-      KEGG_DATA <- clusterProfiler:::prepare_KEGG(species, "KEGG", keyType)
-      save(KEGG_DATA, file = kegg_data.file) 
+      KEGG_DATA <- clusterProfiler:::prepare_KEGG(organism, "kegg")
+      save(KEGG_DATA, file = kegg_data_path) 
     }
+    return(KEGG_DATA)
 }
 
 ## from  GOSemSim

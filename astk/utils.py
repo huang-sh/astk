@@ -29,8 +29,6 @@ def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
     if abs_dpsi > 0:
         keep = (abs(dpsi_df.loc[:, "dpsi"]) > abs_dpsi) & keep
     fdf = dpsi_df.loc[keep, ]
-    # dpsi_sym = fdf["dpsi"].apply(lambda x: "-" if x < 0 else "+")
-    # fdf.insert(len(fdf.columns), "type", dpsi_sym)
     return fdf
 
 def compute_feature_len(df):
@@ -188,11 +186,6 @@ def meta_template(out, group, repN, group_name,
     f = outjson.open(mode="w")
     json.dump(meta_dic, f, indent=4)
     f.close()
-
-# meta_template("template.csv", 10, 2, "~/project/asla/as/fb/quant", "~/project/asla/as/mb/quant")
-# check_gtf_used("/home/huangshenghui/biotrainee/cash_v2.2.1/Examples/Examples/tmp.gtf")
-# check_gtf_used("/home/public/genome/mm39_GRCm39/release_M27/gencode.vM27.annotation.gtf")
-# check_gtf_used("/home/public/genome/mm39_GRCm39/gencode.vM26.annotation.gtf")
 
 
 def ioe_psi(event_row, tpm):
@@ -570,14 +563,18 @@ def select_OrgDb(org):
 
 
 def check_kegg_RData(org):
-    import datetime
-    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    rpath = ".".join([org, date_str, "kegg.RData"])
-    p = Path(rpath)
-    if p.exists() and p.stat().st_size > 10000:
-        return True
-    else:
-        return False
+    import subprocess
+    rscript = Path(__file__).parent / "R" / "dl_keggdata.R"
+    info = subprocess.Popen(["Rscript", str(rscript), org])
+    info.wait()
+    # import datetime
+    # date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    # rpath = ".".join([org, date_str, "kegg.RData"])
+    # p = Path(rpath)
+    # if p.exists() and p.stat().st_size > 10000:
+    #     return True
+    # else:
+    #     return False
 
 
 def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
@@ -652,3 +649,4 @@ def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp
     coor_df = pd.DataFrame(coors.tolist())
     coor_df.drop_duplicates(inplace=True)
     coor_df.to_csv(out, index=False, header=False, sep="\t")
+
