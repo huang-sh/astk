@@ -7,14 +7,14 @@ term_ID <- args[8:length(args)]
 load(RData.file)
 
 if (length(term_ID) == 1){
-    p <- enrichplot::gseaplot(ego, 
+    p <- enrichplot::gseaplot(gse, 
                   geneSetID = term_ID,
                   by        = "all", 
-                  title     = ego[term_ID, "Description"])
+                  title     = gse[term_ID, "Description"])
 
 }else {
     p <- enrichplot::gseaplot2(
-                ego, 
+                gse, 
                 geneSetID = term_ID,
                 title     = "GSEA")
 }

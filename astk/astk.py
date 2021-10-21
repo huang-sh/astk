@@ -147,7 +147,7 @@ def sigfilter(infile, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -org' to view more ")
-@click.option('-kegg_org', '--kegg_organism', 
+@click.option('-org', '--keggOrganism', 
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")          
 def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism):
@@ -502,25 +502,31 @@ def motif_enrich(fasta, outdir, meme):
     info.wait()
 
 
-@cli.command(["gseGO", "gsego"], help="GO Gene Set Enrichment Analysis")
-@click.option('-i', '--input', 'infile',  type=click.Path(exists=True), required=True, help="input dpsi file")
+@cli.command(help="Gene Set Enrichment Analysis")
+@click.option('-i', '--input', 'infile',  type=click.Path(exists=True), 
+                required=True, help="input dpsi file")
 @click.option('-od', '--outdir', default=".", help="outdir")
-@click.option('-n', '--name', default="", help="output name prefix")
-@click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
+@click.option('-n', '--name', default="GSEA", help="output name prefix")
+@click.option('-pval', '--pvalue', type=float, default=0.2, help="pvalue cutoff")
+@click.option('-db', '--database', type=click.Choice(['GO', 'KEGG']), 
+                default="GO", help="enrich database")
 @click.option('-gt', '--geneId', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")                      
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -org' to view more ")
 @click.option('-ont', type=click.Choice(['BP', 'MF', 'CC']), 
-                default="BP", help="one of 'BP', 'MF', and 'CC' subontologies.")          
-def gseGO(infile, outdir, name, pvalue, geneid, orgdb, ont):
+                default="BP", help="one of 'BP', 'MF', and 'CC' subontologies.")  
+@click.option('-org', '--keggOrganism', "organism", default = "",
+                help="KEGG organism short alias.This is required if -db is KEGG.\
+                    Organism list in http://www.genome.jp/kegg/catalog/org_list.html")                            
+def gsea(infile, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
     Path(outdir).mkdir(exist_ok=True)
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
 
-    rscript = Path(__file__).parent / "R" / "gseGO.R"
-    params = [outdir, str(pvalue), org_db, ont, geneid, name, infile]
+    rscript = Path(__file__).parent / "R" / "gsea.R"
+    params = [outdir, str(pvalue), org_db, ont, geneid, name, database, organism, infile]
     info = subprocess.Popen(["Rscript", str(rscript), *params])
     info.wait()
 
@@ -529,7 +535,7 @@ def gseGO(infile, outdir, name, pvalue, geneid, orgdb, ont):
 @click.option('-id', '--id', "keyid", cls=OptionEatAll, type=tuple, 
                 required=True, help="key id")
 @click.option('-o', '--output', help="output figure path")
-@click.option('-rd', '--RData', help="output figure path")        
+@click.option('-rd', '--RData', help="output figure path")     
 def gseplot(keyid, output, rdata):
     rscript = Path(__file__).parent / "R" / "gsea_plot.R"
     params = [output, rdata, *keyid]
