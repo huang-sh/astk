@@ -1,8 +1,12 @@
 
 
-enrichGOSep <- function(gene, output, OrgDb, name="GO",
-                         keyType = 'ENTREZID',
-                         pval = 0.1, qval = 0.1){
+enrichGOSep <- function(gene, 
+                        output, 
+                        OrgDb, 
+                        name    = "GO",
+                        keyType = 'ENTREZID',
+                        pval    = 0.1, 
+                        qval    = 0.1) {
   
   for (ont.i in c("ALL","BP", "CC", "MF")){
     ego <- enrichGO(
@@ -89,17 +93,23 @@ enrichGOSep <- function(gene, output, OrgDb, name="GO",
 }
 
 
-compareClusterSep <- function(gene_ls, output, OrgDb, name="GO",
-                         keyType = 'ENSEMBL',
-                         pval = 0.1, qval = 0.1){
+compareClusterSep <- function(gene_ls, 
+                              output, 
+                              OrgDb, 
+                              name    = "GO",
+                              keyType = 'ENSEMBL',
+                              pval    = 0.1, 
+                              qval    = 0.1) {
+
         for (ont.i in c("BP", "CC", "MF")){
-          cpk <- compareCluster(gene_ls, fun="enrichGO", 
-                                  pvalueCutoff = pval,
-                                  qvalueCutoff = qval,
-                                  OrgDb = OrgDb,
-                                  ont = ont.i,
-                                  keyType = keyType,
-                                  readable      = TRUE) 
+          cpk <- compareCluster(gene_ls, 
+                                fun          = "enrichGO", 
+                                pvalueCutoff = pval,
+                                qvalueCutoff = qval,
+                                OrgDb        = OrgDb,
+                                ont          = ont.i,
+                                keyType      = keyType,
+                                readable     = TRUE) 
 
           if (dim(as.data.frame(cpk))[1] == 0){
             next()
@@ -124,10 +134,14 @@ compareClusterSep <- function(gene_ls, output, OrgDb, name="GO",
 }
 
 
-compareKEGGCluster <- function(gene_ls, output, OrgDb, 
-                         organism, name="KEGG",
-                         keyType = 'ENSEMBL',
-                         pval = 0.1, qval = 0.1){
+compareKEGGCluster <- function(gene_ls, 
+                               output, 
+                               OrgDb, 
+                               organism, 
+                               name    = "KEGG",
+                               keyType = 'ENSEMBL',
+                               pval    = 0.1, 
+                               qval    = 0.1){
     if (keyType == 'ENTREZID'){
         gene_ls  <-  gene_ls
     } else {
@@ -137,11 +151,11 @@ compareKEGGCluster <- function(gene_ls, output, OrgDb,
       })
        
     }
-      cpk <- compareCluster(gene_ls, fun="my_enrichKEGG", 
-                              pvalueCutoff = pval,
-                              qvalueCutoff = qval,
-                              organism = organism,
-                             ) 
+      cpk <- compareCluster(gene_ls, 
+                            fun          = "my_enrichKEGG", 
+                            pvalueCutoff = pval,
+                            qvalueCutoff = qval,
+                            organism     = organism) 
 
       if (dim(as.data.frame(cpk))[1] == 0){
         next()
@@ -160,9 +174,15 @@ compareKEGGCluster <- function(gene_ls, output, OrgDb,
 }
 
 
-enrichKEGGSep <- function(gene, out.dir, OrgDb, name = "KEGG",
-                        org = "mmu", keytype = 'ENTREZID' ,
-                        pval = 0.1, qval = 0.1) {
+enrichKEGGSep <- function(gene, 
+                          out.dir, 
+                          OrgDb, 
+                          name    = "KEGG",
+                          org     = "mmu", 
+                          keytype = 'ENTREZID' ,
+                          pval    = 0.1, 
+                          qval    = 0.1) {
+
     if (keytype == 'ENTREZID'){
         gene  <-  gene
     } else {
@@ -204,25 +224,41 @@ enrichKEGGSep <- function(gene, out.dir, OrgDb, name = "KEGG",
 }
 
 
-my_enrichKEGG <- function(gene, organism = "hsa", keyType = "kegg", pvalueCutoff = 0.05, 
-    pAdjustMethod = "BH", universe, minGSSize = 10, maxGSSize = 500, 
-    qvalueCutoff = 0.2, use_internal_data = FALSE) {
+my_enrichKEGG <- function(gene,
+                          organism          = "hsa",
+                          keyType           = "kegg",
+                          pvalueCutoff      = 0.05, 
+                          pAdjustMethod     = "BH",
+                          universe, 
+                          minGSSize         = 10,
+                          maxGSSize         = 500, 
+                          qvalueCutoff      = 0.2, 
+                          use_internal_data = FALSE) {
+
     species <- clusterProfiler:::organismMapper(organism)
     if (use_internal_data) {
         KEGG_DATA <- clusterProfiler:::get_data_from_KEGG_db(species)
-    }
-    else {
+    } else {
         KEGG_DATA <- download_keggdata(organism)
-        }
-        
-    res <- clusterProfiler:::enricher_internal(gene, pvalueCutoff = pvalueCutoff, 
-        pAdjustMethod = pAdjustMethod, universe = universe, minGSSize = minGSSize, 
-        maxGSSize = maxGSSize, qvalueCutoff = qvalueCutoff, USER_DATA = KEGG_DATA)
+        }  
+    res <- clusterProfiler:::enricher_internal(
+              gene, 
+              pvalueCutoff  = pvalueCutoff, 
+              pAdjustMethod = pAdjustMethod, 
+              universe      = universe, 
+              minGSSize     = minGSSize, 
+              maxGSSize     = maxGSSize, 
+              qvalueCutoff  = qvalueCutoff, 
+              USER_DATA     = KEGG_DATA
+              )
+
     if (is.null(res)) 
         return(res)
+
     res@ontology <- "KEGG"
     res@organism <- species
     res@keytype <- keyType
+
     return(res)
 }
 

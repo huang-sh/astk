@@ -18,15 +18,18 @@ source(file.path(dirname(script_path), "utils.R"))
 OrgDb <- load_OrgDb(org_db)
 
 
-dpsi_df <- read_tsv(dpsi_file, skip =1, col_names = F,
-                col_types = cols("c", "d", "d")) %>% drop_na()
+dpsi_df <- read_tsv(dpsi_file, 
+                    skip      = 1, 
+                    col_names = F,
+                    col_types = cols("c", "d", "d")) %>% 
+                    drop_na()
 
 colnames(dpsi_df) = c("event_id", "dpsi", "pval")
 
 if (gene_type == "ENSEMBL"){
     dpsi_df$gene <- gsub("\\..*", "",  dpsi_df$event_id) 
 } else {
-   dpsi_df$gene <- gsub(";.*", "",  dpsi_df$event_id)
+    dpsi_df$gene <- gsub(";.*", "",  dpsi_df$event_id)
 }
 
 
@@ -36,7 +39,7 @@ dpis_gene <- sapply(unique(dpsi_df$gene), function(x){
     neg_score <- sum(scores[scores < 0])
     if (pos_score > abs(neg_score)){
         return(pos_score)
-    }else{
+    } else{
         return(neg_score)
     }
     
@@ -45,20 +48,18 @@ dpis_gene <- sapply(unique(dpsi_df$gene), function(x){
 
 dpis_gene.sort <- sort(dpis_gene, decreasing=TRUE)
 
-
 ego <- gseGO(geneList     = dpis_gene.sort,
-              OrgDb        = OrgDb,
-              ont          = ont,
-              pvalueCutoff = pval,
-              verbose      = FALSE,
-              keyType = gene_type)
+             OrgDb        = OrgDb,
+             ont          = ont,
+             pvalueCutoff = pval,
+             verbose      = FALSE,
+             keyType      = gene_type)
 
 
 RData.out <- file.path(out.dir, sprintf("%s.%s", name, "RData"))
 csv.out <- file.path(out.dir, sprintf("%s.%s", name, "csv"))
 
-save(ego, file = RData.out)
-
 ego <- setReadable(ego, OrgDb = OrgDb, keyType = gene_type)
 
+save(ego, file = RData.out)
 write_csv(as.data.frame(ego), file = csv.out)

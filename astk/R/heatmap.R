@@ -31,7 +31,7 @@ if (file.exists(cluster_file)){
 
     if (cls_ext == "tsv"){
         exon_cluster <- read_tsv(cluster_file, show_col_types = FALSE)
-    }else if (cls_ext == "csv") {
+    } else if (cls_ext == "csv") {
         exon_cluster <- read_csv(cluster_file, show_col_types = FALSE)
     }
 
@@ -50,11 +50,15 @@ col_fun <- circlize::colorRamp2(seq(0, 1, length.out = 9),
             c('#0077B6', '#00B4D8', '#90E0EF', '#CAF0F8',
                '#FAE0E4', '#F9BEC7', '#FF99AC', '#FF7096', '#FF477E'))
 
-                                                      
-                                                     
 
-p <- Heatmap(dat[, -1], name = "Heatmap", show_row_dend  = T, border = TRUE, col = col_fun,
-        cluster_columns = F, row_split  = split, row_gap = unit(c(3), "mm"))
+p <- Heatmap(dat[, -1], 
+             name = "Heatmap", 
+             show_row_dend  = T, 
+             border = TRUE, 
+             col = col_fun,
+             cluster_columns = F, 
+             row_split  = split, 
+             row_gap = unit(c(3), "mm"))
 
 
 if (str_detect(out, "pdf")){

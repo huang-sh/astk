@@ -14,7 +14,7 @@ files <- args[8:length(args)]
 
 res_ls <- lapply(files, function(file){
     out.dir <- file.path(outdir, tools::file_path_sans_ext(basename(file)))
-    runAme(file , database=meme_db_path, outdir=out.dir)    
+    runAme(file , database = meme_db_path, outdir=out.dir)    
 })
 
 file_names <- sapply(files, function(file)tools::file_path_sans_ext(basename(file)))

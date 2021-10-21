@@ -32,7 +32,7 @@ if (file.exists(cluster_file)){
 
     if (cls_ext == "tsv"){
         exon_cluster <- read_tsv(cluster_file)
-    }else if (cls_ext == "csv") {
+    } else if (cls_ext == "csv") {
         exon_cluster <- read_csv(cluster_file)
     }
 
@@ -45,8 +45,10 @@ if (file.exists(cluster_file)){
     clusters <- sort(unique(unique_exon_cls$cluster))
     lapply(clusters, function(c){
         cluster_gene_ls <- lapply(dpsi_files, function(file){
-            dpsi <- read_tsv(file, skip =1, col_names = F,
-                                col_types = cols("c", "d", "d"))
+            dpsi <- read_tsv(file, 
+                             skip      = 1, 
+                             col_names = F,
+                             col_types = cols("c", "d", "d"))
             colnames(dpsi) = c("event_id", "dpsi", "pval")
 
             genes <- unique(gsub("\\..*", "",  dpsi$event_id)) 
@@ -60,15 +62,22 @@ if (file.exists(cluster_file)){
 
         tryCatch({
             if (db == "GO"){
-                print(gene_id)
-                compareClusterSep(cluster_gene_ls, out.dir, orgdb,
-                                    name = paste("cluster", c, sep=""),
-                                    keyType = gene_type,
-                                    pval = pval, qval = qval)                
+                compareClusterSep(cluster_gene_ls, 
+                                  out.dir, 
+                                  orgdb,
+                                  name    = paste("cluster", c, sep=""),
+                                  keyType = gene_type,
+                                  pval    = pval, 
+                                  qval    = qval)                
             }else if (db == "KEGG") {
-               compareKEGGCluster(cluster_gene_ls, out.dir, orgdb, 
-                               kegg_organism, name=paste("KEGG_cluster", c, sep=""), 
-                               keyType = gene_type, pval = pval, qval = qval)
+               compareKEGGCluster(cluster_gene_ls, 
+                                  out.dir, 
+                                  orgdb, 
+                                  kegg_organism, 
+                                  name=paste("KEGG_cluster", c, sep=""), 
+                                  keyType = gene_type, 
+                                  pval = pval, 
+                                  qval = qval)
             }
 
             }, error = function(e) {
@@ -80,23 +89,32 @@ if (file.exists(cluster_file)){
 
 } else {
     gene_ls <- lapply(dpsi_files, function(file){
-        dpsi <- read_tsv(file, skip =1, col_names = F,
-                            col_types = cols("c", "d", "d"))
+        dpsi <- read_tsv(file, 
+                        skip      = 1, 
+                        col_names = F,
+                        col_types = cols("c", "d", "d"))
         genes <- unique(gsub("\\..*", "",  dpsi$X1))   
         return(genes)
    })
     names(gene_ls) <- filenames
     if (db == "GO"){
-        compareClusterSep(gene_ls, out.dir, orgdb,
-                            name="GO", keyType = gene_type,
-                            pval = pval, qval = qval)
+        compareClusterSep(gene_ls, 
+                          out.dir, 
+                          orgdb,
+                          name    = "GO", 
+                          keyType = gene_type,
+                          pval    = pval, 
+                          qval    = qval)
     }else if (db == "KEGG") {
-        compareKEGGCluster(gene_ls, out.dir, orgdb, kegg_organism,
-                        name="KEGG", keyType = gene_type,
-                        pval = pval, qval = qval)
+        compareKEGGCluster(gene_ls, 
+                           out.dir, 
+                           orgdb, 
+                           kegg_organism,
+                           name    = "KEGG", 
+                           keyType = gene_type,
+                           pval    = pval, 
+                           qval    = qval)
     }
-    
-
 }
 
 

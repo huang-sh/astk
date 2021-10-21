@@ -36,8 +36,10 @@ unique_exon_cls <- exon_cluster %>%
 if (length(dpsi_files) == 1){
     file  <-  dpsi_files[1]
 
-    dpsi <- read_tsv(file, skip =1, col_names = F,
-                           col_types = cols("c", "d", "d"))
+    dpsi <- read_tsv(file, 
+                     skip =1, 
+                     col_names = F,
+                     col_types = cols("c", "d", "d"))
     fn  <-  tools::file_path_sans_ext(basename(file))
 
     genes <- gsub("\\..*", "",  dpsi$X1)                             
@@ -53,20 +55,31 @@ if (length(dpsi_files) == 1){
     })
     names(gene_ls) <- paste("cluster", clusters, sep = "")
     if (db == "GO"){
-        compareClusterSep(gene_ls, out.dir, org_db, name=fn,
-                            keyType = gene_id,
-                            pval = pval, qval = qval)
+        compareClusterSep(gene_ls, 
+                          out.dir, 
+                          org_db, 
+                          name    = fn,
+                          keyType = gene_id,
+                          pval    = pval, 
+                          qval    = qval)
     }else if (db == "KEGG") {
-        compareKEGGCluster(gene_ls, out.dir, org_db, 
-                        kegg_organism, name=paste("KEGG", fn, sep="_"), 
-                        keyType = gene_id, pval = pval, qval = qval)
+        compareKEGGCluster(gene_ls, 
+                          out.dir, 
+                          org_db, 
+                          kegg_organism, 
+                          name    = paste("KEGG", fn, sep="_"), 
+                          keyType = gene_id, 
+                          pval    = pval, 
+                          qval    = qval)
     }
 
 
 } else if (length(dpsi_files) > 1){
     dpsi_ls <- lapply(dpsi_files, function(file){
-        dpsi <- read_tsv(file, skip =1, col_names = F,
-                               col_types = cols("c", "d", "d"))
+        dpsi <- read_tsv(file, 
+                         skip      = 1, 
+                         col_names = F,
+                         col_types = cols("c", "d", "d"))
         colnames(dpsi) = c("event_id", "dpsi", "pval")
         return(dpsi)
     })
@@ -86,13 +99,21 @@ if (length(dpsi_files) == 1){
     names(gene_ls) <- paste("cluster", clusters, sep = "")
 
     if (db == "GO"){
-        compareClusterSep(gene_ls, out.dir, org_db, name="merge",
-                        keyType = gene_id,
-                        pval = pval, qval = qval)
+        compareClusterSep(gene_ls, 
+                          out.dir, org_db, 
+                          name    = "merge",
+                          keyType = gene_id,
+                          pval    = pval, 
+                          qval    = qval)
     }else if (db == "KEGG") {
-        compareKEGGCluster(gene_ls, out.dir, org_db, 
-                        kegg_organism, name="KEGG_merge", 
-                        keyType = gene_id, pval = pval, qval = qval)
+        compareKEGGCluster(gene_ls, 
+                           out.dir, 
+                           org_db, 
+                           kegg_organism, 
+                           name    = "KEGG_merge", 
+                           keyType = gene_id, 
+                           pval    = pval, 
+                           qval    = qval)
     }
 }
 
