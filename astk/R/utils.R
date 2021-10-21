@@ -1,5 +1,28 @@
 
 
+prepare_KEGG <- function(species, KEGG_Type = "KEGG", keyType = "kegg"){
+    astk_dir <- file.path(path.expand('~'), ".astk", "kegg")  
+    if (!dir.exists(astk_dir)){
+      dir.create(astk_dir, recursive=T)
+    }
+    kegg_data_name <- paste(species, lubridate::today(),keyType,"RData", sep = ".")
+    kegg_data_path <- file.path(astk_dir, kegg_data_name)
+
+    if (file.exists(kegg_data_path)){
+        print("load local catch")
+        load(kegg_data_path)
+    }else {
+      print("online downloading... ")
+      kegg <- clusterProfiler::download_KEGG(species, KEGG_Type, keyType)
+      clusterProfiler:::build_Anno(kegg$KEGGPATHID2EXTID, kegg$KEGGPATHID2NAME)
+      save(KEGG_DATA, file = kegg_data_path) 
+    }
+    return(KEGG_DATA)
+}
+
+assignInNamespace("prepare_KEGG", prepare_KEGG, loadNamespace("clusterProfiler"))
+
+
 enrichGOSep <- function(gene, 
                         output, 
                         OrgDb, 
@@ -152,7 +175,7 @@ compareKEGGCluster <- function(gene_ls,
        
     }
       cpk <- compareCluster(gene_ls, 
-                            fun          = "my_enrichKEGG", 
+                            fun          = "enrichKEGG", 
                             pvalueCutoff = pval,
                             qvalueCutoff = qval,
                             organism     = organism) 
@@ -189,10 +212,10 @@ enrichKEGGSep <- function(gene,
        gene <- bitr(gene, fromType = keytype, toType = "ENTREZID", OrgDb = OrgDb)$ENTREZID
     }
     
-    kk <- my_enrichKEGG(gene     = gene,
-                    organism     = org, #hsa
-                    pvalueCutoff = pval,
-                    qvalueCutoff = qval) #
+    kk <- enrichKEGG(gene         = gene,
+                     organism     = org, 
+                     pvalueCutoff = pval,
+                     qvalueCutoff = qval)
 
     if (!dir.exists(out.dir)){
         dir.create(out.dir, recursive = T)
@@ -224,63 +247,6 @@ enrichKEGGSep <- function(gene,
 }
 
 
-my_enrichKEGG <- function(gene,
-                          organism          = "hsa",
-                          keyType           = "kegg",
-                          pvalueCutoff      = 0.05, 
-                          pAdjustMethod     = "BH",
-                          universe, 
-                          minGSSize         = 10,
-                          maxGSSize         = 500, 
-                          qvalueCutoff      = 0.2, 
-                          use_internal_data = FALSE) {
-
-    species <- clusterProfiler:::organismMapper(organism)
-    if (use_internal_data) {
-        KEGG_DATA <- clusterProfiler:::get_data_from_KEGG_db(species)
-    } else {
-        KEGG_DATA <- download_keggdata(organism)
-        }  
-    res <- clusterProfiler:::enricher_internal(
-              gene, 
-              pvalueCutoff  = pvalueCutoff, 
-              pAdjustMethod = pAdjustMethod, 
-              universe      = universe, 
-              minGSSize     = minGSSize, 
-              maxGSSize     = maxGSSize, 
-              qvalueCutoff  = qvalueCutoff, 
-              USER_DATA     = KEGG_DATA
-              )
-
-    if (is.null(res)) 
-        return(res)
-
-    res@ontology <- "KEGG"
-    res@organism <- species
-    res@keytype <- keyType
-
-    return(res)
-}
-
-download_keggdata <- function(organism){
-    astk_dir <- file.path(path.expand('~'), ".astk", "kegg")  
-    if (!dir.exists(astk_dir)){
-      dir.create(astk_dir, recursive=T)
-    }
-    kegg_data_name <- paste(organism, lubridate::today(),"kegg","RData", sep = ".")
-    kegg_data_path <- file.path(astk_dir, kegg_data_name)
-    print(kegg_data_path)
-    if (file.exists(kegg_data_path)){
-        print("load local catch")
-        load(kegg_data_path)
-    }else {
-      print("online downloading... ")
-      KEGG_DATA <- clusterProfiler:::prepare_KEGG(organism, "kegg")
-      save(KEGG_DATA, file = kegg_data_path) 
-    }
-    return(KEGG_DATA)
-}
-
 ## from  GOSemSim
 load_OrgDb <- function(OrgDb) {
     if (is(OrgDb, "character")) {
@@ -289,3 +255,4 @@ load_OrgDb <- function(OrgDb) {
     }
     return(OrgDb)
 }    
+
