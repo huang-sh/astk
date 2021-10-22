@@ -1,12 +1,13 @@
 from setuptools import setup
+from setuptools import find_packages
 
 setup(
     name="astk",
-    version="0.1.0",
+    version="0.1.1",
     url='https://github.com/huang-sh/astk/',
     author='huangsh',
     author_email='hsh-me@outlook.com',
-    packages = ["astk"],
+    packages =  find_packages(),
     package_dir = {"astk": "astk"},
     include_package_data=True,
     install_requires=[
