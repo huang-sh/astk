@@ -191,7 +191,7 @@ def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organ
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -orgdb' to view more ")
-@click.option('-kegg_org', '--kegg_organism', 
+@click.option('-org', '--keggOrganism', 
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")   
 def enrich_cmp(infiles, outdir, cluster, database,
@@ -231,7 +231,7 @@ def enrich_cmp(infiles, outdir, cluster, database,
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -orgdb' to view more ")
-@click.option('-kegg_org', '--kegg_organism', 
+@click.option('-org', '--keggOrganism', 
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html") 
 def enrich_lc(infiles, outdir, cluster, merge, database, pvalue, qvalue,
@@ -532,13 +532,13 @@ def gsea(infile, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
 
 
 @cli.command(help="Gene Set Enrichment Analysis ploting")
-@click.option('-id', '--id', "keyid", cls=OptionEatAll, type=tuple, 
-                required=True, help="key id")
+@click.option('-id', '--id', "termId", cls=OptionEatAll, type=tuple, 
+                required=True, help="term id")
 @click.option('-o', '--output', help="output figure path")
 @click.option('-rd', '--RData', help="output figure path")     
-def gseplot(keyid, output, rdata):
+def gseplot(termid, output, rdata):
     rscript = Path(__file__).parent / "R" / "gsea_plot.R"
-    params = [output, rdata, *keyid]
+    params = [output, rdata, *termid]
     info = subprocess.Popen(["Rscript", str(rscript), *params])
     info.wait()
 
