@@ -147,7 +147,7 @@ def sigfilter(infile, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -org' to view more ")
-@click.option('-org', '--keggOrganism', 
+@click.option('-org', '--keggOrganism', "kegg_organism",
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")          
 def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism):
@@ -191,7 +191,7 @@ def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organ
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -orgdb' to view more ")
-@click.option('-org', '--keggOrganism', 
+@click.option('-org', '--keggOrganism', "kegg_organism",
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")   
 def enrich_cmp(infiles, outdir, cluster, database,
@@ -226,16 +226,16 @@ def enrich_cmp(infiles, outdir, cluster, database,
                 default="GO", help="enrich database")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-gene_id', '--geneId', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
+@click.option('-gene_id', '--geneId', "gene_id", type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")                      
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -orgdb' to view more ")
-@click.option('-org', '--keggOrganism', 
+@click.option('-org', '--keggOrganism', "kegg_organism",
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html") 
 def enrich_lc(infiles, outdir, cluster, merge, database, pvalue, qvalue,
-              gene_id, orgdb, kegg_organism, ):
+              gene_id, orgdb, kegg_organism):
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")                
     if database == "KEGG":
@@ -479,9 +479,11 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
                     -b {binsize} {binarydir} {outdir} {numstates} {genome}"
     if not no_binary:
         print(ChromHMM_bin)
-        subprocess.call([*ChromHMM_jar.split(), *ChromHMM_bin.split()])
+        info = subprocess.Popen([*ChromHMM_jar.split(), *ChromHMM_bin.split()])
+        info.wait()
     print(ChromHMM_lm)
-    subprocess.call([*ChromHMM_jar.split(), *ChromHMM_lm.split()])
+    info = subprocess.Popen([*ChromHMM_jar.split(), *ChromHMM_lm.split()])
+    info.wait()
 
     rscript = Path(__file__).parent / "R" / "ChromHMM_hm.R"
     for of in Path(outdir).glob("*_overlap.txt"):
@@ -532,7 +534,7 @@ def gsea(infile, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
 
 
 @cli.command(help="Gene Set Enrichment Analysis ploting")
-@click.option('-id', '--id', "termId", cls=OptionEatAll, type=tuple, 
+@click.option('-id', '--id', "termid", cls=OptionEatAll, type=tuple, 
                 required=True, help="term id")
 @click.option('-o', '--output', help="output figure path")
 @click.option('-rd', '--RData', help="output figure path")     
