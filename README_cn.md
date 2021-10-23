@@ -27,6 +27,7 @@
 - **enrich**:  AS基因富集分析 
 - **enrichCompare**: 多组AS基因比较分析, 别名: **ecmp**
 - **enrichLenCluster**: 不同长度可变exon/intron类别基因功能比较, 别名: **elc**
+- **gsea**: GO/KEGG 基因集富集分析
 
 **Motif富集分析**
 - **motifEnrich**：motif富集分析， 别名:**me**
@@ -289,6 +290,53 @@ GO terms 富集结果包含了图片格式，以及对应表格文件，还有GO
 ![goplot](demo/img/goplot.png)
 ![goplot](demo/img/GO_csv.png)
 
+
+#### gsea
+**gsea** 用于基因集富集分析，支持GO/KEGG数据库，可变剪切基因将根据dPSI值进行排序作为输入。
+```bash
+### run gsea
+$ astk gsea -i fb_e11_e16/sig01/e11_e16_SE.sig.dpsi -od fb_e11_e16/gsea -n dpsi_GO -orgdb mm -db GO -pval 0.1
+$ ls fb_e11_e16/gsea
+dpsi_GO.csv  dpsi_GO.RDat
+### gsea plot
+$ astk gseplot -id GO:0051049 GO:0030182 -rd fb_e11_e16/gsea/dpsi_GO.RData -o fb_e11_e16/gsea/dpsi_GO.png
+$ ls fb_e11_e16/gsea
+dpsi_GO.csv  dpsi_GO.png  dpsi_GO.RData
+```
+
+**gsea** 参数说明:
+- -i： dpsi文件地址
+- -od: 输出目录
+- -n: 文件名
+- orgdb : OrgDb注释包代码, 运行`astk ls -orgdb` 查看注释包对应代码
+- -db : GO/KEGG 选择
+- pval: pval
+
+**gseplot** 参数说明:
+- -id： term id
+- -rd: **gsea**运行输出的RData文件
+- -n: 文件名
+- -o: 输出图片地址
+
+![gsea](demo/img/dpsi_GO.png)
+
+#### enrichLenCluster
+
+**enrichLenCluster**:  **lenCluster** 聚类结果的基因功能比较， 短名: **elc**
+
+在之前的代码中, AS 事件 被划分三类 (1-51nt, 51-300nt 和 >300nt) . **enrichLenCluster** 可用于比较这三类的AS基因功能。
+
+```bash
+$ astk elc -i fb_e11_e16/sig01/e11_e16_SE.sig-.dpsi \ 
+  -cls fb_e11_e16/mm25_SE_cluster_cls_info.csv -od fb_e11_e16/elc_3_SE- \
+  -db GO -pval 0.1 -qval 0.1 -orgdb mm 
+$ tree fb_e11_e16/elc_3_SE-  
+fb_e11_e16/elc_3_SE-
+├── e11_e16_SE.sig-.cmp.BP.qval0.1_pval0.1.pdf
+├── e11_e16_SE.sig-.cmp.CC.qval0.1_pval0.1.pdf
+└── e11_e16_SE.sig-.cmp.MF.qval0.1_pval0.1.pdf
+```
+
 #### enrichCompare
 
 **enrichCompare** 用于不同组基因的功能比较, 短名: **ecmp**. 
@@ -314,24 +362,6 @@ demo/cmp_7_se
 - -orgdb : OrgDb注释包代码, 运行`astk ls -orgdb` 查看注释包对应代码
 
 ![GO_cmp.png](demo/img/GO_cmp.png)
-
-
-#### enrichLenCluster
-
-**enrichLenCluster**:  **lenCluster** 聚类结果的基因功能比较， 短名: **elc**
-
-在之前的代码中, AS 事件 被划分三类 (1-51nt, 51-300nt 和 >300nt) . **enrichLenCluster** 可用于比较这三类的AS基因功能。
-
-```bash
-$ astk elc -i fb_e11_e16/sig01/e11_e16_SE.sig-.dpsi \ 
-  -cls fb_e11_e16/mm25_SE_cluster_cls_info.csv -od fb_e11_e16/elc_3_SE- \
-  -db GO -pval 0.1 -qval 0.1 -orgdb mm 
-$ tree fb_e11_e16/elc_3_SE-  
-fb_e11_e16/elc_3_SE-
-├── e11_e16_SE.sig-.cmp.BP.qval0.1_pval0.1.pdf
-├── e11_e16_SE.sig-.cmp.CC.qval0.1_pval0.1.pdf
-└── e11_e16_SE.sig-.cmp.MF.qval0.1_pval0.1.pdf
-```
 
 
 **enrichLenCluster** 参数:
