@@ -377,8 +377,9 @@ demo/cmp_7_se
 ![elc_3_sig-.png](demo/img/elc_3_sig-.png)
 
 #### motifEnrich
-**motifEnrich** 用于Motfi富集分析，使用meme-suite软件软法进行分析。短别名： **me**
+**motifEnrich** 用于Motfi富集分析，使用meme-suite AME软件算法进行分析。短别名： **me**
 ![https://github.com/comprna/SUPPA](demo/img/se.png)
+
 在上图中，若我们想了解e1, s3两个剪切位点附近300bp长度内可能存在的motif。**astk** 提供了一个很方便的命令用于快速获取AS事件中剪切位点坐标。
 
 ```
@@ -408,7 +409,7 @@ fb_e11_e16/SE.sig.e1.w300.fa  fb_e11_e16/SE.sig.s3.w300.fa
 astk me -fa fb_e11_e16/SE.sig.*.w300.fa -od fb_e11_e16/me_se14 -mm HOCOMOCOv11_full_MOUSE_mono_meme_format.meme
 ```
 **motifEnrich** 参数:
-- -fa: 输入fasta 序列文件
+- -fa: 输入fasta 序列文件,支持多个文件输入
 - -od: 输出目录
 - -mm: meme格式的motif数据库文件，可从https://meme-suite.org/meme/doc/download.html获取
 
@@ -429,6 +430,27 @@ fb_e11_e16/me_se14
 文件夹内是fasta序列motif富集结果，heatmap.pdf是富集motif pval热图展示
 ![motif_heatmap.png](demo/img/motif_heatmap.png)
 ![motif_ame_e1.png](demo/img/motif_ame_e1.png)
+
+#### motifFind
+**motifFind** 用于Motfi发现，使用meme-suite Streme软件算法进行分析。短别名：**mf**
+
+运行**motifFind**：
+```bash
+astk mf -fa fb_e11_e16/SE.sig.e1.w300.fa -od fb_e11_e16/mf_e1
+```
+**motifEnrich** 参数:
+- -fa: 输入fasta 序列文件
+- -od: 输出目录
+
+**motifFind**输出：
+```
+$ ls mf_e1
+motif_n10.pdf  streme.html  streme.txt  streme.xml
+```
+- motif_n10.pdf 前10 motif 图片
+- streme.html, streme.txt, streme.xml 输出streme
+
+![mf_e1.png](demo/img/mf_e1.png)
 
 #### learnState
 **learnState** 用于整合表观遗传修饰，可查看AS事件剪切位点，exon/intron 表观修饰情况，基于ChromHMM软件算法。从ENCODE上获取小鼠前脑e11.5,e16.5 8种组蛋白修饰ChIP-seq peak文件。
