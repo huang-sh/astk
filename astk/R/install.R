@@ -24,8 +24,8 @@ if (requirement == "1"){
     ##----->> Install packages from Bioconductor
     options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
 
-    bioconductor.package.list <- c('ComplexHeatmap', 'clusterProfiler',
-            'org.Mm.eg.db', 'org.Hs.eg.db', 'simplifyEnrichment', 'memes')
+    bioconductor.package.list <- c('ComplexHeatmap', 'clusterProfiler', 'org.Mm.eg.db',
+             'org.Hs.eg.db', 'simplifyEnrichment', 'universalmotif', 'memes')
 
     for(i in bioconductor.package.list){
         if (!requireNamespace("BiocManager", quietly = TRUE))

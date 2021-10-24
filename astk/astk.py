@@ -104,8 +104,11 @@ def diff_splice(outdir, metadata, gtf, event_type, exon_len, tpm_col, method):
         event_types = AS_type
     else:
         event_types = [event_type]
-    dsi = ul.DiffSplice(outdir, metadata, gtf, event_types, exon_len)
-    dsi.ds(method)
+    try:
+        dsi = ul.DiffSplice(outdir, metadata, gtf, event_types, exon_len)
+        dsi.ds(method)
+    except BaseException as e:
+        print(e)
 
 
 @cli.command(["sigfilter", "sf"], help="filter significant result")
@@ -491,15 +494,31 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
     info.wait()
 
 
-@cli.command(["motifEnrich", "me"], help = "motif enrichment")
-@click.option('-fa', "--fasta", cls=OptionEatAll, type=tuple, required=True, help="fasta files")
+@cli.command(["motifEnrich", "me"], help = "Motif Enrichment")
+@click.option('-fa', "--fasta", cls=OptionEatAll, type=tuple, 
+                required=True, help="fasta files")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-mm', '--meme', type=click.Path(exists=True), required=True, help="path to .meme format file")
+@click.option('-mm', '--meme', type=click.Path(exists=True), 
+                required=True, help="path to .meme format file")
 def motif_enrich(fasta, outdir, meme):
     Path(outdir).mkdir(exist_ok=True)
 
     rscript = Path(__file__).parent / "R" / "motifEnrich.R"
     params = [outdir, meme, *fasta]
+    info = subprocess.Popen(["Rscript", str(rscript), *params])
+    info.wait()
+
+
+@cli.command(["motifFind", "mf"], help = "Motif Discovery")
+@click.option('-fa', "--fasta", type=click.Path(exists=True), 
+                required=True, help="fasta file")
+@click.option('-od', '--outdir', type=click.Path(), default=".",
+                 help="output directory")
+def motif_find(fasta, outdir):
+    Path(outdir).mkdir(exist_ok=True)
+
+    rscript = Path(__file__).parent / "R" / "motifFind.R"
+    params = [str(outdir), str(fasta)]
     info = subprocess.Popen(["Rscript", str(rscript), *params])
     info.wait()
 
