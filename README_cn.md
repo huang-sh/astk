@@ -31,6 +31,7 @@
 
 **Motif富集分析**
 - **motifEnrich**：motif富集分析， 别名:**me**
+- **motifFind**：motifc从头预测 别名:**mf**
 
 **表观遗传修饰分析**
 - **mark**：生成**learnState**所需信息
