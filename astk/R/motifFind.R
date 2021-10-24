@@ -9,8 +9,7 @@ outdir <- args[6]
 fa_file <- args[7]
 
 
-
-streme_out <- runStreme(fa_file, "shuffle", outdir = outdir)
+streme_out <- runStreme(fa_file, "shuffle", outdir = outdir, minw = 5)
 
 
 p <- streme_out %>% 
@@ -19,5 +18,3 @@ p <- streme_out %>%
   view_motifs()
 
 ggsave(file.path(outdir, "motif_n10.pdf"), plot = p)
-
-
