@@ -256,3 +256,26 @@ load_OrgDb <- function(OrgDb) {
     return(OrgDb)
 }    
 
+
+save_fig <- function(plot, 
+                     filename, 
+                     format = "png",
+                     width  = 6, 
+                     height = 6, 
+                     units  = "in",
+                     res    = 72){
+  if (format == "pptx"){
+      eoffice::topptx(plot, filename, width = width, height = height)
+      cat(sprintf("Saving %s x %s in image\n", width, height))
+  } else if (format == "png") {
+      png(filename, width = width, height = height, units=units, res = res)
+      print(plot)
+      dev.off()
+      cat(sprintf("Saving %s x %s in image\n", width, height))
+  } else if (format == "pdf"){
+      pdf(filename, width=width, height=height)
+      print(plot)
+      dev.off()
+      cat(sprintf("Saving %s x %s in image\n", width, height))
+  }
+}
