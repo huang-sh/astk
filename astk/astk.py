@@ -564,5 +564,36 @@ def gseplot(termid, output, rdata):
     info.wait()
 
 
+@cli.command(help="draw UpSet plots for AS events")
+@click.option('-i', '--input', "file", cls=OptionEatAll, type=tuple, 
+                required=True, help="input dpsi files")              
+@click.option('-o', '--output', required=True, help="output figure path")
+@click.option('-dg', '--dg', is_flag=True, 
+                help="This flag is present then dpsi file will divide \
+                    pos and neg groups according to dpsi value") 
+@click.option('-n', '--name', cls=OptionEatAll, type=tuple, 
+                help="file group names") 
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format") 
+@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def upset(file, output, dg, name, fmt, width, height, resolution):
+    rscript = Path(__file__).parent / "R" / "upset.R"
+
+    param_dic = {
+        "file": file,
+        "fmt": fmt, 
+        "dg": dg,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "output": Path(output).with_suffix(f".{fmt}"),
+        "name": name if name else [str(i) for i  in range(len(file))]
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
 if __name__ == '__main__':
     cli()

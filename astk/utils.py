@@ -650,3 +650,16 @@ def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp
     coor_df.drop_duplicates(inplace=True)
     coor_df.to_csv(out, index=False, header=False, sep="\t")
 
+
+def parse_cmd_r(**param_dic):
+    param_ls = []
+    for k, v in param_dic.items():
+        if isinstance(v, (tuple, list)):
+            param_ls.append(f"--{k}")
+            param_ls.extend(v)
+        elif isinstance(v, bool):
+            if v: param_ls.append(f"--{k}")
+        else:
+            param_ls.append(f"--{k}")
+            param_ls.append(str(v))
+    return param_ls

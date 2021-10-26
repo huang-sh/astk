@@ -12,7 +12,7 @@ if (requirement == "1"){
     ##----->> Install packages from Cran
     options(repos=structure(c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))) 
 
-    cran.package.list <- c("tidyverse", "ggplot2")
+    cran.package.list <- c("tidyverse", "ggplot2", "argparse", "UpSetR", "eoffice")
 
     for(i in cran.package.list){
     if(!(i %in% rownames(installed.packages()))){
