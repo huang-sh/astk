@@ -5,12 +5,14 @@ parser$add_argument("--file", nargs='+', help="file names")
 parser$add_argument("--name", nargs='+', help="file path")
 parser$add_argument("--output", help="file path")
 parser$add_argument("--fmt", help="figure format")
-parser$add_argument("--width", type="integer", help="figure width")
-parser$add_argument("--height", type="integer", help="figure height")
-parser$add_argument("--resolution", type="integer",help="figure resolution")
+parser$add_argument("--resolution", help="resolution")
+parser$add_argument("--width", type="double", help="figure width")
+parser$add_argument("--height", type="double", help="figure height")
 parser$add_argument("--dg", action="store_true", default=F, help="dpsi group")
 
 
+script_path  <- stringr::str_split(commandArgs()[4], "=")[[1]][2]
+source(file.path(dirname(script_path), "utils.R"))
 
 args <- parser$parse_args()
 
@@ -55,14 +57,11 @@ p <- UpSetR::upset(UpSetR::fromList(dpsi_ls),
                    main.bar.color = "black",
                    sets.bar.color = rep(colors, each=rep_num))
 
-if (args$fmt == "pptx"){
-    eoffice::topptx(p, args$output, width=args$width, height=args$height)    
-} else if (args$fmt == "png") {
-    png(args$output, width=args$width, height=args$height, res=args$resolution, units="in")
-    print(p)
-    dev.off()
-} else if (args$fmt == "pdf"){
-    pdf(args$output, width=args$width, height=args$height)
-    print(p)
-    dev.off()
-}
+
+save_fig(p, 
+        args$output, 
+        format = args$fmt,
+        width  = args$width, 
+        height = args$height, 
+        units  = "in",
+        res    = args$resolution)

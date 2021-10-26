@@ -556,13 +556,26 @@ def gsea(infile, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
 @click.option('-id', '--id', "termid", cls=OptionEatAll, type=tuple, 
                 required=True, help="term id")
 @click.option('-o', '--output', help="output figure path")
-@click.option('-rd', '--RData', help="output figure path")     
-def gseplot(termid, output, rdata):
+@click.option('-rd', '--RData', help="output figure path")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format") 
+@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def gseplot(termid, output, rdata, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "gsea_plot.R"
-    params = [output, rdata, *termid]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
-    info.wait()
-
+    param_dic = {
+        "termid": termid,
+        "fmt": fmt, 
+        "RData": rdata,
+        "output": output,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "output": Path(output).with_suffix(f".{fmt}")
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
 
 @cli.command(help="draw UpSet plots for AS events")
 @click.option('-i', '--input', "file", cls=OptionEatAll, type=tuple, 
