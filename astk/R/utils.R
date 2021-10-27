@@ -279,3 +279,14 @@ save_fig <- function(plot,
       cat(sprintf("Saving %s x %s in image\n", width, height))
   }
 }
+
+
+fig_cmd_parser <- function(){
+    parser <- argparse::ArgumentParser()
+    parser$add_argument("--output", help="file path")
+    parser$add_argument("--fmt", help="figure format")
+    parser$add_argument("--resolution", type="integer", help="resolution")
+    parser$add_argument("--width", type="double", help="figure width")
+    parser$add_argument("--height", type="double", help="figure height")
+    return(parser)
+}

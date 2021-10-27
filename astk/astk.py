@@ -1,4 +1,3 @@
-from collections import defaultdict
 import os
 import sys
 import json
@@ -268,53 +267,81 @@ def enrich_lc(infiles, outdir, cluster, merge, database, pvalue, qvalue,
 
 
 @cli.command(["volcano", "vol"], help="Volcano plot analysis for dPSI")
-@click.option('-i', '--input', "dpsi", cls=OptionEatAll, type=tuple, help="dpsi files")
-@click.option('-od', '--outdir', type=click.Path(exists=True), help="output directory")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf']),
-                 default="png", help="out figure format ")
-def volcano(dpsi, outdir, fmt):
+@click.option('-i', '--input', "file", cls=OptionEatAll, type=tuple, help="dpsi file")
+@click.option('-o', '--output', help="output path")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format") 
+@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def volcano(file, output, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "volcano.R"
-    for f in dpsi:
-        out = Path(outdir) / Path(f).with_suffix(f".volcano.{fmt}").name
-        info = subprocess.Popen(["Rscript", str(rscript), f, out])
-        info.wait()
+    param_dic = {
+        "file": file,
+        "fmt": fmt, 
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "output": Path(output).with_suffix(f".{fmt}")
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
 
 
 @cli.command(help="PCA analysis for PSI")
 @click.option('-i', '--input', 'infiles',  cls=OptionEatAll, 
                 required=True, type=tuple, help="psi files")
-@click.option('-o', '--output', 'outpath', required=True, help="figure output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf']),
-                 default="png", help="out figure format ")
-def pca(infiles, outpath, fmt):
-    if not (pdir:= Path(outpath).parent).exists():
+@click.option('-o', '--output', required=True, help="figure output path")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format") 
+@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def pca(infiles, output, fmt, width, height, resolution):
+    if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()
     rscript = Path(__file__).parent / "R" / "pca.R"
-    outpath = Path(outpath).with_suffix(f".{fmt}")
-    params = [str(outpath), *infiles]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
-    info.wait()
+    param_dic = {
+        "file": infiles,
+        "fmt": fmt, 
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "output": Path(output).with_suffix(f".{fmt}")
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
 
 
 @cli.command(["heatmap", "hm"], help="Heatmap plot for PSI")
 @click.option('-i', '--input', 'infiles',  cls=OptionEatAll, 
                 required=True, type=tuple, help="psi files")
-@click.option('-o', '--output', 'outpath', required=True, help="figure output path")
+@click.option('-o', '--output', required=True, help="figure output path")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
                 help="cluster information file")     
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf']),
-                 default="png", help="out figure format ")
-def heatmap(infiles, outpath, cluster, fmt):
-    if not (pdir:= Path(outpath).parent).exists():
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format") 
+@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def heatmap(infiles, output, cluster, fmt, width, height, resolution):
+    if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()
     rscript = Path(__file__).parent / "R" / "heatmap.R"
-    cluster = cluster if cluster else "0"
-    outpath = Path(outpath).with_suffix(f".{fmt}")
-    params = [str(outpath), cluster, *infiles]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
-    info.wait()
+
+    param_dic = {
+        "file": infiles,
+        "fmt": fmt, 
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "clusterinfo": cluster if cluster else "0",
+        "output": Path(output).with_suffix(f".{fmt}")
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
 
 
 @cli.command(help = "install R packages")
@@ -514,13 +541,53 @@ def motif_enrich(fasta, outdir, meme):
                 required=True, help="fasta file")
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
-def motif_find(fasta, outdir):
+@click.option('-pval', '--pvalue', type=float, default=0.05,
+                help="pvalue cutoff, default=0.05")
+@click.option('-minw', '--minw', type=int, default=5,
+                 help="minimal motifs width,default=5")                    
+@click.option('-maxw', '--maxw', type=int, default=15,
+                 help="maximal motifs width, default=15")               
+def motif_find(fasta, outdir, pvalue, minw, maxw):
     Path(outdir).mkdir(exist_ok=True)
-
     rscript = Path(__file__).parent / "R" / "motifFind.R"
-    params = [str(outdir), str(fasta)]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
-    info.wait()
+
+    param_dic = {
+        "outdir": outdir,
+        "fasta": fasta, 
+        "pvalue": pvalue,
+        "minw": minw, 
+        "maxw": maxw
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+@cli.command(["motifPlot", "mp"], help = "Motif plot")
+@click.option('-mi', "--motifId", "motifid", cls=OptionEatAll, type=tuple, 
+                required=True, help="motif id")
+@click.option('-mm', "--meme", type=click.Path(exists=True), 
+                required=True, help="meme motif file")
+@click.option('-o', '--output', type=click.Path(), required=True,
+                 help="output path")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format") 
+@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")                 
+def motif_plot(motifid, meme, output, fmt, width, height, resolution):
+    rscript = Path(__file__).parent / "R" / "motifPlot.R"
+
+    param_dic = {
+        "motifId": motifid,
+        "meme": meme,
+        "fmt": fmt,
+        "width": width, 
+        "height": height,
+        "resolution": resolution,
+        "output": Path(output).with_suffix(f".{fmt}")
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
 
 
 @cli.command(help="Gene Set Enrichment Analysis")

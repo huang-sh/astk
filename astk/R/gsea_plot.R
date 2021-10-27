@@ -1,19 +1,16 @@
 
-parser <- argparse::ArgumentParser()
+script_path  <- stringr::str_split(commandArgs()[4], "=")[[1]][2]
+source(file.path(dirname(script_path), "utils.R"))
 
-parser$add_argument("--output", help="output file path")
+
+parser <- fig_cmd_parser()
+
 parser$add_argument("--RData", help="RData file path")
 parser$add_argument("--termid", nargs='+', help="term id")
-parser$add_argument("--fmt", help="figure format")
-parser$add_argument("--resolution", type="integer", help="resolution")
-parser$add_argument("--width", type="double", help="figure width")
-parser$add_argument("--height", type="double", help="figure height")
 
 
 args <- parser$parse_args()
 
-script_path  <- stringr::str_split(commandArgs()[4], "=")[[1]][2]
-source(file.path(dirname(script_path), "utils.R"))
 
 load(args$RData)
 
