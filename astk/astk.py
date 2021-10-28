@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import sys
 import json
@@ -11,7 +12,6 @@ import pandas as pd
 from .cli_config import *
 from . import utils  as ul
 from . import ChromHMM as ch
-
 
 
 @click.group(cls=CustomMultiCommand, 
@@ -173,7 +173,6 @@ def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organ
         params = [str(out), str(pvalue), str(qvalue), database,
                  gene_id, org_db , kegg_organism, file]
         info = subprocess.Popen(["Rscript", str(rscript), *params])
-
     else:
         info.wait()
 
@@ -591,7 +590,7 @@ def motif_plot(motifid, meme, output, fmt, width, height, resolution):
 
 
 @cli.command(help="Gene Set Enrichment Analysis")
-@click.option('-i', '--input', 'infile',  type=click.Path(exists=True), 
+@click.option('-i', '--input', 'infile', type=click.Path(exists=True), 
                 required=True, help="input dpsi file")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-n', '--name', default="GSEA", help="output name prefix")
@@ -670,6 +669,60 @@ def upset(file, output, dg, name, fmt, width, height, resolution):
         "resolution": resolution,
         "output": Path(output).with_suffix(f".{fmt}"),
         "name": name if name else [str(i) for i  in range(len(file))]
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+@cli.command(help = "get motif from meme file")
+@click.option('-mi', '--motifId', required=True, cls=OptionEatAll, type=tuple, 
+                help="motif id")
+@click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
+                help="meme motif file")
+@click.option('-o', '--output', required=True, help="output path")
+def getmeme(motifid, meme, output):
+    try:
+        ul. get_meme(motifid, meme, output)
+    except BaseException as e:
+        print(e)
+
+
+@cli.command(help = "generate motif RNA map")
+@click.option('-fa', '--fasta', required=True, cls=OptionEatAll, type=tuple, 
+                help="fasta files")
+@click.option('-n', '--name', cls=OptionEatAll, type=tuple, default=(),
+                help="fasta files names")
+@click.option('-c', '--center', cls=OptionEatAll, type=tuple, default=(),
+                help="fasta files names")                
+@click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
+                help="meme motif file")
+@click.option('-od', '--outdir', default=".", type=click.Path(), 
+                help="meme motif file")
+@click.option('-b', '--binsize', default=20, 
+                help="the window width for scanning motif, default=20")
+@click.option('-s', '--step', default=10, 
+                help="the slide window size, default=10")                
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format")
+@click.option('-w', '--width', default=8, help="fig width, default=6 inches")
+@click.option('-h', '--height', default=4, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def rnamap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height, resolution):
+    rscript = Path(__file__).parent / "R" / "RNAMap.R"
+    Path(outdir).mkdir(exist_ok=True)
+
+    param_dic = {
+        "fasta": fasta,
+        "outdir": outdir, 
+        "meme": meme,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "bin": binsize,
+        "step": step,
+        "fmt": fmt,
+        "center": center if len(center) ==len(fasta) else ["0"] * len(fasta),
+        "seqid": name if len(name)==len(fasta) else [Path(i).stem for i in fasta]
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])

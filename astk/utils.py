@@ -663,3 +663,18 @@ def parse_cmd_r(**param_dic):
             param_ls.append(f"--{k}")
             param_ls.append(str(v))
     return param_ls
+
+
+def get_meme(motif_ids, meme, output):
+    with open(meme, "r") as hi, open(output, "w") as ho:
+        flag = True
+        for line in hi:
+            if line.startswith("MOTIF"):
+                mid = line.split()[1]
+                if mid in motif_ids:
+                    ho.write(line)
+                    flag = True 
+                else:
+                    flag = False 
+            elif flag:
+                ho.write(line)
