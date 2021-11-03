@@ -39,10 +39,11 @@ def compute_feature_len(df):
 
 def extract_info(df):
     from . import feature_len as fl
+    AS_len = lambda x: fl.EventID(x).alter_element_len
     chrs = df["event_id"].apply(lambda x: x.split(":")[1])
     genes = df["event_id"].apply(lambda x: x.split(";")[0].strip())
-    lens = df["event_id"].apply(fl.AS_len)
-    len_df = pd.DataFrame(lens.tolist())
+    lens = df["event_id"].apply(AS_len)
+    len_df = pd.DataFrame(lens.tolist(), columns=["len"])
     data = {
         "geneId": genes,
         "chr": chrs,
