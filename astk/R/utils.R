@@ -49,9 +49,9 @@ enrichGOSep <- function(gene,
     p_title <- name
     outputf <- file.path(output, paste(name, ".%s.qval%s_pval%s.pdf", sep = ""))  
 
-    goplot.dir <- file.path(output, "goplot")
-    if (!dir.exists(goplot.dir)) {
-      dir.create(goplot.dir, recursive = T)
+    emap.dir <- file.path(output, "emap")
+    if (!dir.exists(emap.dir)) {
+      dir.create(emap.dir, recursive = T)
     }
 
     simgo.dir <- file.path(output, "simgo")
@@ -80,13 +80,17 @@ enrichGOSep <- function(gene,
                 guides(size = guide_legend(override.aes=list(shape=1))) +
                 theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
                       panel.grid.major.x = element_blank())
-       simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)
 
+                          
+       simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)
+       simple.ego <- enrichplot::pairwise_termsim(simple.ego)   
        tryCatch({
-        gop <- goplot(simple.ego, max.overlaps= 5, showCategory = 15)
-        go.out <- file.path(goplot.dir, paste(name, ".%s_goplot.pdf", sep = ""))
+          emap <- enrichplot::emapplot(simple.ego, cex_label_category=.8, cex_line=.5) + 
+                  scale_fill_continuous(low = "#e06663", high = "#327eba", name = "p.adjust",
+                                        guide = guide_colorbar(reverse = TRUE, order=1), trans='log10')         
+        go.out <- file.path(emap.dir, paste(name, ".%s_emap.pdf", sep = ""))
         pdf(sprintf(go.out, ont.i), width = 15, height = 15)
-        print(gop)
+        print(emap)
         dev.off()        
       }, error = function(e) {
          print(e)
