@@ -75,13 +75,16 @@ def len_pick(infile, output, len_range):
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()                   
+    from . import feature_len as fl
+    AS_len = lambda x: fl.EventID(x).alter_element_len
 
-    ioe_df = pd.read_csv(infile, sep="\t")
-    info_df = ul.extract_info(ioe_df)
-    info_df["event_id"] = ioe_df["event_id"]
+    df = pd.read_csv(infile, sep="\t", index_col=0)
+    cols = df.columns
+    df["event_id"] = df.index
+    df["len"] = df["event_id"].apply(AS_len)
     s, e = len_range
-    pdf = info_df.loc[(s <= info_df["len"]) & ( info_df["len"] < e), :]
-    pdf.to_csv(Path(output).parent / f"{Path(output).stem}_{s}-{e}", index=False)
+    pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
+    pdf.to_csv(output, index=True, sep="\t", na_rep="nan", index_label=False)
 
 
 AS_type = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
@@ -138,7 +141,7 @@ def sigfilter(infile, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
                 sf.run()
 
 @cli.command()
-@click.option('-i', '--input', 'infiles',  cls=OptionEatAll, type=tuple, required=True, help="dpsi files")
+@click.option('-i', '--input', 'infile', type=click.Path(exists=True), required=True, help="dpsi file")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
@@ -152,7 +155,7 @@ def sigfilter(infile, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
 @click.option('-org', '--keggOrganism', "kegg_organism",
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")          
-def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism):
+def enrich(infile, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism):
     rscript = Path(__file__).parent / "R" / "enrich.R"
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
@@ -167,14 +170,11 @@ def enrich(infiles, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organ
     if database == "KEGG":
         ul.check_kegg_RData(kegg_organism)
 
-    for file in infiles:
-        out = Path(outdir) / Path(file).stem
-        out.mkdir(exist_ok=True)
-        params = [str(out), str(pvalue), str(qvalue), database,
-                 gene_id, org_db , kegg_organism, file]
-        info = subprocess.Popen(["Rscript", str(rscript), *params])
-    else:
-        info.wait()
+    params = [str(outdir), str(pvalue), str(qvalue), database,
+                gene_id, org_db , kegg_organism, infile]
+    info = subprocess.Popen(["Rscript", str(rscript), *params])        
+    info.wait()
+
 
 
 @cli.command(["enrichCompare", "ecmp"])
@@ -691,7 +691,7 @@ def getmeme(motifid, meme, output):
 @click.option('-fa', '--fasta', required=True, cls=OptionEatAll, type=tuple, 
                 help="fasta files")
 @click.option('-n', '--name', cls=OptionEatAll, type=tuple, default=(),
-                help="fasta files names")
+                help="fasta file names")
 @click.option('-c', '--center', cls=OptionEatAll, type=tuple, default=(),
                 help="fasta files names")                
 @click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
@@ -704,8 +704,8 @@ def getmeme(motifid, meme, output):
                 help="the slide window size, default=10")                
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format")
-@click.option('-w', '--width', default=8, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=4, help="fig height, default=6 inches")
+@click.option('-w', '--width', default=8, help="fig width, default=8 inches")
+@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def rnamap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "RNAMap.R"
