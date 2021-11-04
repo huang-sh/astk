@@ -27,25 +27,13 @@ seq_names <- args$seqid
 centers <- args$center
 
 
-
 meme_ls <- universalmotif::read_meme(meme)
 
 motif_names <- sapply(meme_ls, function(x) x@name)
-
 motif_lens  <-  sapply(meme_ls, function(x) dim(x@motif)[2])
-
 max_motif_len <- max(motif_lens)
 
-
-# seq_files <- c("/home/huangshenghui/project/astk/demo/tmp/SE.e1.fa",
-#                 "/home/huangshenghui/project/astk/demo/tmp/SE.e2.fa",
-#                 "/home/huangshenghui/project/astk/demo/tmp/SE.e3.fa",
-#                 "/home/huangshenghui/project/astk/demo/tmp/SE.e4.fa")
-
-# seq_names <- c("e1", "e2", "e3", "e4")
 names(seq_files)  <- seq_names
-
-# centers <- c(50, 100, 50, 100)
 names(centers) <- seq_names
 
 df_ls <- lapply(seq_names, function(n){
@@ -86,12 +74,11 @@ df_ls <- lapply(seq_names, function(n){
 all_df <- Reduce(rbind, df_ls)
 
 
-
 r <- lapply(unique(all_df$motif_id), function(x){
     p <- ggplot(data = all_df[all_df$motif_id ==x, ]) +
         geom_line(mapping = aes(x = pos, y=count, color = motif_id)) +
         facet_wrap(~seqId, ncol = length(seq_names), scales = "free_x") +
-        labs(y="Motif Coverage", x = "Relative Position") + 
+        labs(x = "Relative Position", y="Motif Coverage") + 
         ggtitle("RNA map")
     
     output <- file.path(args$outdir, sprintf("%s.%s", x, args$fmt))

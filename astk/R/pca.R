@@ -44,7 +44,9 @@ percentage <- round(df_pca$sdev / sum(df_pca$sdev) * 100, 2)
 percentage <- paste(colnames(df), "(", paste( as.character(percentage), "%", ")", sep="") )
 
 p <- ggplot(df, aes(x=PC1,y=PC2, color=group)) +
-    geom_point()+xlab(percentage[1]) + 
+    geom_point() +
+    # stat_ellipse(level = 0.95, show.legend = F) +
+    xlab(percentage[1]) + 
     ylab(percentage[2])
 
 

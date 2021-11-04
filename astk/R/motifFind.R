@@ -20,5 +20,5 @@ streme_out <- memes::runStreme(args$fasta,
                       outdir = args$outdir,
                       minw   = args$minw,
                       maxw   = args$maxw,
-                      thresh = args$thresh)
+                      pvt = args$thresh)
 

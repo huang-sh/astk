@@ -69,12 +69,17 @@ enrichGOSep <- function(gene,
       p <- dotplot(ego, split="ONTOLOGY", showCategory = 15, title = p_title) + 
                 facet_grid(ONTOLOGY~., scale="free") + 
                 scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
-                                      guide   = guide_colorbar(reverse=TRUE, order=1)) 
+                                      guide   = guide_colorbar(reverse=TRUE, order=1)) +
+                guides(size = guide_legend(override.aes=list(shape=1))) +
+                theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
+                      panel.grid.major.x = element_blank())                                      
     }else {
        p <- dotplot(ego, showCategory=30, title = p_title) + 
                 scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
-                                      guide   = guide_colorbar(reverse=TRUE, order=1)) 
-
+                                      guide   = guide_colorbar(reverse=TRUE, order=1)) +
+                guides(size = guide_legend(override.aes=list(shape=1))) +
+                theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
+                      panel.grid.major.x = element_blank())
        simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)
 
        tryCatch({
