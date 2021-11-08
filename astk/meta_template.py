@@ -103,7 +103,7 @@ class Template:
                 group_name = list(range(1, group_num+1))
             else:
                 raise ValueError("group names dismatched path files!")                
-            df = self.df_generate(group_name, repN, path, is_fn=is_fn)
+            df = self.df_generate(group_name, repN, path, **kwargs)
             
             df.insert(1, "condition", cdname) 
         

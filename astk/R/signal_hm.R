@@ -17,7 +17,7 @@ plot_ls <- lapply(args$file, function(file){
     signal_df <- read_csv(file)
 
     filter.signal <- signal_df %>% 
-        group_by(event_id, mark, direction, anchor) %>% 
+        group_by(event_idx, mark, direction, anchor) %>% 
         summarise(value = sum(signal)) %>% 
         group_by(mark, direction, anchor) %>% 
         summarise(value = mean(value)) %>% 
@@ -54,10 +54,3 @@ save_fig(ps,
         height = args$height, 
         units  = "in",
         res    = args$resolution)
-
-    filter.signal <- signal_df %>% 
-        group_by(position, mark, direction, anchor) %>% 
-        summarise(value = sum(signal)) %>% 
-        group_by(mark, direction, anchor) %>% 
-        summarise(value = mean(value)) %>% 
-        arrange(mark)

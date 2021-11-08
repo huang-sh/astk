@@ -59,7 +59,6 @@ def meta(output, replicate, group_name, control, treatment, replicate1, replicat
     except BaseException as e:
         print(e)
 
-
 @cli.command(["lenCluster", "lc"], help="length cluster")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True),
                 required=True,  help='AS ioe file')
