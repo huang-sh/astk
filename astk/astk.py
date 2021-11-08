@@ -22,27 +22,49 @@ def cli():
 
 @cli.command(help="generate metadata template file")
 @click.option('-o', '--output', required=True, help='metadata output path')
-@click.option('-g', '--group', type=int, required=True, help="contrast groups, number")
-@click.option('-repN', '--replicate', cls=OptionEatAll,type=tuple, help="replicate, number")
-@click.option('-gn', '--group_name', cls=OptionEatAll, type=tuple, help="group name")
-@click.option('-p1', cls=OptionEatAll,type=tuple, help="file path for condtion 1")
-@click.option('-p2', cls=OptionEatAll,type=tuple, help="file path for condtion 2")
-@click.option('-repN1', '--replicate1', cls=OptionEatAll,type=tuple, help="replicate1, number")
-@click.option('-repN2', '--replicate2', cls=OptionEatAll,type=tuple, help="replicate2, number")
-def meta(output, group, replicate, group_name, p1, p2, replicate1, replicate2):
+@click.option('-p1', '--control', cls=MultiOption,type=tuple, default=(),
+                help="file path for condtion 1")
+@click.option('-p2', '--treatment', cls=MultiOption,type=tuple, default=(),
+                help="file path for condtion 2")
+@click.option('-gn', '--group_name', cls=MultiOption, type=tuple,
+                default=(), help="group name")                
+@click.option('-repN', '--replicate', cls=MultiOption,type=tuple, 
+                help="replicate, number")                
+@click.option('-repN1', '--replicate1', cls=MultiOption,type=tuple, 
+                help="replicate1, number")
+@click.option('-repN2', '--replicate2', cls=MultiOption,type=tuple, 
+                help="replicate2, number")
+@click.option('-fn', '--filename', 'is_fn', is_flag=True, help="file name")
+@click.option('--split', cls=MultiOption, type=tuple, help="name split symbol and index")    
+def meta(output, replicate, group_name, control, treatment, replicate1, replicate2, **kwargs):
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
-        exit()
-    output = Path(output).with_suffix(".csv")
-    ul.meta_template(output, group, replicate, group_name,
-                    p1, p2, repN1=replicate1, repN2=replicate2)
+        exit() 
+    from .meta_template import Template
+
+    if replicate:
+        repN1 = replicate
+        repN2 = replicate
+    elif all([replicate1, replicate1]):
+        repN1 = replicate1
+        repN2 = replicate2
+    else:
+        print("repN1 and repN2 must be set!")    
+        sys.exit()
+    try:
+        tp = Template()
+        tp.complete_df(group_name, control, treatment, repN1, repN2, **kwargs)
+        tp.to_csv(output)
+        tp.to_json(output)
+    except BaseException as e:
+        print(e)
 
 
 @cli.command(["lenCluster", "lc"], help="length cluster")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True),
                 required=True,  help='AS ioe file')
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-cl', '--custom_len', 'custom_len', cls=OptionEatAll, type=tuple, help="custom length")
+@click.option('-cl', '--custom_len', 'custom_len', cls=MultiOption, type=tuple, help="custom length")
 @click.option('-nc', '--cluster', type=int, default=4, help="number of cluster")
 @click.option('-bw', '--width', type=int, default=3, help="bin width")
 @click.option('-lw', '--len_weight', type=float, default=2, help="length weight")
@@ -120,7 +142,7 @@ def diff_splice(outdir, metadata, gtf, event_type, exon_len, tpm_col, method):
 @click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value")
 @click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=float, default=0, help="absulte dpsi threshold value")
-@click.option('-pf', '--psiFile', cls=OptionEatAll,type=tuple, help="psi files")
+@click.option('-pf', '--psiFile', cls=MultiOption,type=tuple, help="psi files")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
                 default="tsv", help="out  file format ")
 def sigfilter(infile, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
@@ -178,7 +200,7 @@ def enrich(infile, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organi
 
 
 @cli.command(["enrichCompare", "ecmp"])
-@click.option('-i', '--input', 'infiles',  cls=OptionEatAll, 
+@click.option('-i', '--input', 'infiles',  cls=MultiOption, 
                 required=True, type=tuple, help="dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
@@ -217,7 +239,7 @@ def enrich_cmp(infiles, outdir, cluster, database,
 
 
 @cli.command(["enrichLenCluster", "elc"])
-@click.option('-i', '--input', 'infiles',  cls=OptionEatAll, 
+@click.option('-i', '--input', 'infiles',  cls=MultiOption, 
                 required=True, type=tuple, help="dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
@@ -266,7 +288,7 @@ def enrich_lc(infiles, outdir, cluster, merge, database, pvalue, qvalue,
 
 
 @cli.command(["volcano", "vol"], help="Volcano plot analysis for dPSI")
-@click.option('-i', '--input', "file", cls=OptionEatAll, type=tuple, help="dpsi file")
+@click.option('-i', '--input', "file", cls=MultiOption, type=tuple, help="dpsi file")
 @click.option('-o', '--output', help="output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
@@ -288,7 +310,7 @@ def volcano(file, output, fmt, width, height, resolution):
 
 
 @cli.command(help="PCA analysis for PSI")
-@click.option('-i', '--input', 'infiles',  cls=OptionEatAll, 
+@click.option('-i', '--input', 'infiles',  cls=MultiOption, 
                 required=True, type=tuple, help="psi files")
 @click.option('-o', '--output', required=True, help="figure output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
@@ -314,7 +336,7 @@ def pca(infiles, output, fmt, width, height, resolution):
 
 
 @cli.command(["heatmap", "hm"], help="Heatmap plot for PSI")
-@click.option('-i', '--input', 'infiles',  cls=OptionEatAll, 
+@click.option('-i', '--input', 'infiles',  cls=MultiOption, 
                 required=True, type=tuple, help="psi files")
 @click.option('-o', '--output', required=True, help="figure output path")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
@@ -375,14 +397,14 @@ def list(OrgDb):
 
 @cli.command(help = "generate ChromHMM mark file")
 @click.option('-o', '--output', required=True, help="file output path")
-@click.option('-ct', '--cellType', cls=OptionEatAll, type=tuple, required=True, help="cell types")
-@click.option('-bed', '--bed', cls=OptionEatAll, type=tuple, help="bed files")
-@click.option('-mn', '--markNum', cls=OptionEatAll, type=tuple, required=True,
+@click.option('-ct', '--cellType', cls=MultiOption, type=tuple, required=True, help="cell types")
+@click.option('-bed', '--bed', cls=MultiOption, type=tuple, help="bed files")
+@click.option('-mn', '--markNum', cls=MultiOption, type=tuple, required=True,
                  help="mark count of every cell types") 
 @click.option('-sep', help="split symbol for splitting bed file names") 
 @click.option('-mi', "--markIndex", type=int, 
             help="the mark index when bed files are splited by -sep symbol")
-@click.option('--markName', cls=OptionEatAll, type=tuple, help="mark names")
+@click.option('--markName', cls=MultiOption, type=tuple, help="mark names")
 @click.option('--stacked', is_flag=True, 
             help="This flag replaces the mark entry with an entry of the form cell_mark.")
 def mark(output, celltype, bed, marknum, sep, markindex, markname, stacked):
@@ -521,7 +543,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 
 
 @cli.command(["motifEnrich", "me"], help = "Motif Enrichment")
-@click.option('-fa', "--fasta", cls=OptionEatAll, type=tuple, 
+@click.option('-fa', "--fasta", cls=MultiOption, type=tuple, 
                 required=True, help="fasta files")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-mm', '--meme', type=click.Path(exists=True), 
@@ -562,7 +584,7 @@ def motif_find(fasta, outdir, pvalue, minw, maxw):
 
 
 @cli.command(["motifPlot", "mp"], help = "Motif plot")
-@click.option('-mi', "--motifId", "motifid", cls=OptionEatAll, type=tuple, 
+@click.option('-mi', "--motifId", "motifid", cls=MultiOption, type=tuple, 
                 required=True, help="motif id")
 @click.option('-mm', "--meme", type=click.Path(exists=True), 
                 required=True, help="meme motif file")
@@ -619,7 +641,7 @@ def gsea(infile, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
 
 
 @cli.command(help="Gene Set Enrichment Analysis ploting")
-@click.option('-id', '--id', "termid", cls=OptionEatAll, type=tuple, 
+@click.option('-id', '--id', "termid", cls=MultiOption, type=tuple, 
                 required=True, help="term id")
 @click.option('-o', '--output', help="output figure path")
 @click.option('-rd', '--RData', help="output figure path")
@@ -644,13 +666,13 @@ def gseplot(termid, output, rdata, fmt, width, height, resolution):
     subprocess.run(["Rscript", rscript, *param_ls])
 
 @cli.command(help="draw UpSet plots for AS events")
-@click.option('-i', '--input', "file", cls=OptionEatAll, type=tuple, 
+@click.option('-i', '--input', "file", cls=MultiOption, type=tuple, 
                 required=True, help="input dpsi files")              
 @click.option('-o', '--output', required=True, help="output figure path")
 @click.option('-dg', '--dg', is_flag=True, 
                 help="This flag is present then dpsi file will divide \
                     pos and neg groups according to dpsi value") 
-@click.option('-n', '--name', cls=OptionEatAll, type=tuple, 
+@click.option('-n', '--name', cls=MultiOption, type=tuple, 
                 help="file group names") 
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
@@ -675,7 +697,7 @@ def upset(file, output, dg, name, fmt, width, height, resolution):
 
 
 @cli.command(help = "get motif from meme file")
-@click.option('-mi', '--motifId', required=True, cls=OptionEatAll, type=tuple, 
+@click.option('-mi', '--motifId', required=True, cls=MultiOption, type=tuple, 
                 help="motif id")
 @click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
                 help="meme motif file")
@@ -688,11 +710,11 @@ def getmeme(motifid, meme, output):
 
 
 @cli.command(help = "generate motif RNA map")
-@click.option('-fa', '--fasta', required=True, cls=OptionEatAll, type=tuple, 
+@click.option('-fa', '--fasta', required=True, cls=MultiOption, type=tuple, 
                 help="fasta files")
-@click.option('-n', '--name', cls=OptionEatAll, type=tuple, default=(),
+@click.option('-n', '--name', cls=MultiOption, type=tuple, default=(),
                 help="fasta file names")
-@click.option('-c', '--center', cls=OptionEatAll, type=tuple, default=(),
+@click.option('-c', '--center', cls=MultiOption, type=tuple, default=(),
                 help="fasta files names")                
 @click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
                 help="meme motif file")
@@ -723,6 +745,65 @@ def rnamap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height,
         "fmt": fmt,
         "center": center if len(center) ==len(fasta) else ["0"] * len(fasta),
         "seqid": name if len(name)==len(fasta) else [Path(i).stem for i in fasta]
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+@cli.command(help="epi signal")
+@click.option('-o', '--output', required=True, help="output path")
+@click.option('-md', '--metadata', type=click.Path(exists=True),
+             help="contrast group metadata, generated by meta")
+@click.option('-anchor', '--anchor', cls=MultiOption, type=tuple, default=(),
+                help="site anchor files")
+@click.option('-n', '--name', cls=MultiOption, type=tuple, default=(),
+                help="site anchor names")
+@click.option('-w', '--width', default=150, type=int, help="flank window width, default=150")
+@click.option('-bs', '--binSize', default=15, type=int,help="bin size, default=15")
+def epi(output, metadata, anchor, name, width, binsize):
+    from . import epi
+    anchor_dic = dict(zip(name, anchor))
+
+    epi.epi_signal(output, anchor_dic, metadata, width, binsize)
+
+
+@cli.command(help="epi signal")
+@click.option('-o', '--output', required=True, help="output path")
+@click.option('-md', '--metadata', type=click.Path(exists=True),
+             help="contrast group metadata, generated by meta")
+@click.option('-anchor', '--anchor', cls=MultiOption, type=tuple, default=(),
+                help="site anchor files")
+@click.option('-n', '--name', cls=MultiOption, type=tuple, default=(),
+                help="site anchor names")
+@click.option('-w', '--width', default=150, type=int, help="flank window width, default=150")
+@click.option('-bs', '--binSize', default=15, type=int,help="bin size, default=15")
+def epi(output, metadata, anchor, name, width, binsize):
+    from . import epi
+    ### error list(range(1, 4))?
+    names = name if len(name)==len(anchor) else [i for i in range(1, len(anchor)+1)]
+
+    anchor_dic = dict(zip(names, anchor))
+    epi.epi_signal(output, anchor_dic, metadata, width, binsize)
+    
+
+@cli.command(help="epi signal heatmap")
+@click.option('-o', '--output', required=True, help="output path")
+@click.option('-i', '--input', 'infiles', cls=MultiOption, type=tuple, default=(),
+             help="input signal files")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format")
+@click.option('-w', '--width', default=8, help="fig width, default=8 inches")
+@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def epihm(output, infiles, fmt, width, height, resolution):
+    rscript = Path(__file__).parent / "R" / "signal_hm.R"
+    param_dic = {
+        "file": infiles,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "fmt": fmt,
+        "output": output
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
