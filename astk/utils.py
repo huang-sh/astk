@@ -112,82 +112,7 @@ def ioe_event(gtf, event_type, edge_exon_len):
                 logger, b_type="S", th=10)
     else:
          logger.info("Loading cache data.")
-    return output_dir
-
-
-def df_generate(path, rep, group, group_name):
-    if len(rep) == 1:
-        reps = [int(rep[0])] * group
-    elif len(rep) == group:
-        reps = [int(i) for i in rep]
-    else:
-        print("rep dismatch group")
-        sys.exit()
-    if len(path) == 1:
-        paths = [path[0] for _ in range(sum(reps))]
-    elif len(path) == int(rep[0]):
-        paths = list(chain(*repeat(path,  group)))
-    elif len(path) == sum(reps):
-        paths = path
-    else:
-        print("path number dismath")
-        sys.exit()
-    
-    rep_ls = list(chain(*((range(1, i+1)) for i in reps)))
-
-    if group_name is None:
-        groups = list(chain(*[repeat(i, r) for r,i in zip(reps, range(1, group+1))]))
-    elif len(group_name) != group:
-        print("group name number is not consistent with group number, laas will using default value")
-        groups = list(chain(*[repeat(i, r) for r,i in zip(reps, range(1, group+1))]))
-    elif len(group_name) == group:
-        
-        groups = list(chain(*[repeat(i, r) for r,i in zip(reps, range(1, group+1))]))
-        groups = [group_name[i-1] for i in groups]
-    
-    names = [Path(i).parent.name for i in paths] 
-    df = pd.DataFrame({
-        "group": groups,                                                                                                                                                                                                                                                                               
-        "replicate": rep_ls,
-        "name": names,
-        "path": paths
-    })
-    return df
-
-
-def meta_template(out, group, repN, group_name,
-             path1, path2, repN1=None, repN2=None):
-
-    if all([repN1, repN2]):
-        control_df1 = df_generate(path1, repN1, group, group_name)
-        treatment_df2 = df_generate(path2, repN2, group, group_name)
-    elif any([repN1, repN2]):
-        print("-repN1 and -repN2 must be set simultaneously")
-    elif repN:
-        control_df1 = df_generate(path1, repN, group, group_name)
-        treatment_df2 = df_generate(path2, repN, group, group_name)
-    control_df1.insert(1, "condition", "control")
-    treatment_df2.insert(1, "condition", "treatment")
-    df = pd.concat([control_df1, treatment_df2]).sort_values(by=["group", "condition"])
-    df.to_csv(out, index=False)
-    
-    meta_dic = {}
-    for gn, gdf in df.groupby("group"):
-        meta_dic[gn] = {"control": {"samples": []},
-                         "treatment": {"samples": []}}
-        for _, row in gdf.iterrows():
-            name = row["name"]
-            rep = row["replicate"]
-            path = row["path"]
-            sp_dic = {"name": name, "replicate": rep, "path": path}
-            meta_dic[gn][row["condition"]]["samples"].append(sp_dic)
-    
-    outjson = Path(out).with_suffix(".json")
-
-    f = outjson.open(mode="w")
-    json.dump(meta_dic, f, indent=4)
-    f.close()
-
+    return output_dir  
 
 def ioe_psi(event_row, tpm):
     alternative_transcripts = event_row["alternative_transcripts"].split(",")
@@ -679,3 +604,9 @@ def get_meme(motif_ids, meme, output):
                     flag = False 
             elif flag:
                 ho.write(line)
+
+
+def sep_name(name, sep, *idx):
+    str_ls = name.split(sep)
+    name_ls = [str_ls[int(i)-1] for i in idx]
+    return ".".join(name_ls)
