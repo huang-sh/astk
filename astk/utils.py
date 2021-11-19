@@ -184,7 +184,7 @@ def custome_cluster_len(df, out, lens, width=10, max_len=500):
     return df
 
 
-def cluster_len(df, out, n_cls=5, width=10, max_len=500, len_weight = 5):
+def cluster_len(df, out, n_cls=5, width=10, max_len=500, len_weight=5):
     len_count = df["len"]
     counts, bin_edges = len_hist(df["len"], width, max_len)
     lens = [(bin_edges[i] + bin_edges[i+1])/2-1  for i,v in enumerate(bin_edges[:-1])]
@@ -397,81 +397,6 @@ class DiffSplice:
                 self.dpsi_files[as_type][gn] = dpis_file.with_suffix(".dpsi")
         
         self.update_meta()
-
-
-#TODO: generate psi files according dpsi(+,-)
-class SigFilter:
-    def __init__(self, dpsi_file, out, dpsi, pval, 
-                abs_dpsi, psi_file, fmt) -> None:
-        self.dpsi_file = dpsi_file
-        self.dpsi = dpsi
-        self.pval = pval
-        self.abs_dpsi = abs_dpsi 
-        self.psi_file = psi_file if psi_file else []
-        self.fmt = fmt
-        self.sep = "," if fmt == "csv" else "\t"
-        self.sig_psi = []
-        self.set_out(out)
- 
-    def filter_dpsi(self):
-        dpsi_df = pd.read_csv(self.dpsi_file, sep="\t", index_col=0)
-        old_col = dpsi_df.columns
-        dpsi_df.columns = ["dpsi", "pval"]
-        filter_df = sig_filter(dpsi_df, dpsi=self.dpsi, abs_dpsi=self.abs_dpsi, pval=self.pval)
-
-        if self.abs_dpsi > 0:
-            pos_df = filter_df.loc[filter_df["dpsi"] > 0, ]
-
-            neg_df = filter_df.loc[filter_df["dpsi"] < 0, ]
-            self.pos_sig_event = pos_df.index
-            self.neg_sig_event = neg_df.index
-            
-            pos_df.columns = old_col
-            neg_df.columns = old_col
-            pos_df.to_csv(self.pos_sig_dpsi, index=True, sep=self.sep, index_label=False)
-            neg_df.to_csv(self.neg_sig_dpsi, index=True, sep=self.sep, index_label=False)
-
-        filter_df.columns = old_col
-        filter_df.to_csv(self.sig_dpsi, index=True, sep=self.sep, index_label=False)
-
-        self.sig_event = filter_df.index
-    
-    def filter_psi(self):
-        for i, pf in enumerate(self.psi_file):
-            psi = pd.read_csv(pf, sep="\t")
-            psi.index = psi["event_id"]
-            if len(set(self.sig_event) & set(psi.index)) > 0:
-                sig_psi = psi.loc[self.sig_event, ]
-                sig_psi.to_csv(self.sig_psi[i], index=False, sep="\t")
-    
-    def set_out(self, out):
-        sig_psi = []
-        if out is not None:
-            Path(out).mkdir(exist_ok=True)
-            sig_dpsi = Path(out) / Path(self.dpsi_file).name
-            for i in self.psi_file:
-                sig_psi.append(Path(out) / Path(i).name)
-        else:
-            self.sig_dpsi = Path(self.dpsi_file)
-            for i in self.psi_file:
-                sig_psi.append(Path(i))  
-        self.sig_dpsi = sig_dpsi.with_suffix(".sig.dpsi")
-        if self.abs_dpsi >= 0:
-            self.pos_sig_dpsi = sig_dpsi.with_suffix(".sig+.dpsi")
-            self.neg_sig_dpsi = sig_dpsi.with_suffix(".sig-.dpsi")
-            self.pos_sig_psi = []
-            self.neg_sig_psi = []
-            for i in sig_psi:
-                self.sig_psi.append(i.with_suffix(".sig.psi"))
-                self.pos_sig_psi.append(i.with_suffix(".sig+.psi"))
-                self.neg_sig_psi.append(i.with_suffix(".sig-.psi"))
-        if abs(self.dpsi) >= 0:
-            for i in sig_psi:
-                self.sig_psi.append(i.with_suffix(".sig.psi"))
-    def run(self):
-        self.filter_dpsi()
-        self.filter_psi()
-
 
 
 OrgDb_dic = {
