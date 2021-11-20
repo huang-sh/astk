@@ -42,11 +42,11 @@ def meta(output, replicate, group_name, control, treatment, replicate1, replicat
         print(f"{pdir} doest not exist")
         exit() 
     if replicate:
-        repN1 = replicate
-        repN2 = replicate
+        repN1 = [int(i) for i in replicate]
+        repN2 = [int(i) for i in replicate]
     elif all([replicate1, replicate1]):
-        repN1 = replicate1
-        repN2 = replicate2
+        repN1 = [int(i) for i in replicate1]
+        repN2 = [int(i) for i in replicate2]
     else:
         print("repN1 and repN2 must be set!")    
         sys.exit()
@@ -818,6 +818,33 @@ def epiline(output, infile, fmt, width, height, resolution):
         "resolution": resolution,
         "fmt": fmt,
         "output": output
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+@cli.command(help="epi signal line")
+@click.option('-o', '--output', required=True, help="output path")
+@click.option('-i', '--input', 'infiles', cls=MultiOption, type=tuple, default=(),
+             help="input dpsi files")
+@click.option('-dg', '--dg', is_flag=True, default = False,
+              help=("This flag is present then a dpsi file will divide "
+                  "two part according to |dpsi| > 0 and |dpsi| < 0"))             
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
+                 default="png", help="out figure format")
+@click.option('-w', '--width', default=8, help="fig width, default=8 inches")
+@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+def barplot(output, infiles, dg, fmt, width, height, resolution):
+    rscript = Path(__file__).parent / "R" / "barplot.R"
+    param_dic = {
+        "file": infiles,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "fmt": fmt,
+        "output": output,
+        "dg": dg
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
