@@ -11,6 +11,7 @@ import pandas as pd
 
 from . import utils  as ul
 from . import ChromHMM as ch
+from . import event_id as ei
 from .meta_template import Template
 from .cli_config import *
 from .select import *
@@ -58,7 +59,7 @@ def meta(output, replicate, group_name, control, treatment, replicate1, replicat
     except BaseException as e:
         print(e)
 
-@cli.command(["lenCluster", "lc"], help="length cluster")
+@cli.command(["lenDist", "ld"], help="length distribution")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True),
                 required=True,  help='AS ioe file')
 @click.option('-o', '--output', required=True, help="output path")
@@ -67,7 +68,7 @@ def meta(output, replicate, group_name, control, treatment, replicate1, replicat
 @click.option('-bw', '--width', type=int, default=3, help="bin width")
 @click.option('-lw', '--len_weight', type=float, default=2, help="length weight")
 @click.option('--max_len', type=int, default=500, help="the max length of exon in clustering")
-def len_cluster(infile, output, custom_len, cluster, width, len_weight, max_len):
+def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()                   
@@ -86,6 +87,41 @@ def len_cluster(infile, output, custom_len, cluster, width, len_weight, max_len)
         df = ul.cluster_len(info_df, output, n_cls=cluster, max_len=max_len, len_weight=len_weight, width=width)
     df.to_csv(Path(output).parent / f"{Path(output).stem}_cls_info.csv", index=False)
 
+@cli.command(["lenCluster", "lc"], help="length cluster")
+@click.option('-i', '--input', 'infiles', cls=MultiOption,type=tuple, default=(),
+                required=True,  help='AS ioe file')
+@click.option('-id', '--inDir', type=click.Path(exists=True), help='input direcory')
+@click.option('-od', '--outdir', required=True, help="output directory")
+@click.option('-lr', '--lenRange', cls=MultiOption, type=tuple,
+              default=(1, ), help="custom length")
+def len_cluster(infiles, indir, outdir, lenrange):
+    outdir = Path(outdir)
+    
+    outdir = Path(outdir).absolute()
+    od_name = outdir.name
+
+    lrs =list(map(int, lenrange))
+    coor_ls = [(lrs[i], lrs[i+1]) for i in range(len(lrs)-1)]
+
+    if indir:
+        files = list(Path(indir).glob("*.dpsi"))
+    else:
+        files = [Path(i) for i in infiles]
+    
+    if len(files) == 1:
+        file = Path(files[0])
+        outdir.mkdir(exist_ok=True)
+        for s, e in coor_ls:
+            outfile = outdir / f"{file.stem}_{s}-{e}{file.suffix}"
+            ul.df_len_select(file, outfile, s, e)
+    else:
+        for file in files:
+            for s, e in coor_ls:
+                s_outdir = outdir.with_name(f"{od_name}_{s}-{e}")
+                s_outdir.mkdir(exist_ok=True)
+                outfile = s_outdir / Path(file).name
+                ul.df_len_select(file, outfile, s, e)
+
 
 @cli.command(["lenPick", "lp"])
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True), help='AS ioe file')
@@ -95,8 +131,7 @@ def len_pick(infile, output, len_range):
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()                   
-    from . import feature_len as fl
-    AS_len = lambda x: fl.EventID(x).alter_element_len
+    AS_len = lambda x: ei.SuppaEventID(x).alter_element_len
 
     df = pd.read_csv(infile, sep="\t", index_col=0)
     cols = df.columns
@@ -402,7 +437,7 @@ def install(requirement, OrgDb, cran, bioconductor, java):
 @cli.command(["list", "ls"], help = "list OrgDb")
 @click.option('-orgdb', '--OrgDb', "OrgDb",
                 is_flag=True, help="list OrgDb")
-def list(OrgDb):
+def list_(OrgDb):
     if OrgDb:
         for k, v in ul.OrgDb_dic.items():
             print(f"{k}: {v}")
@@ -770,8 +805,8 @@ def rnamap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height,
 @click.option('-bs', '--binSize', default=15, type=int,help="bin size, default=15")
 def epi(output, metadata, anchor, name, width, binsize):
     from . import epi
-    ### error list(range(1, 4))?
-    names = name if len(name)==len(anchor) else [i for i in range(1, len(anchor)+1)]
+
+    names = name if len(name)==len(anchor) else list(range(1, len(anchor)+1))
 
     anchor_dic = dict(zip(names, anchor))
     epi.epi_signal(output, anchor_dic, metadata, width, binsize)

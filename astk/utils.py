@@ -14,7 +14,7 @@ from sklearn.cluster import KMeans
 from .suppa.lib.event import make_events
 from .suppa.lib.gtf_store import *
 from .suppa.lib.tools import *
-from . import feature_len as fl
+from . import event_id as ei
 
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
@@ -535,3 +535,13 @@ def sep_name(name, sep, *idx):
     str_ls = name.split(sep)
     name_ls = [str_ls[int(i)-1] for i in idx]
     return ".".join(name_ls)
+
+
+def df_len_select(infile, outfile, s, e):
+    AS_len = lambda x: ei.SuppaEventID(x).alter_element_len
+    df = pd.read_csv(infile, sep="\t", index_col=0)
+    cols = df.columns
+    df["event_id"] = df.index
+    df["len"] = df["event_id"].apply(AS_len)
+    pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
+    pdf.to_csv(outfile, index=True, sep="\t", na_rep="nan", index_label=False)
