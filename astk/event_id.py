@@ -1,5 +1,7 @@
 
-class EventID:
+class SuppaEventID:
+    """This class is for suppa2 AS event ID parsing
+    """
 
     def __init__(self, event_id):
         self.event_id = event_id
@@ -90,3 +92,4 @@ class EventID:
         else:
             coors = ()
         return coors
+
