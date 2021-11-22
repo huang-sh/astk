@@ -100,7 +100,7 @@ def len_cluster(infiles, indir, outdir, lenrange):
     outdir = Path(outdir).absolute()
     od_name = outdir.name
 
-    lrs =list(map(int, lenrange))
+    lrs = list(map(int, lenrange))
     coor_ls = [(lrs[i], lrs[i+1]) for i in range(len(lrs)-1)]
 
     if indir:
@@ -121,7 +121,6 @@ def len_cluster(infiles, indir, outdir, lenrange):
                 s_outdir.mkdir(exist_ok=True)
                 outfile = s_outdir / Path(file).name
                 ul.df_len_select(file, outfile, s, e)
-
 
 @cli.command(["lenPick", "lp"])
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True), help='AS ioe file')
@@ -170,18 +169,24 @@ def diff_splice(outdir, metadata, gtf, event_type, exon_len, tpm_col, method):
 
 @cli.command(["sigfilter", "sf"], help="filter significant result")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True), help="dpsi file")
+@click.option('-id', '--inDir', type=click.Path(exists=True), help="input dpsi directory")
 @click.option('-md', '--metadata', type=click.Path(exists=True), help="metadata file")
-@click.option('-od', '--outdir', required=True, help="output directory")
+@click.option('-od', '--outDir', required=True, help="output directory")
 @click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value")
 @click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=float, default=0, help="absulte dpsi threshold value")
 @click.option('-pf', '--psiFile', cls=MultiOption,type=tuple, help="psi files")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
                 default="tsv", help="out  file format ")
-def sigfilter(infile, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
+def sigfilter(infile, indir, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
     if infile:
         sf = SigFilter(infile, outdir, dpsi, pval, abs_dpsi, psifile, fmt)
         sf.run()
+    if indir:
+        for file in Path(indir).glob("*.dpsi"):
+            sf = SigFilter(file, outdir, dpsi, pval, abs_dpsi, psifile, fmt)
+            sf.run()
+            
     if metadata:
         with open(metadata, "r") as f:
             meta_dic = json.load(f)
@@ -862,6 +867,8 @@ def epiline(output, infile, fmt, width, height, resolution):
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-i', '--input', 'infiles', cls=MultiOption, type=tuple, default=(),
              help="input dpsi files")
+@click.option('-n', '--name', cls=MultiOption, type=tuple, default=(),
+             help="input dpsi names")
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("This flag is present then a dpsi file will divide "
                   "two part according to |dpsi| > 0 and |dpsi| < 0"))             
@@ -870,10 +877,11 @@ def epiline(output, infile, fmt, width, height, resolution):
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
 @click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def barplot(output, infiles, dg, fmt, width, height, resolution):
+def barplot(output, infiles, name, dg, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "barplot.R"
     param_dic = {
         "file": infiles,
+        "name": name,
         "width": width, 
         "height": height, 
         "resolution": resolution,
