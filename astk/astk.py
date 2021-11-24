@@ -104,7 +104,7 @@ def len_cluster(infiles, indir, outdir, lenrange):
     coor_ls = [(lrs[i], lrs[i+1]) for i in range(len(lrs)-1)]
 
     if indir:
-        files = list(Path(indir).glob("*.dpsi"))
+        files = list(Path(indir).glob("*psi"))
     else:
         files = [Path(i) for i in infiles]
     
@@ -117,7 +117,7 @@ def len_cluster(infiles, indir, outdir, lenrange):
     else:
         for file in files:
             for s, e in coor_ls:
-                s_outdir = outdir.with_name(f"{od_name}_{s}-{e}")
+                s_outdir = outdir.with_name(f"{od_name}_{s}-{e-1}")
                 s_outdir.mkdir(exist_ok=True)
                 outfile = s_outdir / Path(file).name
                 ul.df_len_select(file, outfile, s, e)
@@ -168,37 +168,27 @@ def diff_splice(outdir, metadata, gtf, event_type, exon_len, tpm_col, method):
 
 
 @cli.command(["sigfilter", "sf"], help="filter significant result")
-@click.option('-i', '--input', 'infile', type=click.Path(exists=True), help="dpsi file")
-@click.option('-id', '--inDir', type=click.Path(exists=True), help="input dpsi directory")
-@click.option('-md', '--metadata', type=click.Path(exists=True), help="metadata file")
+@click.option('-i', '--input', 'infiles', cls=MultiOption,type=tuple, help="dpsi files")
 @click.option('-od', '--outDir', required=True, help="output directory")
 @click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value")
 @click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=float, default=0, help="absulte dpsi threshold value")
-@click.option('-pf', '--psiFile', cls=MultiOption,type=tuple, help="psi files")
+@click.option('-pf1', '--psiFile1', cls=MultiOption,type=tuple, default=(),
+             help="psi files of condtion 1")
+@click.option('-pf2', '--psiFile2', cls=MultiOption,type=tuple, default=(),
+             help="psi files of condtion 2")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
                 default="tsv", help="out  file format ")
-def sigfilter(infile, indir, metadata, outdir, dpsi, pval, abs_dpsi, psifile, fmt):
-    if infile:
-        sf = SigFilter(infile, outdir, dpsi, pval, abs_dpsi, psifile, fmt)
-        sf.run()
-    if indir:
-        for file in Path(indir).glob("*.dpsi"):
-            sf = SigFilter(file, outdir, dpsi, pval, abs_dpsi, psifile, fmt)
-            sf.run()
+def sigfilter(infiles, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
+    
+    for idx, dpsi_file in enumerate(infiles):
+        if len(infiles) == len(psifile1) and len(infiles) == len(psifile2):
+            psifiles = (psifile1[idx], psifile2[idx])
+        else:
+            psifiles = ()
             
-    if metadata:
-        with open(metadata, "r") as f:
-            meta_dic = json.load(f)
-        
-        for i in meta_dic:
-            for at in meta_dic[i]["dpsi"].keys():
-                infile = meta_dic[i]["dpsi"][at]
-                psi_file1 = meta_dic[i]["control"]["psi"][at]
-                psi_file2 = meta_dic[i]["treatment"]["psi"][at]
-                psi_file = [psi_file1, psi_file2]
-                sf = SigFilter(infile, outdir, dpsi, pval, abs_dpsi, psi_file, fmt)
-                sf.run()
+        sf = SigFilter(dpsi_file, outdir, dpsi, pval, abs_dpsi, psifiles, fmt)
+        sf.run()
 
 
 @cli.command(["psiFilter", "pf"], help="filter psi result")
@@ -722,17 +712,21 @@ def gseplot(termid, output, rdata, fmt, width, height, resolution):
                 required=True, help="input dpsi files")              
 @click.option('-o', '--output', required=True, help="output figure path")
 @click.option('-n', '--name', cls=MultiOption, type=tuple, 
-                help="file group names") 
+                help="file group names")
+@click.option('-dg', '--dg', is_flag=True, default = False,
+              help=("This flag is present then a dpsi file will divide "
+                  "two part according to |dpsi| > 0 and |dpsi| < 0"))                     
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def upset(file, output, name, fmt, width, height, resolution):
+def upset(file, output, name, dg, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "upset.R"
 
     param_dic = {
         "file": file,
+        "dg": dg,
         "fmt": fmt, 
         "width": width, 
         "height": height, 
