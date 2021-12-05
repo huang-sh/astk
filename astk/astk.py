@@ -430,12 +430,17 @@ def install(requirement, OrgDb, cran, bioconductor, java):
 
 
 @cli.command(["list", "ls"], help = "list OrgDb")
-@click.option('-orgdb', '--OrgDb', "OrgDb",
-                is_flag=True, help="list OrgDb")
-def list_(OrgDb):
+@click.option('-orgdb', '--OrgDb', "OrgDb", is_flag=True, help="list OrgDb")
+@click.option('-rbpsp', '--RBPSp', "RBPSp", is_flag=True, help="RNA binding protein Species")
+def list_(OrgDb, RBPSp):
+    from .constant import OrgDb_dic, RBP_sp_dic
     if OrgDb:
-        for k, v in ul.OrgDb_dic.items():
+        for k, v in OrgDb_dic.items():
+            print(f"{k}: {v}")      
+    if RBPSp:
+        for k, v in RBP_sp_dic.items():
             print(f"{k}: {v}")
+   
 
 @cli.command(help = "generate ChromHMM mark file")
 @click.option('-o', '--output', required=True, help="file output path")
