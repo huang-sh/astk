@@ -203,7 +203,7 @@ def psi_filter(infile, output, psi, quantile):
     if infile:
         pf = PsiFilter(infile, psi, quantile)
         pf.run(output)
-
+  
 
 @cli.command()
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True), required=True, help="dpsi file")
@@ -431,7 +431,7 @@ def install(requirement, OrgDb, cran, bioconductor, java):
 
 @cli.command(["list", "ls"], help = "list OrgDb")
 @click.option('-orgdb', '--OrgDb', "OrgDb", is_flag=True, help="list OrgDb")
-@click.option('-rbpsp', '--RBPSp', "RBPSp", is_flag=True, help="RNA binding protein Species")
+@click.option('-rbpsp', '--RBPSp', "RBPSp", is_flag=True, help="RNA binding protein  ")
 def list_(OrgDb, RBPSp):
     from .constant import OrgDb_dic, RBP_sp_dic
     if OrgDb:
@@ -590,19 +590,36 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 
 
 @cli.command(["motifEnrich", "me"], help = "Motif Enrichment")
-@click.option('-fa', "--fasta", cls=MultiOption, type=tuple, 
-                required=True, help="fasta files")
+@click.option('-tf', "--tfasta", cls=MultiOption, type=tuple, 
+                required=True, help="input fasta files")
+@click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
+                required=True, help="control fasta files")                
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-mm', '--meme', type=click.Path(exists=True), 
-                required=True, help="path to .meme format file")
-def motif_enrich(fasta, outdir, meme):
+@click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP']),
+                 default="ATtRACT", help="RBP motif database default=ATtRACT")
+@click.option('-org', '--organism', help="RBP organism")
+# @click.option('-mm', '--meme', type=click.Path(exists=True), 
+#                 required=True, help="path to .meme format file")
+def motif_enrich(tfasta, cfasta, outdir, database, organism):
+    from .constant import RBP_sp_dic
+
     Path(outdir).mkdir(exist_ok=True)
-
     rscript = Path(__file__).parent / "R" / "motifEnrich.R"
-    params = [outdir, meme, *fasta]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
-    info.wait()
 
+    if len(tfasta) != len(cfasta):
+        print("-tf/tfasta number must be same as -cf/cfasta")
+        sys.exit()
+    sp = RBP_sp_dic.get(organism, "0")
+
+    param_dic = {
+        "tfile": tfasta,
+        "cfile": cfasta,
+        "outdir": outdir,
+        "database": database,
+        "organism": sp
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
 
 @cli.command(["motifFind", "mf"], help = "Motif Discovery")
 @click.option('-fa', "--fasta", type=click.Path(exists=True), 
