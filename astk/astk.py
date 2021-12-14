@@ -593,7 +593,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 @click.option('-tf', "--tfasta", cls=MultiOption, type=tuple, 
                 required=True, help="input fasta files")
 @click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
-                required=True, help="control fasta files")                
+                help="control fasta files")                
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP']),
                  default="ATtRACT", help="RBP motif database default=ATtRACT")
@@ -606,9 +606,12 @@ def motif_enrich(tfasta, cfasta, outdir, database, organism):
     Path(outdir).mkdir(exist_ok=True)
     rscript = Path(__file__).parent / "R" / "motifEnrich.R"
 
-    if len(tfasta) != len(cfasta):
+    if cfasta and len(tfasta) != len(cfasta):
         print("-tf/tfasta number must be same as -cf/cfasta")
         sys.exit()
+    elif cfasta is None:
+        cfasta = ["0" for _ in tfasta]
+
     sp = RBP_sp_dic.get(organism, "0")
 
     param_dic = {
@@ -622,8 +625,10 @@ def motif_enrich(tfasta, cfasta, outdir, database, organism):
     subprocess.run(["Rscript", rscript, *param_ls])
 
 @cli.command(["motifFind", "mf"], help = "Motif Discovery")
-@click.option('-fa', "--fasta", type=click.Path(exists=True), 
+@click.option('-tf', "--tfasta", type=click.Path(exists=True), 
                 required=True, help="fasta file")
+@click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
+                help="control fasta files")                     
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
 @click.option('-pval', '--pvalue', type=float, default=0.05,
@@ -632,7 +637,7 @@ def motif_enrich(tfasta, cfasta, outdir, database, organism):
                  help="minimal motifs width,default=5")                    
 @click.option('-maxw', '--maxw', type=int, default=15,
                  help="maximal motifs width, default=15")               
-def motif_find(fasta, outdir, pvalue, minw, maxw):
+def motif_find(tfasta, outdir, pvalue, minw, maxw):
     Path(outdir).mkdir(exist_ok=True)
     rscript = Path(__file__).parent / "R" / "motifFind.R"
 
