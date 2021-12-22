@@ -14,27 +14,16 @@ parser$add_argument("--organism", help="organism")
 
 args <- parser$parse_args()
 
-if (args$database == "CISBP"){
-   motif_path <- file.path(dirname(dirname(script_path)), "data", "CIS_RBP_motif.txt")
+
+if (args$database == "CISBP-RNA"){
+   motif_path <- file.path(motif_dir, "CISBP-RNA", sprintf("%s.meme", args$organism))
+   mf <- universalmotif::read_meme(motif_path)
     
 } else {
-   motif_path <- file.path(dirname(dirname(script_path)), "data", "ATtRACT_RBP_motif.txt")
+   motif_path <- file.path(motif_dir, "ATtRACT",  sprintf("%s.meme", args$organism))
+   mf <- universalmotif::read_meme(motif_path)
 }
 
-motif_ls <- universalmotif::read_cisbp(motif_path)
-
-if (args$organism != "0"){
-    print(args$organism)
-    mf <- universalmotif::filter_motifs(motif_ls, organism = args$organism)
-} else {
-    mf <- motif_ls
-}
-
-readFasta <- function(file){
-    dna <- Biostrings::readDNAStringSet(file)
-    rna <- Biostrings::BStringSet(Biostrings::RNAStringSet(dna))
-    return(rna)
-}
 
 file_ls  <-  list()
 
@@ -44,7 +33,7 @@ for (i in seq(1, length(args$tfile))){
 
 res_ls <- lapply(file_ls, function(files){
     tfa <- readFasta(files[1])
-    
+
     if (files[2] == "0"){
         cfa <- "shuffle"
     } else {
