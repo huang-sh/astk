@@ -46,7 +46,7 @@ enrichGOSep <- function(gene,
       next()
     }
     print(ont.i)
-    p_title <- name
+    p_title <- ont.i
     outputf <- file.path(output, paste(name, ".%s.qval%s_pval%s.pdf", sep = ""))  
 
     emap.dir <- file.path(output, "emap")
@@ -298,4 +298,10 @@ fig_cmd_parser <- function(){
     parser$add_argument("--width", type="double", help="figure width")
     parser$add_argument("--height", type="double", help="figure height")
     return(parser)
+}
+
+readFasta <- function(file){
+    dna <- Biostrings::readDNAStringSet(file)
+    rna <- Biostrings::BStringSet(Biostrings::RNAStringSet(dna))
+    return(rna)
 }
