@@ -595,7 +595,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 @click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
                 help="control fasta files")                
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP']),
+@click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
                  default="ATtRACT", help="RBP motif database default=ATtRACT")
 @click.option('-org', '--organism', help="RBP organism")
 # @click.option('-mm', '--meme', type=click.Path(exists=True), 
@@ -624,29 +624,50 @@ def motif_enrich(tfasta, cfasta, outdir, database, organism):
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
 
-@cli.command(["motifFind", "mf"], help = "Motif Discovery")
-@click.option('-tf', "--tfasta", type=click.Path(exists=True), 
+@cli.command(["motifFind", "mf"], help = "Motif Discovery and similarity comparision")
+@click.option('-tf', "--tfasta", cls=MultiOption, type=tuple, 
                 required=True, help="fasta file")
 @click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
                 help="control fasta files")                     
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
+# @click.option('-mcmp', '--motifcmp', is_flag=True, 
+#                 default = False, help="motif similarity comparision")
+@click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
+                 default="CISBP-RNA", help="RBP motif database default=CISBP-RNA")
+@click.option('-org', '--organism', help="RBP organism")                              
 @click.option('-pval', '--pvalue', type=float, default=0.05,
-                help="pvalue cutoff, default=0.05")
+                help="Discovery pvalue cutoff, default=0.05")
+@click.option('-eval', '--evalue', type=float, default=0.5,
+                help="motif comparison pvalue cutoff, default=0.5")
 @click.option('-minw', '--minw', type=int, default=5,
                  help="minimal motifs width,default=5")                    
 @click.option('-maxw', '--maxw', type=int, default=15,
                  help="maximal motifs width, default=15")               
-def motif_find(tfasta, outdir, pvalue, minw, maxw):
+def motif_find(tfasta, cfasta, outdir, database, organism, pvalue, evalue, minw, maxw):
+    from .constant import RBP_sp_dic
+
     Path(outdir).mkdir(exist_ok=True)
     rscript = Path(__file__).parent / "R" / "motifFind.R"
 
+    sp = RBP_sp_dic.get(organism, "0")
+
+    if cfasta and len(tfasta) != len(cfasta):
+        print("-tf/tfasta number must be same as -cf/cfasta")
+        sys.exit()
+    elif cfasta is None:
+        cfasta = ["0" for _ in tfasta]
+
     param_dic = {
         "outdir": outdir,
-        "fasta": fasta, 
+        "tfile": tfasta, 
+        "cfile": cfasta, 
         "pvalue": pvalue,
         "minw": minw, 
-        "maxw": maxw
+        "maxw": maxw,
+        "database": database,
+        "organism": sp,
+        "eval": evalue
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
