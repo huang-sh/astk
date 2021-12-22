@@ -1,0 +1,21 @@
+MEME version 4
+
+ALPHABET= ACGU
+
+Background letter frequencies (from uniform background):
+A 0.25000 C 0.25000 G 0.25000 U 0.25000 
+
+MOTIF M080_0.6 (estExt_fgenesh1_pm.C_chr_6.10089)_(Saccharomyces_cerevisiae)_(RBD_0.71)
+
+letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
+  0.143282	  0.239833	  0.228688	  0.388197	
+  0.004311	  0.004311	  0.987067	  0.004311	
+  0.004311	  0.987067	  0.004311	  0.004311	
+  0.176483	  0.004311	  0.004311	  0.814895	
+  0.004311	  0.004311	  0.987067	  0.004311	
+  0.004311	  0.004311	  0.987067	  0.004311	
+  0.144333	  0.661955	  0.027973	  0.165738	
+  0.114292	  0.586361	  0.185055	  0.114292	
+
+URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T61841_0.6
+
