@@ -64,7 +64,7 @@ def check_gtf_used(gtf):
     hash_val = gtf_hash.hexdigest()
     return hash_val
 
-def ioe_event(gtf, event_type, edge_exon_len):
+def ioe_event(gtf, event_type, edge_exon_len, pool_genes=False):
 
     mode = "logging.INFO" 
 
@@ -103,9 +103,11 @@ def ioe_event(gtf, event_type, edge_exon_len):
             my_genome.add_to_genes(exon_meta)
         
         my_genome.sort_transcripts()
-        my_genome.split_genes()
-        logger.info("Pooling genes")
-        my_genome.poll_genes()
+
+        if pool_genes:
+            my_genome.split_genes()
+            logger.info("Pooling genes")
+            my_genome.poll_genes()
 
         out_prefix = output_dir / "annotation"
         make_events(event_type, my_genome, gtf, out_prefix, edge_exon_len,
@@ -230,19 +232,19 @@ def cluster_len(df, out, n_cls=5, width=10, max_len=500, len_weight=5):
 
 class DiffSplice:
     def __init__(self, outdir, meta, gtf, as_types,
-                 exon_len) -> None:
+                 exon_len, pool_genes) -> None:
         self.psi = {}
         self.mk_outdir(outdir)
-        self.ioe_dir = self.get_ioe_event(gtf, exon_len)
+        self.ioe_dir = self.get_ioe_event(gtf, exon_len, pool_genes)
         self.parse_meta(meta)
         for at in as_types:
             self.get_psi(at)
         self.write_data()
    
     @staticmethod
-    def get_ioe_event(gtf, exon_len):
+    def get_ioe_event(gtf, exon_len, pool_genes):
         events = ['SE', "SS", "MX", "RI", 'FL']
-        ioe_dir = ioe_event(gtf, events, exon_len)
+        ioe_dir = ioe_event(gtf, events, exon_len, pool_genes=pool_genes)
         return ioe_dir
     
     def parse_meta(self, meta):
@@ -392,7 +394,7 @@ class DiffSplice:
                 dpis_file = self.dpsi_dir / f"{gn}_{as_type}"
                 ioe_file = self.ioe_dir / f"annotation_{as_type}_strict.ioe"
                 mca(method, psi_files, expr_files, ioe_file, 1000, 0, 
-                    False, True, 0.05, True, False, False, 0, 0, str(dpis_file))
+                    False, True, 0.05, True, False, False, 1, 0, str(dpis_file))
 
                 self.dpsi_files[as_type][gn] = dpis_file.with_suffix(".dpsi")
         
@@ -429,7 +431,7 @@ def check_kegg_RData(org):
 
 
 def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
-    eid = fl.EventID(event_id)
+    eid = ei.SuppaEventID(event_id)
     if eid.strand == "-" and strand_sp:
         coordinates = eid.coordinates[::-1]
     else:
@@ -452,7 +454,7 @@ def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
     return eid.Chr, s, e, eid.gene_id
 
 
-def get_coor_bed(dpsi_file, out, start, end, strand_sp, anchor, upstream_w, downstream_w):
+def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstream_w):
     wget_coor_coor = partial(get_coor, start=start, end=end, strand_sp=strand_sp,
                     anchor=anchor, upstream_w=upstream_w, downstream_w=downstream_w)
     dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
@@ -460,11 +462,18 @@ def get_coor_bed(dpsi_file, out, start, end, strand_sp, anchor, upstream_w, down
     coors = dpsi_df["event_id"].apply(wget_coor_coor)
     coor_df = pd.DataFrame(coors.tolist())
     coor_df.drop_duplicates(inplace=True)
-    coor_df.to_csv(out, index=False, header=False, sep="\t")
+    return coor_df
+
+def get_coor_fa(df, fasta, out):
+    import pybedtools
+
+    lines = [f"{v[1]}\t{v[2]-1}\t{v[3]}" for v in df.itertuples()]
+    bed = pybedtools.BedTool("\n".join(lines), from_string=True)
+    bed.sequence(fi=fasta, fo=out)
 
 
 def get_anchor_coor(event_id, index, sideindex, offset5, offset3, strand_sp):
-    eid = fl.EventID(event_id)
+    eid = ei.SuppaEventID(event_id)
     if eid.strand == "-" and strand_sp:
         coordinates = eid.coordinates[::-1]
     else:
@@ -505,7 +514,7 @@ def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp
 def parse_cmd_r(**param_dic):
     param_ls = []
     for k, v in param_dic.items():
-        if isinstance(v, (tuple, list)):
+        if isinstance(v, (tuple, list)) and bool(v):
             param_ls.append(f"--{k}")
             param_ls.extend(v)
         elif isinstance(v, bool):

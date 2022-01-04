@@ -117,10 +117,10 @@ def len_cluster(infiles, indir, outdir, lenrange):
     else:
         for file in files:
             for s, e in coor_ls:
-                s_outdir = outdir.with_name(f"{od_name}_{s}-{e-1}")
+                s_outdir = outdir.with_name(f"{od_name}")
                 s_outdir.mkdir(exist_ok=True)
                 outfile = s_outdir / Path(file).name
-                ul.df_len_select(file, outfile, s, e)
+                ul.df_len_select(file, outfile, s, e+1)
 
 @cli.command(["lenPick", "lp"])
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True), help='AS ioe file')
@@ -153,15 +153,17 @@ AS_type = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
 @click.option('-m', '--method', type=click.Choice(['empirical', 'classical']),
              default="empirical", help="gene annotation gtf file")
 @click.option('--exon_len', type=int, default=100,
-             help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")
+             help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")             
+@click.option('-pg', '--poolGenes', default=False, is_flag=True, 
+             help="pool together overlapping genes")
 @click.option('--tpm_col', type=int, default=4, help="TPM columns index")
-def diff_splice(outdir, metadata, gtf, event_type, exon_len, tpm_col, method):
+def diff_splice(outdir, metadata, gtf, event_type, method, exon_len, poolgenes, tpm_col):
     if event_type == "all":
         event_types = AS_type
     else:
         event_types = [event_type]
     try:
-        dsi = ul.DiffSplice(outdir, metadata, gtf, event_types, exon_len)
+        dsi = ul.DiffSplice(outdir, metadata, gtf, event_types, exon_len, poolgenes)
         dsi.ds(method)
     except BaseException as e:
         print(e)
@@ -217,7 +219,7 @@ def psi_filter(infile, output, psi, quantile):
 @click.option('-orgdb', '--orgdb', required=True,
                 help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
                     run 'astk ls -org' to view more ")
-@click.option('-org', '--keggOrganism', "kegg_organism",
+@click.option('-ko', '--keggOrganism', "kegg_organism",
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")          
 def enrich(infile, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism):
@@ -509,12 +511,17 @@ def anchor(infile, output, index, sideindex, offset5, offset3, strand_sp):
 @click.option('-s', '--start', type=int, help="start index")
 @click.option('-e', '--end', type=int, help="end index")
 @click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
-@click.option('-anchor', '--anchor', type=int, help="element index")
+@click.option('-a', '--anchor', type=int, help="element index")
 @click.option('-u', '--upstreamWidth', "upstream_w", type=int, default=150, help="width of right flank")
 @click.option('-d', '--downstreamWidth', "downstream_w", type=int, default=150, help="width of left flank")
-def getcoor(infile, output, start, end, strand_sp, anchor, upstream_w, downstream_w):
+@click.option('-fi', 'fasta', type=click.Path(exists=True), 
+            help="Input FASTA file. if set, the fasta sequence will be extracted")
+def getcoor(infile, output, start, end, strand_sp, anchor, upstream_w, downstream_w, fasta):
     try:
-        ul.get_coor_bed(infile, output, start, end, strand_sp, anchor, upstream_w, downstream_w)
+        coor_df = ul.get_coor_bed(infile, start, end, strand_sp, anchor, upstream_w, downstream_w)
+        coor_df.to_csv(output, index=False, header=False, sep="\t")
+        if fasta:
+            ul.get_coor_fa(coor_df, fasta, Path(output).with_suffix(".fa"))
     except BaseException as e:
         print(e)
 
@@ -596,7 +603,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
                 help="control fasta files")                
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
-                 default="ATtRACT", help="RBP motif database default=ATtRACT")
+                 default="CISBP-RNA", help="RBP motif database default=CISBP-RNA")
 @click.option('-org', '--organism', help="RBP organism")
 # @click.option('-mm', '--meme', type=click.Path(exists=True), 
 #                 required=True, help="path to .meme format file")
