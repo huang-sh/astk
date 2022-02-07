@@ -6,26 +6,21 @@ source(file.path(dirname(script_path), "utils.R"))
 
 parser <- fig_cmd_parser()
 
-parser$add_argument("--file", nargs='+', help="file names")
-parser$add_argument("--name", nargs='+', help="file path")
+parser$add_argument("--file", nargs='+', help="file path")
+parser$add_argument("--name", nargs='+', help="file names")
 parser$add_argument("--dg", action='store_true', help="dg")
 
 
 args <- parser$parse_args()
 
 files <- args$file
-names(files) <- args$name
-
-# files <- list.files("~/project/astk/paper/fb_e11_ct/sig01",
-#             pattern = "*_SE.sig.dpsi", full.names = T)
-
 
 
 filenames <- sapply(stringr::str_split(basename(files), "\\."), function(x) x[1])
 
 if (length(filenames) == length(args$name)){
     filenames <- args$name
-}
+} 
 
 names(files) <- filenames
 
@@ -55,6 +50,7 @@ data <- data.frame(
     name = filenames,
     type = types
 )
+data$name <- factor(data$name, levels = data$name)
 
 p <- ggplot(data) +
     geom_col(mapping = aes(x = name, y = count, fill=type), 
