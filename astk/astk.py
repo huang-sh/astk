@@ -15,6 +15,7 @@ from . import event_id as ei
 from .meta_template import Template
 from .cli_config import *
 from .select import *
+from .constant import *
 
 @click.group(cls=CustomMultiCommand, 
         context_settings=dict(help_option_names=['-h', '--help']))
@@ -330,6 +331,36 @@ def enrich_lc(infiles, outdir, cluster, merge, database, pvalue, qvalue,
         else:
             info.wait()
 
+@cli.command(["nease"], help="Functional enrichment with NEASE")
+@click.argument('file', type=click.Path(exists=True))
+@click.option('-od', '--outdir', required=True, help="output directory")
+@click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
+@click.option('-db', '--database', type=click.Choice(NEASE_DATABASE), 
+                default="Reactome", help="nease enrich database")
+@click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
+                help="organism") 
+def nease_sc(file, outdir, pvalue, database, organism):
+    from .enrich import nease_enrich
+
+    get_geneid = lambda x: ei.SuppaEventID(x).gene_id.split(".")[0]
+    get_start = lambda x: ei.SuppaEventID(x).alter_element_coor[0]
+    get_end = lambda x: ei.SuppaEventID(x).alter_element_coor[1]
+
+    df = pd.read_csv(file, sep="\t", index_col=0)
+    df["event_id"] = df.index
+    
+    nease_input = pd.DataFrame({
+                    "Gene stable ID": df["event_id"].apply(get_geneid),
+                    "new_start": df["event_id"].apply(get_start), 
+                    "new_end": df["event_id"].apply(get_end),
+                    "beta": df[df.columns[0]].values})
+
+    nease_enrich(nease_input, outdir, database=[database], organism=organism, cutoff=pvalue)
+
+
+@cli.command(["necmp"], help="Functional enrichment comparision with NEASE")
+def neasecmp_sc():
+    pass
 
 @cli.command(["volcano", "vol"], help="Volcano plot analysis for dPSI")
 @click.option('-i', '--input', "file", cls=MultiOption, type=tuple, help="dpsi file")
@@ -916,7 +947,7 @@ def epiline(output, infile, fmt, width, height, resolution):
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-i', '--input', 'infiles', cls=MultiOption, type=tuple, default=(),
              help="input dpsi files")
-@click.option('-n', '--name', cls=MultiOption, type=tuple, default=(),
+@click.option('-xl', '--xlabel', cls=MultiOption, type=tuple, default=(),
              help="input dpsi names")
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("This flag is present then a dpsi file will divide "
@@ -926,11 +957,11 @@ def epiline(output, infile, fmt, width, height, resolution):
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
 @click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def barplot(output, infiles, name, dg, fmt, width, height, resolution):
+def barplot(output, infiles, xlabel, dg, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "barplot.R"
     param_dic = {
         "file": infiles,
-        "name": name,
+        "name": xlabel,
         "width": width, 
         "height": height, 
         "resolution": resolution,
