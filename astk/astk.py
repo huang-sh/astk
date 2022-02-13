@@ -794,31 +794,30 @@ def gseplot(termid, output, rdata, fmt, width, height, resolution):
     subprocess.run(["Rscript", rscript, *param_ls])
 
 @cli.command(help="draw UpSet plots for AS events")
-@click.option('-i', '--input', "file", cls=MultiOption, type=tuple, 
-                required=True, help="input dpsi files")              
+@click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)           
 @click.option('-o', '--output', required=True, help="output figure path")
-@click.option('-n', '--name', cls=MultiOption, type=tuple, 
-                help="file group names")
+@click.option('-xl', '--xlabel', cls=MultiOption, type=tuple, 
+                help="x xlabel")
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("This flag is present then a dpsi file will divide "
                   "two part according to |dpsi| > 0 and |dpsi| < 0"))                     
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def upset(file, output, name, dg, fmt, width, height, resolution):
+def upset(files, output, xlabel, dg, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "upset.R"
 
     param_dic = {
-        "file": file,
+        "file": files,
         "dg": dg,
         "fmt": fmt, 
         "width": width, 
         "height": height, 
         "resolution": resolution,
         "output": Path(output).with_suffix(f".{fmt}"),
-        "name": name if name else [str(i) for i  in range(len(file))]
+        "name": xlabel if xlabel else [str(i) for i  in range(len(file))]
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
