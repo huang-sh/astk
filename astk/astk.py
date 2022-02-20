@@ -817,21 +817,31 @@ def upset(files, output, xlabel, dg, fmt, width, height, resolution):
         "height": height, 
         "resolution": resolution,
         "output": Path(output).with_suffix(f".{fmt}"),
-        "name": xlabel if xlabel else [str(i) for i  in range(len(file))]
+        "name": xlabel if xlabel else [str(i) for i  in range(len(files))]
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
 
 
 @cli.command(help = "get motif from meme file")
-@click.option('-mi', '--motifId', required=True, cls=MultiOption, type=tuple, 
-                help="motif id")
-@click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
-                help="meme motif file")
+@click.argument('motifId', nargs=-1, required=True)   
+@click.option('-mm', '--meme', type=click.Path(exists=True), help="meme motif file")
+@click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
+                help="RBP motif database")
+@click.option('-org', '--organism', help="RBP organism")
 @click.option('-o', '--output', required=True, help="output path")
-def getmeme(motifid, meme, output):
+def getmeme(motifid, meme, database, organism, output):
+    sp = RBP_sp_dic.get(organism, None)
+    if meme:
+        meme_file = meme
+    elif database and sp:
+        meme_file = Path(__file__).parent  / f"data/motif/{database}/{sp}.meme"
+    else:
+        print("--meme or --db and -org muset be set")    
+        sys.exit()
+
     try:
-        ul. get_meme(motifid, meme, output)
+        ul.get_meme(motifid, meme_file, output)
     except BaseException as e:
         print(e)
 
@@ -875,7 +885,7 @@ def rnamap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height,
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
-
+    
 
 @cli.command(help="epi signal")
 @click.option('-o', '--output', required=True, help="output path")
@@ -942,7 +952,7 @@ def epiline(output, infile, fmt, width, height, resolution):
     subprocess.run(["Rscript", rscript, *param_ls])
 
 
-@cli.command(help="epi signal line")
+@cli.command(help="barplot ")
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-i', '--input', 'infiles', cls=MultiOption, type=tuple, default=(),
              help="input dpsi files")
