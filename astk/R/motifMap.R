@@ -17,17 +17,19 @@ parser$add_argument("--center", nargs="+", type="integer", help="fasta files")
 
 args <- parser$parse_args()
 
-
 step <- args$step
 win <- args$bin
 meme <- args$meme
 
 seq_files <- args$fasta
 seq_names <- args$seqid
-centers <- args$center
-
-
+centers <- args$cente
 meme_ls <- universalmotif::read_meme(meme)
+
+if (class(meme_ls) != "list"){
+    meme_ls  <-  list(meme_ls)
+
+}
 
 motif_names <- sapply(meme_ls, function(x) x@name)
 motif_lens  <-  sapply(meme_ls, function(x) dim(x@motif)[2])
@@ -40,10 +42,15 @@ df_ls <- lapply(seq_names, function(n){
     faset <- readBStringSet(seq_files[n])
     seq_len <- width(faset)[1]
     starts <- seq(1, seq_len, by = step) 
-    win_starts <- starts[(seq_len-starts+1) >= max_motif_len]
+    win_starts <- starts[(seq_len-starts+1) >= max_motif_len] 
     res_ls <- lapply(win_starts, function(s){
-        subfa <- subseq(faset, start=s, end=NA, width=win) 
-        res <- memes::runFimo(subfa, meme_ls)   
+        if (s == win_starts[length(win_starts)]){
+            subfa <- subseq(faset, start=s, end=min(width(faset))) 
+        }
+        else {
+           subfa <- subseq(faset, start=s, end=NA, width=win) 
+        }
+        res <- memes::runFimo(subfa, meme_ls)  
         return(res)
     })
 
@@ -58,8 +65,8 @@ df_ls <- lapply(seq_names, function(n){
 
     count_df <-  data.frame(t(sapply(motif_count,c)))
     len_factor <- motif_lens / max_motif_len
-
     count_df <- as.data.frame(mapply('/', count_df, len_factor))
+    colnames(count_df) <- motif_names
     new_motif_names <- colnames(count_df)
 
     count_df$pos <- win_starts - centers[n]
@@ -73,14 +80,12 @@ df_ls <- lapply(seq_names, function(n){
 
 all_df <- Reduce(rbind, df_ls)
 
-
 r <- lapply(unique(all_df$motif_id), function(x){
     p <- ggplot(data = all_df[all_df$motif_id ==x, ]) +
         geom_line(mapping = aes(x = pos, y=count, color = motif_id)) +
         facet_wrap(~seqId, ncol = length(seq_names), scales = "free_x") +
         labs(x = "Relative Position", y="Motif Coverage") + 
         ggtitle("RNA map")
-    
     output <- file.path(args$outdir, sprintf("%s.%s", x, args$fmt))
 
     save_fig(p, 
