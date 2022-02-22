@@ -1,4 +1,3 @@
-suppressMessages(library(tidyverse))
 suppressMessages(library(ComplexHeatmap))
 
 
@@ -16,38 +15,37 @@ args <- parser$parse_args()
 
 
 psi_df_ls <- lapply(args$file, function(file){
-    psi_df <- read_tsv(file, col_types = cols("c", "d", "d"))
+    psi_df <- read.delim(file, row.names = 1) # col_types = cols("c", "d", "d")
     return(psi_df)
 })
 
 
 my_inner_join <- function(x, y){
-    inner_join(x, y, by = "event_id")
+    rows <- intersect(rownames(x), rownames(y))
+    cbind(x[rows, ], y[rows, ])
 }
 
 dat <- Reduce(my_inner_join, psi_df_ls)
 dat <- na.omit(dat)
-
 
 if (file.exists(args$clusterinfo)){
 
     cls_ext <- tools::file_ext(args$clusterinfo)
 
     if (cls_ext == "tsv"){
-        exon_cluster <- read_tsv(args$clusterinfo, show_col_types = FALSE)
+        exon_cluster <- read.delim(args$clusterinfo, row.names = 1)
     } else if (cls_ext == "csv") {
-        exon_cluster <- read_csv(args$clusterinfo, show_col_types = FALSE)
+        exon_cluster <- read.delim(args$clusterinfo, row.names = 1)
     }
 
     exon_cluster <- as.data.frame(exon_cluster)
     rownames(exon_cluster) <- exon_cluster$event_id
 
-    exon_cluster[dat$event_id, ]$cluster
-    split <- paste("Cluster", exon_cluster[dat$event_id, ]$cluster, sep = "")
+    exon_cluster[rownames(dat), ]$cluster
+    split <- paste("Cluster", exon_cluster[rownames(dat), ]$cluster, sep = "")
 } else {
    split <- NULL
 }
-
 
 
 col_fun <- circlize::colorRamp2(seq(0, 1, length.out = 9), 
@@ -55,16 +53,15 @@ col_fun <- circlize::colorRamp2(seq(0, 1, length.out = 9),
                   '#CAF0F8', '#FAE0E4', '#F9BEC7',
                   '#FF99AC', '#FF7096', '#FF477E'))
 
-
-p <- Heatmap(dat[, -1], 
+p <- Heatmap(as.matrix(dat), 
              name            = "Heatmap", 
              show_row_dend   = T, 
              border          = TRUE, 
              col             = col_fun,
              cluster_columns = F, 
+             show_row_names  = F,
              row_split       = split, 
              row_gap         = unit(c(3), "mm"))
-
 
 save_fig(p, 
         args$output, 
@@ -73,7 +70,3 @@ save_fig(p,
         height = args$height, 
         units  = "in",
         res    = args$resolution)
-
-
-
-

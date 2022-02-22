@@ -41,7 +41,7 @@ enrichGOSep <- function(gene,
                     pvalueCutoff  = pval,
                     qvalueCutoff  = qval,
                     readable      = TRUE,
-                    pool          = TRUE)
+                    pool          = FALSE)
     if (dim(as.data.frame(ego))[1] == 0){
       next()
     }

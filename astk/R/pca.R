@@ -13,26 +13,33 @@ parser$add_argument("--file", nargs='+', help="psi file path")
 args <- parser$parse_args()
 
 psi_df_ls <- lapply(args$file, function(file){
-    psi_df <- read_tsv(file, col_types = cols("c", "d", "d"))
+    psi_df <- read.delim(file, row.names = 1)
     return(psi_df)
 })
 
 names <- lapply(args$file, function(file){
     name <- tools::file_path_sans_ext(basename(file))
-    psi_df <- read_tsv(file, col_types = cols("c", "d", "d"))
-    rep(name, dim(psi_df)[2]-1)
+    psi_df <- read.delim(file, row.names = 1) # col_types = cols("c", "d", "d")
+    rep(name, dim(psi_df)[2])
 })
 
+# my_inner_join <- function(x, y){
+#     inner_join(x, y, by = "event_id")
+# }
+
+# dat <- Reduce(my_inner_join, psi_df_ls)
 my_inner_join <- function(x, y){
-    inner_join(x, y, by = "event_id")
+    rows <- intersect(rownames(x), rownames(y))
+    cbind(x[rows, ], y[rows, ])
 }
 
 dat <- Reduce(my_inner_join, psi_df_ls)
+dat <- na.omit(dat)
 
 
 dat <- na.omit(dat)
-df_pca <- prcomp(t(dat[, -1]))
-
+print(dim(dat))
+df_pca <- prcomp(t(dat))
 df <- as.data.frame(df_pca$x)
 
 df$group <- unlist(names)

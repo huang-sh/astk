@@ -50,7 +50,8 @@ data <- data.frame(
     name = filenames,
     type = types
 )
-data$name <- factor(data$name, levels = data$name)
+
+data$name <- factor(data$name)
 
 p <- ggplot(data) +
     geom_col(mapping = aes(x = name, y = count, fill=type), 
