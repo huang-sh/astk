@@ -2,29 +2,50 @@ suppressMessages(library(tidyverse))
 suppressMessages(library(clusterProfiler))
 
 
-args <- commandArgs()
+parser <- argparse::ArgumentParser()
+parser$add_argument("--outdir", help="output directory")
+parser$add_argument("--pval", type="double", help="pval")
+parser$add_argument("--qval", type="double", help="qval")
+parser$add_argument("--database", help="database")
+parser$add_argument("--clusterfile", help="cluster file")
+parser$add_argument("--orgdb", help="orgdb")
+parser$add_argument("--genetype", help="gene type")
+parser$add_argument("--keggorganism", help="kegg organism")
+parser$add_argument("--files",  nargs='+', help="dpsi files")
+parser$add_argument("--xlabel",  nargs='+', help="dpsi files")
 
-out.dir <- args[6]
-pval  <- as.numeric(args[7])
-qval  <- as.numeric(args[8])
-db <- args[9]
-cluster_file <- args[10]
-orgdb <- args[11]
-gene_type <- args[12]
-kegg_organism <- args[13]
+args <- parser$parse_args()
 
-dpsi_files <- args[14:length(args)]
+out.dir <- args$outdir
+pval  <- args$pval
+qval  <- args$qval
+db <- args$database
+cluster_file <- args$clusterfile
+orgdb <- args$orgdb
+gene_type <- args$genetype
+kegg_organism <- args$keggorganism
+dpsi_files <- args$files
+xlabel <- args$xlabel
 
 suppressMessages(library(orgdb, character.only = T))
 
-script_path  <- str_split(args[4], "=")[[1]][2]
+args1 <- commandArgs()
+script_path  <- str_split(args1[4], "=")[[1]][2]
 source(file.path(dirname(script_path), "utils.R"))
-
 
 
 filenames <- unlist(lapply(dpsi_files, function(file){
                             tools::file_path_sans_ext(basename(file))
                         }))   
+
+if (length(unique(xlabel)) == length(dpsi_files)){
+    filenames <- xlabel
+} else if (length(filenames) != length(unique(filenames))) {
+   filenames <- paste(filenames, seq(1, length(filenames)), sep=".") 
+} else {
+   filenames <- filenames
+}
+
 
 if (file.exists(cluster_file)){
 
