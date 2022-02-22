@@ -18,7 +18,7 @@ plot_ls <- lapply(args$file, function(file){
 
     filter.signal <- signal_df %>% 
         group_by(event_idx, mark, direction, anchor) %>% 
-        summarise(value = sum(signal)) %>% 
+        summarise(value = mean(signal)) %>% 
         group_by(mark, direction, anchor) %>% 
         summarise(value = mean(value)) %>% 
         arrange(mark)
@@ -40,7 +40,7 @@ plot_ls <- lapply(args$file, function(file){
     anchors <- rep(anchors, each = 2)
     colnames(signal_mtx) <- paste(anchors, ud, sep="_")
     filename  <-  tools::file_path_sans_ext(basename(file))
-    p <- Heatmap(scale(signal_mtx), name = filename, cluster_columns = F, cluster_rows = F)
+    p <- Heatmap(signal_mtx, name = filename, cluster_columns = F, cluster_rows = F)
     return(p)
 })
 
