@@ -15,7 +15,10 @@ setup(
         "pandas>=1.3.0",
         "matplotlib>=3.4.0",
         "scikit-learn>=0.24.0",
-        "statsmodels>= 0.12.0"
+        "statsmodels>= 0.12.0",
+        "pysam",
+        "pybedtools",
+        "nease"
     ],
     entry_points="""
         [console_scripts]
