@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+astk.event_id
+~~~~~~~~~~~~~~~~~
+This module provides event id process function.
+"""
 
 class SuppaEventID:
     """This class is for suppa2 AS event ID parsing

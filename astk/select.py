@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+astk.select
+~~~~~~~~~~~~~~~~~
+This module provides data filter function.
+"""
+
 from pathlib import Path
 
 import pandas as pd
@@ -38,9 +45,8 @@ class SigFilter:
         dpsi_df.columns = ["dpsi", "pval"]
         filter_df = sig_filter(dpsi_df, dpsi=self.dpsi, abs_dpsi=self.abs_dpsi, pval=self.pval)
 
-        if self.abs_dpsi > 0:
+        if self.abs_dpsi > 0: 
             pos_df = filter_df.loc[filter_df["dpsi"] > 0, ]
-
             neg_df = filter_df.loc[filter_df["dpsi"] < 0, ]
             self.pos_sig_event = pos_df.index
             self.neg_sig_event = neg_df.index
@@ -54,7 +60,7 @@ class SigFilter:
         filter_df.to_csv(self.sig_dpsi, index=True, sep=self.sep, index_label=False)
 
         self.sig_event = filter_df.index
-    
+                       
     def filter_psi(self):
         for i, pf in enumerate(self.psi_file):
             psi = pd.read_csv(pf, sep="\t")

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-
 """
 astk.meta_template
 ~~~~~~~~~~~~~~~~~
 This module provides a metadata template table and json output 
 inferring from replicates and file paths.
 """
+
 import json
 from itertools import chain, repeat
 from pathlib import Path

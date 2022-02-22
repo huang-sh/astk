@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+astk.utils
+~~~~~~~~~~~~~~~~~
+This module provides some utility functions.
+"""
+from os import name
 import sys
 import json
 import hashlib
@@ -5,6 +12,7 @@ import logging
 from pathlib import Path
 from functools import partial
 from itertools import chain, repeat
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -451,7 +459,7 @@ def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
     else:
         print("param error")
         sys.exit()
-    return eid.Chr, s, e, eid.gene_id
+    return eid.Chr, s, e, event_id
 
 
 def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstream_w):
@@ -467,9 +475,9 @@ def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstrea
 def get_coor_fa(df, fasta, out):
     import pybedtools
 
-    lines = [f"{v[1]}\t{v[2]-1}\t{v[3]}" for v in df.itertuples()]
+    lines = [f"{v[1]}\t{v[2]-1}\t{v[3]}\t{v[4]}" for v in df.itertuples()]
     bed = pybedtools.BedTool("\n".join(lines), from_string=True)
-    bed.sequence(fi=fasta, fo=out)
+    bed.sequence(fi=fasta, fo=out, name=True)
 
 
 def get_anchor_coor(event_id, index, sideindex, offset5, offset3, strand_sp):

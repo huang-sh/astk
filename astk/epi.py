@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+astk.epi
+~~~~~~~~~~~~~~~~~
+This module provides epigenetic signal features extraction 
+from bam files.
+"""
+
 from functools import partial
 
 import pandas as pd
@@ -10,7 +18,7 @@ def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
         if control_sam:
             treat = sam.count(chrN, start, end)
             control = control_sam.count(chrN, start, end)
-            signal = treat / control
+            signal = treat / max(control, 0.9)
         else:
             signal = 1e6*sam.count(chrN, start, end)/sam.mapped
         return signal
@@ -28,7 +36,7 @@ def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
     ])
     return df 
 
-
+#TO-DO make it faster
 def epi_signal(out, achor_dic, bam_meta, width, binsize):
     df = pd.read_csv(bam_meta)
     cds = set(df.condition)

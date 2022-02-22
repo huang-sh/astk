@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+astk.click
+~~~~~~~~~~~~~~~~~
+This module provides command line api configure.
+"""
+
 import click
 
 
