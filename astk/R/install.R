@@ -5,17 +5,31 @@ OrgDb <- args[7]
 cran <- args[8]
 bio <- args[8]
 
+parser <- argparse::ArgumentParser()
+parser$add_argument("--requirement", action='store_true')
+parser$add_argument("--OrgDb", nargs='+')
+parser$add_argument("--CRAN", nargs='+')
+parser$add_argument("--bioconductor", nargs='+')
+parser$add_argument("--mirror", action='store_true')
 
+args <- parser$parse_args()
 
-if (requirement == "1"){
+if (args$mirror){
+    options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
+    options("repos" = c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+} else {
+   options("repos" = c(CRAN="http://cran.us.r-project.org"))
+}
+
+if (args$requirement){
     ## Install packages of dependency
     ##----->> Install packages from Cran
-    options(repos=structure(c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))) 
 
-    cran.package.list <- c("tidyverse", "ggplot2", "argparse", "UpSetR",
-                            "eoffice", "ggnewscale", "ggsignif")
+    cran.packages <- c("tidyverse", "ggplot2", "argparse", 
+                       "UpSetR", "eoffice", "ggnewscale", 
+                       "ggsignif")
 
-    for(i in cran.package.list){
+    for(i in cran.packages){
     if(!(i %in% rownames(installed.packages()))){
         message('Installing package: ', i)
         install.packages(i, dependencies = T)
@@ -23,12 +37,11 @@ if (requirement == "1"){
         next
     }
     ##----->> Install packages from Bioconductor
-    options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
 
-    bioconductor.package.list <- c('ComplexHeatmap', 'clusterProfiler', 'org.Mm.eg.db',
+    bioconductor.packages <- c('ComplexHeatmap', 'clusterProfiler', 'org.Mm.eg.db',
              'org.Hs.eg.db', 'simplifyEnrichment', 'universalmotif', 'memes')
 
-    for(i in bioconductor.package.list){
+    for(i in bioconductor.packages){
         if (!requireNamespace("BiocManager", quietly = TRUE))
             install.packages("BiocManager")
         if(!(i %in% rownames(installed.packages()))){
@@ -39,26 +52,43 @@ if (requirement == "1"){
     }    
 }
 
-if (OrgDb != "0"){
-    options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
+if (! is.null(args$OrgDb)){
+
     if (!requireNamespace("BiocManager", quietly = TRUE)){
         install.packages("BiocManager")
     }else {
-       BiocManager::install(OrgDb)
+        for (i in args$OrgDb){
+            if(!(i %in% rownames(installed.packages()))){
+                message('Installing package: ', i)
+                BiocManager::install(i)
+            } else 
+                next
+        }
     }
 }
 
-if (cran != "0"){
-    options(repos=structure(c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))) 
-    install.packages(cran)
+if (! is.null(args$CRAN)){
+    for (i in args$CRAN){
+        if(!(i %in% rownames(installed.packages()))){
+            message('Installing package: ', i)
+            BiocManager::install(i)
+        } else 
+            next
+    }
+    
 }
 
-if (bio != "0"){
-    options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
+if (! is.null(args$bioconductor)){
     if (!requireNamespace("BiocManager", quietly = TRUE)){
         install.packages("BiocManager")
     }else {
-       BiocManager::install(bio)
+        for (i in args$bioconductor){
+            if(!(i %in% rownames(installed.packages()))){
+                message('Installing package: ', i)
+               BiocManager::install(i)
+            } else 
+                next
+        }
     }
     
 }

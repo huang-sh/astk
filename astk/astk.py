@@ -485,25 +485,36 @@ def barplot(output, files, xlabel, dg, fmt, width, height, resolution):
 
 
 @cli.command(help = "install R packages")
-@click.option('-r', '--requirement', is_flag=True, help="install astk requirement R packages")
-@click.option('-OrgDb', '--OrgDb', "OrgDb", help="install Genome wide annotation package")
-@click.option('-cran', '--cran', help="install CRAN package")
-@click.option('-bio', '--bioconductor', help="install Bioconductor package")
+@click.option('-r', '--requirement', is_flag=True, default=False,
+                help="install astk requirement R packages")
+@click.option('-OrgDb', '--OrgDb', "OrgDb", cls=MultiOption, type=tuple, 
+                default=(), help="install Genome wide annotation package")
+@click.option('-cran', '--cran', cls=MultiOption, type=tuple, 
+                default=(), help="install CRAN package")
+@click.option('-bioc', '--bioconductor', cls=MultiOption, type=tuple, 
+                default=(),help="install Bioconductor package")
 @click.option('-j', '--java',  is_flag=True, help="install java software")
-def install(requirement, OrgDb, cran, bioconductor, java):
+@click.option('-m', '--mirror',  is_flag=True, default=False,
+                help="use tsinghua mirrors.")
+def install(requirement, OrgDb, cran, bioconductor, java, mirror):
     pdir = Path(__file__).parent
     rscript = pdir / "R" / "install.R"
-    rq = "1" if requirement else "0"
-    OrgDb = OrgDb if OrgDb else "0"
-    cran = cran if cran else "0"
-    bioconductor = bioconductor if bioconductor else "0"
-    params = [rq, OrgDb, cran, bioconductor]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
-    info.wait()
+    
     if java:
         print("install ChromHMM")
         ch.install(pdir)
         shutil.copyfile(pdir/"ChromHMM.jar", pdir/"ChromHMM/ChromHMM.jar")
+    param_dic = {
+        "requirement": requirement,
+        "OrgDb": OrgDb if OrgDb else False,
+        "CRAN": cran if cran else False, 
+        "bioconductor": bioconductor if bioconductor else False, 
+        "mirror": mirror
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
 
 
 @cli.command(["list", "ls"], help = "list OrgDb")
