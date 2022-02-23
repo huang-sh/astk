@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name="astk",
-    version="0.1.1",
+    version="0.1.2",
     url='https://github.com/huang-sh/astk/',
     author='huangsh',
     author_email='hsh-me@outlook.com',
