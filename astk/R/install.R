@@ -1,9 +1,11 @@
-args <- commandArgs()
 
-requirement <- args[6]
-OrgDb <- args[7]
-cran <- args[8]
-bio <- args[8]
+CRAN_url <- c("https://cloud.r-project.org/", 
+        "https://mirrors.tuna.tsinghua.edu.cn/CRAN/")
+
+if (!("argparse" %in% rownames(installed.packages()))){
+    options("repos" = CRAN_url)
+    install.packages("argparse")
+} 
 
 parser <- argparse::ArgumentParser()
 parser$add_argument("--requirement", action='store_true')
@@ -14,11 +16,13 @@ parser$add_argument("--mirror", action='store_true')
 
 args <- parser$parse_args()
 
+print(args)
+
 if (args$mirror){
     options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
     options("repos" = c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
 } else {
-   options("repos" = c(CRAN="http://cran.us.r-project.org"))
+   options("repos" = CRAN_url)
 }
 
 if (args$requirement){
@@ -41,9 +45,9 @@ if (args$requirement){
     bioconductor.packages <- c('ComplexHeatmap', 'clusterProfiler', 'org.Mm.eg.db',
              'org.Hs.eg.db', 'simplifyEnrichment', 'universalmotif', 'memes')
 
+    if (!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
     for(i in bioconductor.packages){
-        if (!requireNamespace("BiocManager", quietly = TRUE))
-            install.packages("BiocManager")
         if(!(i %in% rownames(installed.packages()))){
             message('Installing package: ', i)
             BiocManager::install(i, dependencies = T)
