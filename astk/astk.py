@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """
 astk.astk
@@ -6,23 +5,12 @@ astk.astk
 This module provides program command line api.
 """
 
-from collections import defaultdict
-import os
 import sys
-import json
 import shutil
 import subprocess
 from pathlib import Path
 
-import click
-import pandas as pd
-
-from . import utils  as ul
-from . import ChromHMM as ch
-from . import event_id as ei
-from .meta_template import Template
 from .cli_config import *
-from .select import *
 from .constant import *
 
 @click.group(cls=CustomMultiCommand, 
@@ -49,6 +37,8 @@ def cli():
 @click.option('-fn', '--filename', 'is_fn', is_flag=True, help="file name")
 @click.option('--split', cls=MultiOption, type=tuple, help="name split symbol and index")    
 def meta(output, replicate, groupname, control, treatment, replicate1, replicate2, **kwargs):
+    from .meta_template import Template
+
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit() 
@@ -79,6 +69,9 @@ def meta(output, replicate, groupname, control, treatment, replicate1, replicate
 @click.option('-lw', '--len_weight', type=float, default=2, help="length weight")
 @click.option('--max_len', type=int, default=500, help="the max length of exon in clustering")
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
+    import pandas as pd
+    from . import utils  as ul
+
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()                   
@@ -104,6 +97,8 @@ def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
 @click.option('-lr', '--lenRange', cls=MultiOption, type=tuple,
               default=(1, ), help="custom length")
 def len_cluster(files, indir, outdir, lenrange):
+    from . import utils  as ul
+
     outdir = Path(outdir)
     
     outdir = Path(outdir).absolute()
@@ -136,6 +131,9 @@ def len_cluster(files, indir, outdir, lenrange):
 @click.option('-o', '--output', help="output path")
 @click.option('-rg', '--range', "len_range", type=(int, int), required=True, help="length range")
 def len_pick(infile, output, len_range):
+    from . import event_id as ei
+    import pandas as pd
+
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()                   
@@ -167,6 +165,8 @@ AS_type = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
              help="pool together overlapping genes")
 @click.option('--tpm_col', type=int, default=4, help="TPM columns index")
 def diff_splice(outdir, metadata, gtf, event_type, method, exon_len, poolgenes, tpm_col):
+    from . import utils  as ul
+
     if event_type == "all":
         event_types = AS_type
     else:
@@ -191,14 +191,15 @@ def diff_splice(outdir, metadata, gtf, event_type, method, exon_len, poolgenes, 
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
                 default="tsv", help="out  file format ")
 def sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
-    
+    from . import select as sl
+
     for idx, dpsi_file in enumerate(files):
         if len(files) == len(psifile1) and len(files) == len(psifile2):
             psifiles = (psifile1[idx], psifile2[idx])
         else:
             psifiles = ()
             
-        sf = SigFilter(dpsi_file, outdir, dpsi, pval, abs_dpsi, psifiles, fmt)
+        sf = sl.SigFilter(dpsi_file, outdir, dpsi, pval, abs_dpsi, psifiles, fmt)
         sf.run()
 
 
@@ -211,8 +212,10 @@ def sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
 # @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
 #                 default="tsv", help="out  file format ")
 def psi_filter(file, output, psi, quantile):
+    from . import select as sl
+
     if file:
-        pf = PsiFilter(file, psi, quantile)
+        pf = sl.PsiFilter(file, psi, quantile)
         pf.run(output)
   
 
@@ -232,6 +235,8 @@ def psi_filter(file, output, psi, quantile):
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")          
 def enrich(file, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "enrich.R"
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
@@ -273,6 +278,8 @@ def enrich(file, outdir, pvalue, qvalue, database, gene_id, orgdb, kegg_organism
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")   
 def enrich_cmp(files, outdir, cluster, database, pvalue, qvalue, 
                 xlabel, gene_id, orgdb, kegg_organism):
+    from . import utils  as ul
+
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")
     if database == "KEGG":
@@ -321,6 +328,8 @@ def enrich_cmp(files, outdir, cluster, database, pvalue, qvalue,
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html") 
 def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
               gene_id, orgdb, kegg_organism):
+    from . import utils  as ul
+
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")                
     if database == "KEGG":
@@ -357,7 +366,9 @@ def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
 @click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
                 help="organism") 
 def nease_sc(file, outdir, pvalue, database, organism):
+    import pandas as pd
     from .enrich import nease_enrich
+    from . import event_id as ei
 
     get_geneid = lambda x: ei.SuppaEventID(x).gene_id.split(".")[0]
     get_start = lambda x: ei.SuppaEventID(x).alter_element_coor[0]
@@ -388,6 +399,8 @@ def neasecmp_sc():
 @click.option('-hi', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def volcano(file, output, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "volcano.R"
     param_dic = {
         "file": file,
@@ -410,6 +423,8 @@ def volcano(file, output, fmt, width, height, resolution):
 @click.option('-hi', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def pca(files, output, fmt, width, height, resolution):
+    from . import utils  as ul
+
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()
@@ -437,6 +452,8 @@ def pca(files, output, fmt, width, height, resolution):
 @click.option('-hi', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def heatmap(files, output, cluster, fmt, width, height, resolution):
+    from . import utils  as ul
+
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()
@@ -469,6 +486,8 @@ def heatmap(files, output, cluster, fmt, width, height, resolution):
 @click.option('-hi', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def barplot(output, files, xlabel, dg, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "barplot.R"
     param_dic = {
         "file": files,
@@ -497,6 +516,9 @@ def barplot(output, files, xlabel, dg, fmt, width, height, resolution):
 @click.option('-m', '--mirror',  is_flag=True, default=False,
                 help="use tsinghua mirrors.")
 def install(requirement, OrgDb, cran, bioconductor, java, mirror):
+    from . import ChromHMM as ch
+    from . import utils  as ul
+
     pdir = Path(__file__).parent
     rscript = pdir / "R" / "install.R"
     
@@ -544,6 +566,7 @@ def list_(OrgDb, RBPSp):
             help="This flag replaces the mark entry with an entry of the form cell_mark.")
 def mark(output, celltype, bed, marknum, sep, markindex, markname, stacked):
     from itertools import chain
+    import pandas as pd
 
     if all([sep, markindex]):
         marks = [Path(i).stem.split(sep)[markindex-1] for i in bed]
@@ -586,6 +609,8 @@ def mark(output, celltype, bed, marknum, sep, markindex, markname, stacked):
 @click.option('-d', '--downstreamOffset', "offset3", type=int, default=0, help="downstream offset")
 @click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
 def anchor(file, output, index, sideindex, offset5, offset3, strand_sp):
+    from . import utils  as ul
+
     try:
         ul.gen_anchor_bed(file, output, index, sideindex, offset5, offset3, strand_sp)
     except BaseException as e:
@@ -603,6 +628,8 @@ def anchor(file, output, index, sideindex, offset5, offset3, strand_sp):
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
             help="Input FASTA file. if set, the fasta sequence will be extracted")
 def getcoor(file, output, start, end, strand_sp, anchor, upstream_w, downstream_w, fasta):
+    from . import utils  as ul
+
     try:
         coor_df = ul.get_coor_bed(file, start, end, strand_sp, anchor, upstream_w, downstream_w)
         coor_df.to_csv(output, index=False, header=False, sep="\t")
@@ -695,6 +722,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 #                 required=True, help="path to .meme format file")
 def motif_enrich(tfasta, cfasta, outdir, database, organism):
     from .constant import RBP_sp_dic
+    from . import utils  as ul
 
     Path(outdir).mkdir(exist_ok=True)
     rscript = Path(__file__).parent / "R" / "motifEnrich.R"
@@ -739,6 +767,7 @@ def motif_enrich(tfasta, cfasta, outdir, database, organism):
                  help="maximal motifs width, default=15")               
 def motif_find(tfasta, cfasta, outdir, database, organism, pvalue, evalue, minw, maxw):
     from .constant import RBP_sp_dic
+    from . import utils  as ul
 
     Path(outdir).mkdir(exist_ok=True)
     rscript = Path(__file__).parent / "R" / "motifFind.R"
@@ -782,6 +811,8 @@ def motif_find(tfasta, cfasta, outdir, database, organism, pvalue, evalue, minw,
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")                 
 def motif_plot(motifid, database, organism, meme, output, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "motifPlot.R"
     sp = RBP_sp_dic.get(organism, None)
     if meme:
@@ -822,6 +853,8 @@ def motif_plot(motifid, database, organism, meme, output, fmt, width, height, re
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")                            
 def gsea(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
+    from . import utils  as ul
+
     Path(outdir).mkdir(exist_ok=True)
     if not (org_db := ul.select_OrgDb(orgdb)):
         print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
@@ -843,6 +876,8 @@ def gsea(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def gseplot(termid, output, rdata, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "gseaPlot.R"
     param_dic = {
         "termid": termid,
@@ -871,6 +906,8 @@ def gseplot(termid, output, rdata, fmt, width, height, resolution):
 @click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def upset(files, output, xlabel, dg, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "upset.R"
 
     param_dic = {
@@ -895,6 +932,8 @@ def upset(files, output, xlabel, dg, fmt, width, height, resolution):
 @click.option('-org', '--organism', help="RBP organism")
 @click.option('-o', '--output', required=True, help="output path")
 def getmeme(motifid, meme, database, organism, output):
+    from . import utils  as ul
+
     sp = RBP_sp_dic.get(organism, None)
     if meme:
         meme_file = meme
@@ -931,6 +970,8 @@ def getmeme(motifid, meme, database, organism, output):
 @click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def mmap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "motifMap.R"
     Path(outdir).mkdir(exist_ok=True)
 
@@ -979,6 +1020,8 @@ def epi(output, metadata, anchor, name, width, binsize):
 @click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def epihm(output, files, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "signalHeatmap.R"
     param_dic = {
         "file": files,
@@ -1001,6 +1044,8 @@ def epihm(output, files, fmt, width, height, resolution):
 @click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def epiline(output, file, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "signalProfile.R"
     param_dic = {
         "file": file,
@@ -1023,6 +1068,8 @@ def epiline(output, file, fmt, width, height, resolution):
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def sigcmp(output, file, fmt, width, height, resolution):
+    from . import utils  as ul
+
     rscript = Path(__file__).parent / "R" / "signalCompare.R"
     param_dic = {
         "file": file,
