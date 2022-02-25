@@ -16,8 +16,6 @@ parser$add_argument("--mirror", action='store_true')
 
 args <- parser$parse_args()
 
-print(args)
-
 if (args$mirror){
     options(BioC_mirror="https://mirrors.tuna.tsinghua.edu.cn/bioconductor")
     options("repos" = c(CRAN="https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))

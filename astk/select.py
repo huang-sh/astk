@@ -136,3 +136,4 @@ class PsiFilter:
         else:
             psi_df = self.psi_df    
         psi_df.to_csv(out, sep="\t", index_label=False)
+        
