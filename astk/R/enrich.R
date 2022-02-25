@@ -1,22 +1,33 @@
 suppressMessages(library(tidyverse))
 suppressMessages(library(clusterProfiler))
 
+script_path  <- stringr::str_split(commandArgs()[4], "=")[[1]][2]
+source(file.path(dirname(script_path), "utils.R"))
 
-args <- commandArgs()
+parser <- fig_cmd_parser()
+parser$add_argument("--outdir", help="output directory")
+parser$add_argument("--pval", type="double", help="pval")
+parser$add_argument("--qval", type="double", help="qval")
+parser$add_argument("--database", help="database")
+parser$add_argument("--ontology", help="ontology")
+parser$add_argument("--orgdb", help="orgdb")
+parser$add_argument("--genetype", help="gene type")
+parser$add_argument("--keggorganism", help="kegg organism")
+parser$add_argument("--file", help="dpsi files")
 
-out.dir <- args[6]
-pval  <- as.numeric(args[7])
-qval  <- as.numeric(args[8])
-db <- args[9]
-gene_type <- args[10]
-org_db <- args[11]
-kegg_org <- args[12]
-dpsi_file <- args[13]
+args <- parser$parse_args()
+
+out.dir <- args$outdir
+pval  <- args$pval
+qval  <- args$qval
+db <- args$database
+ontology <- args$ontology
+gene_type <- args$genetype
+org_db <- args$orgdb
+kegg_org <- args$keggorganism
+dpsi_file <- args$file
 
 suppressMessages(library(org_db, character.only = T))
-
-script_path  <- str_split(args[4], "=")[[1]][2]
-source(file.path(dirname(script_path), "utils.R"))
 
 
 dpsi <- read_tsv(dpsi_file, 
@@ -29,13 +40,17 @@ colnames(dpsi) = c("event_id", "dpsi", "pval")
 genes <- gsub("\\..*", "",  dpsi$event_id) 
 
 if (db == "GO"){
-    enrichGOSep(genes, 
+    p <- enrichGOSep(genes, 
                 out.dir,
                 org_db, 
                 name    = "GO",
+                ont     = ontology,
                 keyType = gene_type,
                 pval    = pval, 
-                qval    = qval)
+                qval    = qval,
+                width   = args$width, 
+                height  = args$height,
+                format  = args$fmt)
 } else if (db == "KEGG") {
     enrichKEGGSep(genes, 
                   out.dir, 
@@ -44,5 +59,8 @@ if (db == "GO"){
                   org     = kegg_org, 
                   keytype = gene_type,
                   pval    = pval, 
-                  qval    = qval)
+                  qval    = qval,
+                  width   = args$width, 
+                  height  = args$height,
+                  format  = args$fmt)
 }

@@ -27,16 +27,19 @@ enrichGOSep <- function(gene,
                         output, 
                         OrgDb, 
                         name    = "GO",
+                        ont     = "BP",
                         keyType = 'ENTREZID',
                         pval    = 0.1, 
-                        qval    = 0.1) {
+                        qval    = 0.1,
+                        width   = 12, 
+                        height  = 10,
+                        format  = "pdf") {
   
-  for (ont.i in c("ALL","BP", "CC", "MF")){
     ego <- enrichGO(
                     gene          = gene,
                     keyType       = keyType,
                     OrgDb         = OrgDb,
-                    ont           = ont.i,
+                    ont           = ont,
                     pAdjustMethod = "BH",
                     pvalueCutoff  = pval,
                     qvalueCutoff  = qval,
@@ -45,9 +48,9 @@ enrichGOSep <- function(gene,
     if (dim(as.data.frame(ego))[1] == 0){
       next()
     }
-    print(ont.i)
-    p_title <- ont.i
-    outputf <- file.path(output, paste(name, ".%s.qval%s_pval%s.pdf", sep = ""))  
+    print(ont)
+    p_title <- ont
+    outputf <- file.path(output, paste(name, ".%s.qval%s_pval%s.%s", sep = ""))  
 
     emap.dir <- file.path(output, "emap")
     if (!dir.exists(emap.dir)) {
@@ -61,11 +64,11 @@ enrichGOSep <- function(gene,
 
     out.csv <- file.path(output, paste(name, ".%s.qval%s_pval%s.csv", sep = ""))
     
-    write.csv(as.data.frame(ego), file = sprintf(out.csv, ont.i, qval, pval))
+    write.csv(as.data.frame(ego), file = sprintf(out.csv, ont, qval, pval))
 
-    out.pdf <- sprintf(outputf, ont.i, qval, pval)
+    out.pdf <- sprintf(outputf, ont, qval, pval, format)
 
-    if (ont.i == "ALL"){
+    if (ont == "ALL"){
       p <- dotplot(ego, split="ONTOLOGY", showCategory = 15, title = p_title) + 
                 facet_grid(ONTOLOGY~., scale="free") + 
                 scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
@@ -89,7 +92,7 @@ enrichGOSep <- function(gene,
                   scale_fill_continuous(low = "#e06663", high = "#327eba", name = "p.adjust",
                                         guide = guide_colorbar(reverse = TRUE, order=1), trans='log10')         
         go.out <- file.path(emap.dir, paste(name, ".%s_emap.pdf", sep = ""))
-        pdf(sprintf(go.out, ont.i), width = 15, height = 15)
+        pdf(sprintf(go.out, ont), width = 15, height = 15)
         print(emap)
         dev.off()        
       }, error = function(e) {
@@ -98,42 +101,58 @@ enrichGOSep <- function(gene,
       )
       outputsc.pdf <- file.path(simgo.dir, paste(name, "_%s_simple.pdf", sep = ""))
       outputsc.csv <- file.path(simgo.dir, paste(name, "_%s_simple.csv", sep = ""))
-      emat  <-  simplifyEnrichment::GO_similarity(ego$ID, ont.i)
+      emat  <-  simplifyEnrichment::GO_similarity(ego$ID, ont)
 
-      pdf(sprintf(outputsc.pdf, ont.i) ,width = 12, height = 10)
+      pdf(sprintf(outputsc.pdf, ont) ,width = 12, height = 10)
       df = tryCatch({
         df <- simplifyEnrichment::simplifyGO(emat)
       }, warning = function(w) {
           print(w)
       }, error = function(e) {
-        file.remove(sprintf(outputsc.pdf, ont.i))
+        file.remove(sprintf(outputsc.pdf, ont))
          return(F)
       }
       )
 
       dev.off()
-      write.csv(df, file = sprintf(outputsc.csv, ont.i))
+      write.csv(df, file = sprintf(outputsc.csv, ont))
     }
+
+    save_fig(p, 
+        out.pdf, 
+        format = format,
+        width  = width, 
+        height = height, 
+        units  = "in")
     
-    pdf(out.pdf, width = 12, height = 10)
-    fit <- try(print(p))
-    if ("try-error" %in% class(fit)){
-      print(sprintf("%s not enrich", ont.i))
-    }
-    dev.off()
-  }
+    # pdf(out.pdf, width = 12, height = 10)
+    # fit <- try(print(p))
+    # if ("try-error" %in% class(fit)){
+    #   print(sprintf("%s not enrich", ont))
+    # }
+    # dev.off()
+
 }
 
 
 compareClusterSep <- function(gene_ls, 
                               output, 
                               OrgDb, 
+                              ont     = "BP",
                               name    = "GO",
                               keyType = 'ENSEMBL',
                               pval    = 0.1, 
-                              qval    = 0.1) {
+                              qval    = 0.1,
+                              width   = 12, 
+                              height  = 10,
+                              format  = "pdf") {
 
-        for (ont.i in c("BP", "CC", "MF")){
+        if (ont == "ALL"){
+          onts <- c("BP", "CC", "MF")
+        } else {
+          onts <- c(ont)
+        }
+        for (ont.i in onts){
           cpk <- compareCluster(gene_ls, 
                                 fun          = "enrichGO", 
                                 pvalueCutoff = pval,
@@ -146,8 +165,8 @@ compareClusterSep <- function(gene_ls,
           if (dim(as.data.frame(cpk))[1] == 0){
             next()
           }
-          outputf <- file.path(output, paste(name, ".cmp.%s.qval%s_pval%s.pdf", sep = "")) 
-          out.pdf <- sprintf(outputf, ont.i, qval, pval)
+          outputf <- file.path(output, paste(name, ".cmp.%s.qval%s_pval%s.%s", sep = "")) 
+          out.pdf <- sprintf(outputf, ont.i, qval, pval, format)
           
           p <- dotplot(cpk, title = sprintf("%s_%s",name, ont.i)) + 
                 scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
@@ -156,13 +175,13 @@ compareClusterSep <- function(gene_ls,
                 theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
                       panel.grid.major.x = element_blank())
 
-          pdf(out.pdf, width = 12, height = 10)
-          fit <- try(print(p))
-          if ("try-error" %in% class(fit)){
-            print(sprintf("%s not enrich", ont.i))
-          }
-          dev.off()
-  }
+          save_fig(p, 
+              out.pdf, 
+              format = format,
+              width  = width, 
+              height = height, 
+              units  = "in")
+        }
 }
 
 
@@ -173,7 +192,10 @@ compareKEGGCluster <- function(gene_ls,
                                name    = "KEGG",
                                keyType = 'ENSEMBL',
                                pval    = 0.1, 
-                               qval    = 0.1){
+                               qval    = 0.1,
+                               width   = 12, 
+                               height  = 10,
+                               format  = "pdf") {
     if (keyType == 'ENTREZID'){
         gene_ls  <-  gene_ls
     } else {
@@ -196,12 +218,19 @@ compareKEGGCluster <- function(gene_ls,
       out.pdf <- sprintf(outputf, qval, pval)
       
       p <- dotplot(cpk, title = sprintf("%s",name)) 
-      pdf(out.pdf, width = 12, height = 10)
-      fit <- try(print(p))
-      if ("try-error" %in% class(fit)){
-        print(sprintf("%s not enrich", ont.i))
-      }
-      dev.off()
+
+      save_fig(p, 
+          out.pdf, 
+          format = format,
+          width  = width, 
+          height = height, 
+          units  = "in")
+      # pdf(out.pdf, width = 12, height = 10)
+      # fit <- try(print(p))
+      # if ("try-error" %in% class(fit)){
+      #   print(sprintf("%s not enrich", ont.i))
+      # }
+      # dev.off()
 
 }
 
@@ -213,7 +242,10 @@ enrichKEGGSep <- function(gene,
                           org     = "mmu", 
                           keytype = 'ENTREZID' ,
                           pval    = 0.1, 
-                          qval    = 0.1) {
+                          qval    = 0.1,
+                          width   = 12, 
+                          height  = 10,
+                          format  = "pdf") {
 
     if (keytype == 'ENTREZID'){
         gene  <-  gene

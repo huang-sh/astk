@@ -1,12 +1,15 @@
 suppressMessages(library(tidyverse))
 suppressMessages(library(clusterProfiler))
 
+script_path  <- stringr::str_split(commandArgs()[4], "=")[[1]][2]
+source(file.path(dirname(script_path), "utils.R"))
 
-parser <- argparse::ArgumentParser()
+parser <- fig_cmd_parser()
 parser$add_argument("--outdir", help="output directory")
 parser$add_argument("--pval", type="double", help="pval")
 parser$add_argument("--qval", type="double", help="qval")
 parser$add_argument("--database", help="database")
+parser$add_argument("--ontology", help="ontology")
 parser$add_argument("--clusterfile", help="cluster file")
 parser$add_argument("--orgdb", help="orgdb")
 parser$add_argument("--genetype", help="gene type")
@@ -26,12 +29,9 @@ gene_type <- args$genetype
 kegg_organism <- args$keggorganism
 dpsi_files <- args$files
 xlabel <- args$xlabel
+ontology <- args$ontology
 
 suppressMessages(library(orgdb, character.only = T))
-
-args1 <- commandArgs()
-script_path  <- str_split(args1[4], "=")[[1]][2]
-source(file.path(dirname(script_path), "utils.R"))
 
 
 filenames <- unlist(lapply(dpsi_files, function(file){
@@ -122,10 +122,14 @@ if (file.exists(cluster_file)){
         compareClusterSep(gene_ls, 
                           out.dir, 
                           orgdb,
+                          ont     = ontology,
                           name    = "GO", 
                           keyType = gene_type,
                           pval    = pval, 
-                          qval    = qval)
+                          qval    = qval,
+                          width   = args$width, 
+                          height  = args$height,
+                          format  = args$fmt)
     }else if (db == "KEGG") {
         compareKEGGCluster(gene_ls, 
                            out.dir, 
@@ -134,7 +138,10 @@ if (file.exists(cluster_file)){
                            name    = "KEGG", 
                            keyType = gene_type,
                            pval    = pval, 
-                           qval    = qval)
+                           qval    = qval,
+                           width   = args$width, 
+                           height  = args$height,
+                           format  = args$fmt)
     }
 }
 
