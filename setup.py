@@ -7,7 +7,7 @@ setup(
     url='https://github.com/huang-sh/astk/',
     author='huangsh',
     author_email='hsh-me@outlook.com',
-    packages =  find_packages(),
+    packages =  ["astk", "astk.suppa"],
     package_dir = {"astk": "astk"},
     include_package_data=True,
     install_requires=[
