@@ -239,7 +239,7 @@ def psi_filter(file, output, psi, quantile):
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="pdf", help="out figure format") 
 @click.option('-w', '--width', default=10, help="fig width, default=10 inches")
-@click.option('-hi', '--height', default=12, help="fig height, default=12 inches")    
+@click.option('-h', '--height', default=12, help="fig height, default=12 inches")    
 def enrich(file, outdir, pvalue, qvalue, database, ontology,  
             gene_id, orgdb, kegg_organism, fmt, width, height):
     from . import utils  as ul
@@ -300,7 +300,7 @@ def enrich(file, outdir, pvalue, qvalue, database, ontology,
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="pdf", help="out figure format") 
 @click.option('-w', '--width', default=10, help="fig width, default=6 inches")
-@click.option('-hi', '--height', default=12, help="fig height, default=6 inches")                
+@click.option('-h', '--height', default=12, help="fig height, default=6 inches")                
 def enrich_cmp(files, outdir, cluster, database, ontology, pvalue, qvalue, 
                 xlabel, gene_id, orgdb, kegg_organism, fmt, width, height):
     from . import utils  as ul
@@ -425,7 +425,7 @@ def neasecmp_sc():
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-hi', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def volcano(file, output, fmt, width, height, resolution):
     from . import utils  as ul
@@ -449,7 +449,7 @@ def volcano(file, output, fmt, width, height, resolution):
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-hi', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def pca(files, output, fmt, width, height, resolution):
     from . import utils  as ul
@@ -478,7 +478,7 @@ def pca(files, output, fmt, width, height, resolution):
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-hi', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def heatmap(files, output, cluster, fmt, width, height, resolution):
     from . import utils  as ul
@@ -512,7 +512,7 @@ def heatmap(files, output, cluster, fmt, width, height, resolution):
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format")
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
-@click.option('-hi', '--height', default=4, help="fig height, default=4 inches")
+@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def barplot(output, files, xlabel, dg, fmt, width, height, resolution):
     from . import utils  as ul
