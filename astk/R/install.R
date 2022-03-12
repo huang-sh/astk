@@ -41,7 +41,8 @@ if (args$requirement){
     ##----->> Install packages from Bioconductor
 
     bioconductor.packages <- c('ComplexHeatmap', 'clusterProfiler', 'org.Mm.eg.db',
-             'org.Hs.eg.db', 'simplifyEnrichment', 'universalmotif', 'memes')
+             'org.Hs.eg.db', 'simplifyEnrichment', 'universalmotif', 'memes',"tximport",
+             "DESeq2")
 
     if (!requireNamespace("BiocManager", quietly = TRUE))
         install.packages("BiocManager")
