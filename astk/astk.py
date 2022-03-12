@@ -1112,5 +1112,43 @@ def sigcmp(output, file, fmt, width, height, resolution):
     subprocess.run(["Rscript", rscript, *param_ls])
 
 
+@cli.command(["coSpliceNet", "csnet"], help="Co-Splice Network")
+@click.option('-o', '--output', required=True,
+                help="AS sites flank fasta")
+@click.option('-fa', '--fasta', required=True, type=click.Path(exists=True),
+                help="AS sites flank fasta")
+@click.option('-psi', '--psiMeta', required=True, type=click.Path(exists=True),
+                help="psi meta file")
+@click.option('-tq', '--tqMeta', required=True, type=click.Path(exists=True),
+                help="transcript quantification meta file")
+@click.option('-org', '--organism', required=True, help="organism")
+@click.option('-db', '--database', type=click.Choice(['ATtRACT']),default='ATtRACT',
+                help="RBP motif database")
+@click.option('-gtf', '--gtf', type=click.Path(exists=True),
+                help="genome gtf annotation file")
+def coSpliceNet(output, fasta, psimeta, tqmeta, organism, database, gtf):
+    from . import utils  as ul
+
+    sp = RBP_sp_dic.get(organism, None)
+    if sp is None:
+        print("--organism is not valid")
+        sys.exit()
+
+    rscript = Path(__file__).parent / "R" / "CoSpliceNet.R"
+    csv_out = Path(output).with_suffix(".csv")
+    html_out = Path(output).with_suffix(".html")
+    param_dic = {
+        "output": csv_out,
+        "fasta": fasta, 
+        "psiMeta": psimeta, 
+        "tqMeta": tqmeta,
+        "organism": sp,
+        "database": database,
+        "gtf": gtf
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+    ul.coSpliceNet(csv_out, html_out)
+
 if __name__ == '__main__':
     cli()
