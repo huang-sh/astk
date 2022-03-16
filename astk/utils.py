@@ -604,6 +604,8 @@ def coSpliceNet(file, output):
             repulsion=50,
             linestyle_opts=opts.LineStyleOpts(curve=0.2),
             label_opts=opts.LabelOpts(is_show=False),
+            edge_symbol=[None, 'arrow'],
+            edge_symbol_size=4
         )
         .set_global_opts(
             legend_opts=opts.LegendOpts(is_show=False),
