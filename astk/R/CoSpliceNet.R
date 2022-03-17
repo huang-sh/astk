@@ -15,18 +15,10 @@ parser$add_argument("--psiMeta",  help="psi meta file path")
 parser$add_argument("--tqMeta", help="quant.sh meta file path")
 parser$add_argument("--organism", help="organism")
 parser$add_argument("--database", help="database")
-parser$add_argument("--gtf", help="gtf")
+parser$add_argument("--txdb", help="txdb")
 parser$add_argument("--fasta", help="fasta")
 parser$add_argument("--output", help="output")
 
-
-parser$add_argument("--outdir", help="output directory")
-parser$add_argument("--pvalue",  help="pvalue")
-parser$add_argument("--minw",  help=" minimal motifs width")
-parser$add_argument("--maxw",  help=" maximal motifs width")
-
-
-parser$add_argument("--eval", help="eval")
 
 args <- parser$parse_args()
 
@@ -59,11 +51,7 @@ psi_df <- Reduce(cbind, mean_psi_ls)
 colnames(psi_df) <- psi_meta$group
 
 
-txdb <- makeTxDbFromGFF(args$gtf,
-                        format="gtf",
-                        organism=gsub("_", " ", args$organism),
-                        dbxrefTag = "gene_name")
-
+txdb <- AnnotationDbi::loadDb(args$txdb)
 k <- keys(txdb, keytype = "TXNAME")
 tx2gene <- AnnotationDbi::select(txdb, k, "GENEID", "TXNAME")
 
@@ -71,7 +59,6 @@ txi <- tximport(sf_meta$path, type = "salmon", tx2gene = tx2gene)
 
 sampleTable <- data.frame(condition = sf_meta$group)
 rownames(sampleTable) <- sf_meta$name
-sampleTable
 
 dds <- DESeqDataSetFromTximport(txi, sampleTable, ~condition)
 

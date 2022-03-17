@@ -13,7 +13,7 @@ from astk.network import co_splice_net
 @click.option('-org', '--organism', required=True, help="organism")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT']),default='ATtRACT',
                 help="RBP motif database")
-@click.option('-gtf', '--gtf', type=click.Path(exists=True),
-                help="genome gtf annotation file")
+@click.option('-txdb', '--txdb', type=click.Path(exists=True),
+                help="TxDb file")
 def coSpliceNet(*args, **kwargs):
     co_splice_net(*args, **kwargs)

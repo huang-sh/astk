@@ -6,7 +6,7 @@ import astk.utils.func  as ul
 from astk.constant import BASE_DIR, RBP_sp_dic
 
 
-def co_splice_net(output, fasta, psimeta, tqmeta, organism, database, gtf):
+def co_splice_net(output, fasta, psimeta, tqmeta, organism, database, txdb):
     sp = RBP_sp_dic.get(organism, None)
     if sp is None:
         print("--organism is not valid")
@@ -22,7 +22,7 @@ def co_splice_net(output, fasta, psimeta, tqmeta, organism, database, gtf):
         "tqMeta": tqmeta,
         "organism": sp,
         "database": database,
-        "gtf": gtf
+        "txdb": txdb
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
