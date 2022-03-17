@@ -5,6 +5,8 @@ astk.constant
 ~~~~~~~~~~~~~~~~~
 This module stores constants.
 """
+from pathlib import Path
+
 
 OrgDb_dic = {
      "hs": "org.Hs.eg.db", "mm": "org.Mm.eg.db", "rn": "org.Rn.eg.db",
@@ -37,3 +39,8 @@ NEASE_DATABASE = [
      'PharmGKB', 'HumanCyc', 'Wikipathways', 'Reactome', 'KEGG','SMPDB',
      'Signalink', 'NetPath', 'EHMN', 'INOH', 'BioCarta', 'PID'
 ]
+
+
+AS_type = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
+
+BASE_DIR = Path(__file__).parent

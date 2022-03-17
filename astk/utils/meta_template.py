@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-astk.meta_template
+astk.utils.meta_template
 ~~~~~~~~~~~~~~~~~
 This module provides a metadata template table and json output 
 inferring from replicates and file paths.

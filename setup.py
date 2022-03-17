@@ -7,9 +7,11 @@ setup(
     url='https://github.com/huang-sh/astk/',
     author='huangsh',
     author_email='hsh-me@outlook.com',
-    packages =  ["astk", "astk.suppa"],
-    package_dir = {"astk": "astk"},
+    packages=find_packages(),    
     include_package_data=True,
+    package_data = {
+    '': ['data/motif/*/*.meme', "data/motif/ELM/*"],
+    },
     install_requires=[
         "click>=8.0.0",
         "pandas>=1.3.0",
@@ -20,8 +22,9 @@ setup(
         "pybedtools",
         "nease"
     ],
-    entry_points="""
-        [console_scripts]
-        astk=astk.astk:cli
-    """,
+    entry_points={
+        "console_scripts": [
+            "astk=astk.cli:cli_fun"
+        ]
+    },
 )

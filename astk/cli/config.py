@@ -32,6 +32,17 @@ class CustomMultiCommand(click.Group):
             return cmd
         return decorator
 
+    def add_command(self, cmd, name=None) -> None:
+        """Registers another :class:`Command` with this group.  If the name
+        is not provided, the name of the command is used.
+        """
+        name = name or [cmd.name]
+        if name is None:
+            raise TypeError("Command has no name.")
+        # _check_multicommand(self, name, cmd, register=True)
+        for n in name:
+            self.commands[n] = cmd
+
     def resolve_command(self, ctx, args):
         from click.utils import make_str
         from click.parser import split_opt

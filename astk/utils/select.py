@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-astk.select
+astk.utils.select
 ~~~~~~~~~~~~~~~~~
 This module provides data filter function.
 """

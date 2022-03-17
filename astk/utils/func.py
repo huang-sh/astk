@@ -1,27 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-astk.utils
-~~~~~~~~~~~~~~~~~
-This module provides some utility functions.
-"""
-from os import name
 import sys
 import json
 import hashlib
 import logging
 from pathlib import Path
 from functools import partial
-from itertools import chain, repeat
-from typing import Tuple
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-
-from .suppa.lib.event import make_events
-from .suppa.lib.gtf_store import *
-from .suppa.lib.tools import *
+from astk.suppa.lib.event import make_events
+from astk.suppa.lib.gtf_store import *
+from astk.suppa.lib.tools import *
 from . import event_id as ei
 
 
@@ -40,14 +26,19 @@ def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
     return fdf
 
 def compute_feature_len(df):
-    
-    lens = df["event_id"].apply(fl.AS_len)
+    import pandas as pd
+    from .event_id import SuppaEventID
+
+    AS_len = lambda x: SuppaEventID(x).alter_element_len
+    lens = df["event_id"].apply(AS_len)
     len_df = pd.DataFrame(lens.tolist())
     return len_df
 
 def extract_info(df):
-    from . import feature_len as fl
-    AS_len = lambda x: fl.EventID(x).alter_element_len
+    import pandas as pd
+    from .event_id import SuppaEventID
+
+    AS_len = lambda x: SuppaEventID(x).alter_element_len
     chrs = df["event_id"].apply(lambda x: x.split(":")[1])
     genes = df["event_id"].apply(lambda x: x.split(";")[0].strip())
     lens = df["event_id"].apply(AS_len)
@@ -153,6 +144,8 @@ def ioe_psi(event_row, tpm):
 
 
 def len_hist(len_counts, width, max_len):
+    import numpy as np
+
     offset = (width - max_len % width) if max_len % width else 0
     bins =  (max_len + offset) // width
     counts, bin_edges = np.histogram(len_counts, bins=bins, range=(1, max_len+offset+1))
@@ -160,6 +153,8 @@ def len_hist(len_counts, width, max_len):
 
 
 def plot_hist_cluster(out, cluster_ls, bins):
+    import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots()
     for i, subset in enumerate(cluster_ls, 1):
         ax.hist(subset, bins=bins, alpha=0.5, label=f"Cluster {i}")
@@ -168,6 +163,8 @@ def plot_hist_cluster(out, cluster_ls, bins):
 
                                                          
 def custome_cluster_len(df, out, lens, width=10, max_len=500):
+    import pandas as pd
+
     len_count = df["len"]
     counts, bin_edges = len_hist(len_count, width, max_len)
     cluster_ls = []
@@ -195,6 +192,10 @@ def custome_cluster_len(df, out, lens, width=10, max_len=500):
 
 
 def cluster_len(df, out, n_cls=5, width=10, max_len=500, len_weight=5):
+    from sklearn.cluster import KMeans
+    import pandas as pd
+    import numpy as np
+
     len_count = df["len"]
     counts, bin_edges = len_hist(df["len"], width, max_len)
     lens = [(bin_edges[i] + bin_edges[i+1])/2-1  for i,v in enumerate(bin_edges[:-1])]
@@ -256,6 +257,8 @@ class DiffSplice:
         return ioe_dir
     
     def parse_meta(self, meta):
+        import pandas as pd
+
         self.tpm = {}
         tpm_col = 4
         self.meta_file = meta
@@ -275,6 +278,8 @@ class DiffSplice:
             self.tpm[gn] = [control_tpm, treatment_tpm]
 
     def get_psi(self, as_type):
+        import pandas as pd
+
         self.psi.setdefault(as_type, {})
 
         ioe_file = Path(self.ioe_dir) / f"annotation_{as_type}_strict.ioe"
@@ -324,6 +329,8 @@ class DiffSplice:
 
     @staticmethod
     def read_tpm(file, colname, tpm_col):
+        import pandas as pd
+
         quant_df = pd.read_csv(file, sep = "\t")
         tpm_df = pd.DataFrame({colname: quant_df.iloc[:, tpm_col-1]})
         tpm_df.index = quant_df.iloc[:, 0]
@@ -392,7 +399,7 @@ class DiffSplice:
             # print(f"please rm {self.outdir}/ref directory")
         self.method = method
         self.dpsi_files = {}
-        from .suppa.lib.diff_tools import multiple_conditions_analysis
+        from astk.suppa.lib.diff_tools import multiple_conditions_analysis
         mca = multiple_conditions_analysis
 
         for as_type, group_dic in self.psi_files.items():
@@ -463,6 +470,8 @@ def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
 
 
 def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstream_w):
+    import pandas as pd
+
     wget_coor_coor = partial(get_coor, start=start, end=end, strand_sp=strand_sp,
                     anchor=anchor, upstream_w=upstream_w, downstream_w=downstream_w)
     dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
@@ -555,6 +564,8 @@ def sep_name(name, sep, *idx):
 
 
 def df_len_select(infile, outfile, s, e):
+    import pandas as pd
+
     AS_len = lambda x: ei.SuppaEventID(x).alter_element_len
     df = pd.read_csv(infile, sep="\t", index_col=0)
     cols = df.columns
