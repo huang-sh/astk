@@ -81,3 +81,11 @@ def anchor(*args, **kwargs):
             help="Input FASTA file. if set, the fasta sequence will be extracted")
 def getcoor(*args, **kwargs):
     ul.getcoor(*args, **kwargs)
+
+
+@click.command(help = "Make the TxDb object")
+@click.argument('gtf', type=click.Path(exists=True), required=True)
+@click.option('-org', '--organism', required=True, help="organism")
+@click.option('-o', '--output', help="file output path")
+def mktxdb(*args, **kwargs):
+    ul.mkTxDb(*args, **kwargs)
