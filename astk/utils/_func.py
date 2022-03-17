@@ -1,3 +1,4 @@
+from ast import Pass
 import sys
 import shutil
 import subprocess
@@ -94,3 +95,18 @@ def getcoor(file, output, start, end, strand_sp, anchor, upstream_w, downstream_
             ulf.get_coor_fa(coor_df, fasta, Path(output).with_suffix(".fa"))
     except BaseException as e:
         print(e)
+
+
+def mkTxDb(gtf, organism, output):
+    sp = RBP_sp_dic.get(organism, None)
+    sp = sp.replace("_", " ")
+    rscript = BASE_DIR / "R" / "makeTxDb.R"
+    if not output:
+        output = Path(gtf).with_suffix(".txdb")
+    param_dic = {
+        "organism": sp,
+        "gtf": gtf,
+        "output": output
+    }
+    param_ls = ulf.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])    
