@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from functools import partial
 
+from astk.constant import OrgDb_dic, BASE_DIR
 from astk.suppa.lib.event import make_events
 from astk.suppa.lib.gtf_store import *
 from astk.suppa.lib.tools import *
@@ -417,13 +418,12 @@ class DiffSplice:
 
 
 def select_OrgDb(org):
-    from astk.constant import OrgDb_dic
     return OrgDb_dic.get(org, None)
 
 
 def check_kegg_RData(org):
     import subprocess
-    rscript = Path(__file__).parent / "R" / "dl_keggdata.R"
+    rscript = BASE_DIR / "R" / "dl_keggdata.R"
     info = subprocess.Popen(["Rscript", str(rscript), org])
     info.wait()
     # import datetime
