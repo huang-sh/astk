@@ -416,17 +416,8 @@ class DiffSplice:
         self.update_meta()
 
 
-OrgDb_dic = {
-     "hs": "org.Hs.eg.db", "mm": "org.Mm.eg.db", "rn": "org.Rn.eg.db",
-     "dm": "org.Dm.eg.db", "at": "org.At.tair.db", "sc": "org.Sc.sgd.db",
-     "dr": "org.Dr.eg.db", "ce": "org.Ce.eg.db", "bt": "org.Bt.eg.db",
-     "ss": "org.Ss.eg.db", "mmu": "org.Mmu.eg.db", "gg": "org.Gg.eg.db", 
-     "cf": "org.Cf.eg.db", "eck12": "org.EcK12.eg.db", "xl": "org.Xl.eg.db",
-     "pt": "org.Pt.eg.db", "ag": "org.Ag.eg.db", "pf": "org.Pf.plasmo.db",
-     "ecsakai": "org.EcSakai.eg.db", "mxanthus": "org.Mxanthus.db"
-     }
-
 def select_OrgDb(org):
+    from astk.constant import OrgDb_dic
     return OrgDb_dic.get(org, None)
 
 
