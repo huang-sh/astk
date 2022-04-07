@@ -65,11 +65,19 @@ astk subcommand options
 * **motifMap**：motit RNA map
 * **getmeme**: extract motif from a meme motif file
 
+**Co-splicing network**
+
+* **csnet**:  inferring co-splicing networks based on RBP motif discovery and co-expression of RBP gene expression and AS events PSI values.
+
 **epigenetics modification analysis**
 
 * **epi**： extract epigenetic signal features within alternative splicing sites flank
 * **epihm**：draw heatmap figure of mean epigenetic signal features within alternative splicing sites flank.
 * **sigcmp**：epigenetic signal features significance test between different alternative splicing sites flank using wilcox test.
+
+**Eukaryotic Linear Motif**
+
+* **elms**： search Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.
 
 **AS sites coordinate extract**
 
@@ -407,8 +415,8 @@ Arguments:
 * -od: output directory
 * -org: organism
 
-
 #### getmeme
+
 **getmeme** is used for querying ASTK built-in motif data.
 
 ```bash 
@@ -439,8 +447,8 @@ Arguments:
 * -org: organism
 * -o: output file path
 
-
 #### mmap
+
 **mmap** is used for generating motif map to show motif distribution.
 
 ```bash
@@ -457,7 +465,51 @@ Arguments:
 * -mm: motif meme file
 * -od: output directory
 
+#### csnet
+
+**csnet** is using for inferring co-splicing networks based on RBP motif discovery and co-expression of RBP gene expression and AS events PSI values.
+
+```bash
+
+for j in $(seq 2 6);
+do
+    for i in $(seq 1 4);
+    do
+        astk getcoor diff/fb_e11_based/sig01/fb_e11_1${j}_SE.sig+.dpsi \
+            -a ${i} -u 150 -d 150 -fi $mm_fa \
+            -o coor/fb_e11_1${j}_SE.sig+.a${i}.w300.bed 
+    done 
+    cat coor/fb_e11_1${j}_SE.sig+.a*.w300.fa > net/fb_e11_1${j}_SE.sig+.w300.fa
+done
+
+astk mktxdb gencode.vM25.annotation.gtf -org mm -o gencode.vM25.annotation.txdb
+ 
+astk meta -o metadata/e11_e16_psi.csv -repN 1 \
+    -p1 diff/fb_e11_based/psi/fb_e11_12_SE_c1.psi diff/fb_e11_based/psi/fb_e11_1*_SE_c2.psi \
+    -gn e11 e12 e13 e14 e15 e16 
+
+astk meta -o metadata/e11_e16_sf.csv -repN 2 \
+    -p1 ~/project/astk/demo1/data/quant/fb_e1[1-6].5_rep*/quant.sf \
+    -gn e11 e12 e13 e14 e15 e16
+
+astk csnet -o net/co_splicing.csv -fa net/fb_SE.sig+.w300.fa \
+    -psi metadata/e11_e16_psi.csv -tq metadata/e11_e16_sf.csv \
+    -org mm --txdb gencode.vM25.annotation.txdb    
+
+```
+
+Arguments:
+
+* -o: output path
+* -fa: fasta file
+* -psi: psi meta file
+* -tq: transcript quantification meta file
+* -od: output directory
+
+![/co-splicing.png](demo/img/co-splicing.png)
+
 #### epi
+
 **epi** is used for extract epigenetic signal features within alternative splicing sites flank. You should generate bam files metadata using command meta firstly.
 
 ```bash
@@ -519,6 +571,22 @@ Arguments:
 
 ![H3K27me3_cmp.png](demo/img/epi/H3K27me3_0.b150.sig-.cmp.png)
 
+#### elms
+
+**elms** is using for searching Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.
+
+```bash
+astk elms diff/fb_e11_based/sig01_1-51/fb_e11_p0_SE.sig.dpsi -g mm10 -o elm.csv
+```
+
+Arguments:
+
+* FILE: dpsi file path
+* -g: genome assembly
+* -o: output
+
+![elm.png](demo/img/elm.png)
+
 ### FAQs
 
 **When I install software dependent packages, it raises errors like this:**
@@ -537,15 +605,16 @@ $ conda install -c conda-forge r-magick -y
 $ astk install -r
 ```
 
-**When meet this error?**
-```
+**namespace ‘rlang’ 0.4.12 is already loaded, but >= 1.0.0 is required**
+
+```bash
 Error in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]) : 
   namespace ‘rlang’ 0.4.12 is already loaded, but >= 1.0.0 is required
 Calls: source ... asNamespace -> loadNamespace -> namespaceImport -> loadNamespace
 Execution halted
 ```
 
-You could install the rlang to higher version manually. For example:
+When meet this error? You could install the rlang to higher version manually. For example:
 ```
 # R console
 > install.packages("rlang")
