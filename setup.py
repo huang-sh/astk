@@ -20,7 +20,9 @@ setup(
         "statsmodels>= 0.12.0",
         "pysam",
         "pybedtools",
-        "nease"
+        "nease",
+        "biopython",
+        "pyecharts"
     ],
     entry_points={
         "console_scripts": [
