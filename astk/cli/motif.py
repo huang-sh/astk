@@ -81,3 +81,12 @@ def motif_plot(*args, **kwargs):
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def mmap(*args, **kwargs):
     mo.mmap(*args, **kwargs)
+
+
+@click.command(help="Eukaryotic Linear Motif Searching")
+@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('-o', '--output', type=click.Path(), help="output path")
+@click.option('-g', '--genome', type=click.Choice(['mm10', 'hg38']),
+                  required=True, help="genome assembly")
+def elms(*args, **kwargs):
+    mo.search_elm(*args, **kwargs)

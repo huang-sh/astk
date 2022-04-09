@@ -31,6 +31,8 @@ cli_fun.add_command(motif_enrich, name=["motifEnrich", "me"])
 cli_fun.add_command(motif_find, name=["motifFind", "mf"])
 cli_fun.add_command(motif_plot, name=["motifPlot", "mp"])
 cli_fun.add_command(mmap)
+cli_fun.add_command(elms)
+
 
 ## gene set enrichment analysis module
 cli_fun.add_command(gsea_fun, name=["gsea"])
