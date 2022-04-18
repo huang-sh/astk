@@ -107,3 +107,18 @@ def psi_filter(file, output, psi, quantile):
         pf.run(output)
   
 
+def intersect(file_a, file_b, output):
+    import pandas as pd
+
+    fa = Path(file_a)
+    fb = Path(file_b)
+    dfa = pd.read_csv(fa, sep="\t", index_col=0)
+    dfb = pd.read_csv(fb, sep="\t", index_col=0)
+
+    share_id = list(set(dfa.index) & set(dfb.index))
+
+    out_a = Path(f"{output}_a").with_suffix(fa.suffix)
+    out_b = Path(f"{output}_b").with_suffix(fb.suffix)
+    
+    dfa.loc[share_id, :].to_csv(out_a, sep="\t")
+    dfb.loc[share_id, :].to_csv(out_b, sep="\t")

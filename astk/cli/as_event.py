@@ -79,3 +79,10 @@ def sigfilter(*args, **kwargs):
 def psi_filter(*args, **kwargs):
     et.psi_filter(*args, **kwargs)
 
+
+@click.command(help="intersect AS event")
+@click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="file a")
+@click.option('-b', "file_b", type=click.Path(exists=True), required=True, help="file b")
+@click.option('-o', "--output", required=True, help="output suffix")
+def intersect(*args, **kwargs):
+    et.intersect(*args, **kwargs)

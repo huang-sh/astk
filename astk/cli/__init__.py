@@ -22,6 +22,7 @@ cli_fun.add_command(len_pick, name=["lenPick", "lp"])
 cli_fun.add_command(diff_splice, name=["diffSplice", "ds"])
 cli_fun.add_command(sigfilter, name=["sigfilter", "sf"])
 cli_fun.add_command(psi_filter, name=["psiFilter", "pf"])
+cli_fun.add_command(intersect, name=["intersect"])
 
 # co-splicing network module
 cli_fun.add_command(coSpliceNet, name=["coSpliceNet", "csnet"])
@@ -42,7 +43,7 @@ cli_fun.add_command(nease_sc, name=["nease"])
 # cli_fun.add_command(enrich_lc, help=["enrichLenCluster", "elc"])
 
 ## epigenetic analysis module
-cli_fun.add_command(epi_sc)
+cli_fun.add_command(epi_sc, name=["epi"])
 cli_fun.add_command(epihm)
 cli_fun.add_command(epiline)
 
