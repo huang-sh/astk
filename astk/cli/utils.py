@@ -3,20 +3,22 @@ import astk.utils as ul
 
 
 @click.command(help="generate metadata template file")
-@click.option('-p1', '--control', cls=MultiOption,type=tuple, default=(),
+@click.option('-p1', '--control', cls=MultiOption, type=tuple, default=(),
                 required=True, help="file path for condtion 1")
-@click.option('-p2', '--treatment', cls=MultiOption,type=tuple, default=(),
+@click.option('-p2', '--treatment', cls=MultiOption, type=tuple, default=(),
                 required=True, help="file path for condtion 2")
 @click.option('-gn', '--groupName', cls=MultiOption, type=tuple,
                 default=(), help="group name")                
-@click.option('-repN', '--replicate', cls=MultiOption,type=tuple, 
+@click.option('-repN', '--replicate', cls=MultiOption, type=tuple, 
                 help="replicate, number")
 @click.option('-o', '--output', required=True, type=click.Path(),
                 help='metadata output path')                
-@click.option('-repN1', '--replicate1', cls=MultiOption,type=tuple, 
+@click.option('-repN1', '--replicate1', cls=MultiOption, type=tuple, 
                 help="replicate1, number")
-@click.option('-repN2', '--replicate2', cls=MultiOption,type=tuple, 
+@click.option('-repN2', '--replicate2', cls=MultiOption, type=tuple, 
                 help="replicate2, number")
+@click.option('--condition', cls=MultiOption, type=tuple, 
+                help="condition name")                
 @click.option('-fn', '--filename', 'is_fn', is_flag=True, help="file name")
 @click.option('--split', cls=MultiOption, type=tuple, help="name split symbol and index")    
 def meta(*args, **kwargs):

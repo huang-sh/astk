@@ -25,7 +25,7 @@ def meta(output, replicate, groupname, control, treatment, replicate1, replicate
         print("repN1 and repN2 must be set!")    
         sys.exit()
     try:
-        tp = Template()
+        tp = Template(kwargs.pop("condition", None))
         tp.complete_df(groupname, control, treatment, repN1, repN2, **kwargs)
         tp.to_csv(output)
         tp.to_json(output)
