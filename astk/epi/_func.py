@@ -8,7 +8,7 @@ import pandas as pd
 import pysam
 
 import astk.utils.func  as ul
-
+from astk.constant import *
 
 def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
 
@@ -75,12 +75,12 @@ def epi_signal(out, achor_dic, bam_meta, width, binsize):
 
 
 
-def epi_sc(output, metadata, anchor, name, width, binsize):
+# def epi_sc(output, metadata, anchor, name, width, binsize):
 
-    names = name if len(name)==len(anchor) else list(range(1, len(anchor)+1))
+#     names = name if len(name)==len(anchor) else list(range(1, len(anchor)+1))
 
-    anchor_dic = dict(zip(names, anchor))
-    epi_signal(output, anchor_dic, metadata, width, binsize)
+#     anchor_dic = dict(zip(names, anchor))
+#     epi_signal(output, anchor_dic, metadata, width, binsize)
 
 
 def epihm(output, files, fmt, width, height, resolution):
@@ -88,21 +88,6 @@ def epihm(output, files, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "signalHeatmap.R"
     param_dic = {
         "file": files,
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "fmt": fmt,
-        "output": output
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
-
-
-def epiline(output, file, fmt, width, height, resolution):
-
-    rscript = Path(__file__).parent / "R" / "signalProfile.R"
-    param_dic = {
-        "file": file,
         "width": width, 
         "height": height, 
         "resolution": resolution,
@@ -212,3 +197,42 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
     for of in Path(outdir).glob("*_overlap.txt"):
         info = subprocess.Popen(["Rscript", str(rscript), of])
     info.wait()
+
+
+def epi_sc(event_file, event_label, bam_file, bam_label, width, bin_size,
+            output, normalmethod, paired_end, title, bam_merge):
+
+    rscript = BASE_DIR / "R" / "epiFeature.R"
+    param_dic = {
+        "binsize": bin_size,
+        "width": width, 
+        "bam": bam_file,
+        "bamlabel": bam_label,
+        "region": event_file, 
+        "regionlabel": event_label, 
+        "title": title,
+        "out": output,
+        "markmerge": bam_merge,
+        "normalmethod": normalmethod,
+        "pairedend": paired_end
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+def epi_profile(file, output, title, ylim, fmt, width, height, resolution):
+
+    rscript = BASE_DIR / "R" / "epiProfile.R"
+    param_dic = {
+        "title": title,
+        "file": file,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "fmt": fmt,
+        "output": output,
+        "ylim": ylim
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    # print(param_ls)
+    subprocess.run(["Rscript", rscript, *param_ls])

@@ -44,8 +44,8 @@ cli_fun.add_command(nease_sc, name=["nease"])
 
 ## epigenetic analysis module
 cli_fun.add_command(epi_sc, name=["epi"])
-cli_fun.add_command(epihm)
-cli_fun.add_command(epiline)
+# cli_fun.add_command(epihm)
+cli_fun.add_command(epi_profile_sc, name=["epiProfile", "ep"])
 
 ## drawing module
 cli_fun.add_command(gseplot)
