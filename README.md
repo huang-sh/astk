@@ -14,6 +14,10 @@ $ conda activate astk
 ## install astk
 $ pip install astk
 ```
+or install the development version from github
+```
+pip install git+https://github.com/huang-sh/astk.git@dev
+```
 
 After install **astk**, you should install **astk**' dependent R packages with:
 
@@ -510,42 +514,30 @@ Arguments:
 
 #### epi
 
-**epi** is used for extract epigenetic signal features within alternative splicing sites flank. You should generate bam files metadata using command meta firstly.
+**epi** is used for extract epigenetic signal features within alternative splicing sites flank.
 
 ```bash
-astk meta -o metadata/ni_H3K27me3_0_bam_0hr.csv -repN 2 \
-    -p1 ~/project/ni_as/chipseq/algin/input_DNA_rep[1-2]_0hr_Input.bam \
-    -p2 ~/project/ni_as/chipseq/algin/H3K27me3_ChIPSeq_rep[1-2]_0hr.bam \
-    -gn H3K27me3_0  \
--fn --split '_' 1  
-
-
-for i in 1 2 3 4;
-do
-    astk anchor diff/ni_adj_ct/sig01/0_3_SE.sig-.dpsi -idx ${i}  \
-        -u 150 -d 150 -o coor/ni_0_3_SE.sig-.anchor.a${i}.bed 
-done   
-
-mkdir img/epi
-astk epi -o img/epi/H3K27me3_0.b150.sig-.csv -bs 150 \
-    -md metadata/ni_H3K27me3_0_bam_0hr.csv \
-    -anchor coor/ni_0_3_SE.sig-.anchor.a*.bed 
+astk epi -e diff/fb_e11_based/psi/fb_e11_16_SE_c2.0.[28].psi -el low high \
+    -bam ../fb_chip/H3K27ac.e16.5.fb_m.bam -bl H3K27ac \
+    -w 300 -bs 5 -o ../astk_H3K27ac 
 
 ```
 
 Arguments:
 
-* -bs: bin size
-* -md: bam file metadata
-* -anchor: position anchor files
+* -e: file that including  AS event ID
+* -el: event label
+* -bam: bam files 
+* -bl: bam files labels
 * -o: output path
 
-#### epihm
-**epihm** is used for drawing heatmap figure of mean epigenetic signal features within alternative splicing sites flank.
+#### epiProfile
+**epiProfile** is used for drawing signal profile figure of epigenetic signal features within alternative splicing sites flank.
 
 ```
-astk epihm img/epi/H3K27me3_0.b150.sig-.csv \
-    -o ni_adj_ct/epi/H3K27me3_0.b150.sig-.png 
+
+astk ep  ../astk_H3K27ac*.csv --title "H3K27ac Profile" \
+    -o ../astk_H3K27ac.pdf -fmt pdf   
 ```
 
 Arguments:
@@ -553,7 +545,7 @@ Arguments:
 * FILE: feature file path
 * -o: output figure path
 
-![H3K27me3_hm.png](demo/img/epi/H3K27me3_0.b150.sig-.png)
+![H3K27ac.png](demo/img/epi/H3K27ac.png)
 
 #### sigcmp
 
@@ -569,7 +561,6 @@ Arguments:
 * FILE: feature file path
 * -o: output figure path
 
-![H3K27me3_cmp.png](demo/img/epi/H3K27me3_0.b150.sig-.cmp.png)
 
 #### elms
 
