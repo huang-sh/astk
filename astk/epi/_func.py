@@ -200,7 +200,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 
 
 def epi_sc(event_file, event_label, bam_file, bam_label, width, bin_size,
-            output, normalmethod, paired_end, title, bam_merge):
+            output, normalmethod, paired_end, title, bam_merge, as_type):
 
     rscript = BASE_DIR / "R" / "epiFeature.R"
     param_dic = {
@@ -214,7 +214,8 @@ def epi_sc(event_file, event_label, bam_file, bam_label, width, bin_size,
         "out": output,
         "markmerge": bam_merge,
         "normalmethod": normalmethod,
-        "pairedend": paired_end
+        "pairedend": paired_end,
+        "ASType": as_type
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
