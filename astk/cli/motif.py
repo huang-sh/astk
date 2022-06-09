@@ -3,9 +3,9 @@ import astk.motif as mo
 
 
 @click.command(["motifEnrich", "me"], help = "Motif Enrichment")
-@click.option('-tf', "--tfasta", cls=MultiOption, type=tuple, 
+@click.option('-tf', "--tfasta", cls=MultiOption, type=click.Path(exists=True), 
                 required=True, help="input fasta files")
-@click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
+@click.option('-cf', "--cfasta", cls=MultiOption, type=click.Path(exists=True), 
                 help="control fasta files")                
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
@@ -17,9 +17,9 @@ def motif_enrich(*args, **kwargs):
     mo.motif_enrich(*args, **kwargs)
 
 @click.command(help = "Motif Discovery and similarity comparision")
-@click.option('-tf', "--tfasta", cls=MultiOption, type=tuple, 
+@click.option('-tf', "--tfasta", cls=MultiOption, type=click.Path(exists=True), 
                 required=True, help="fasta file")
-@click.option('-cf', "--cfasta", cls=MultiOption, type=tuple, 
+@click.option('-cf', "--cfasta", cls=MultiOption, type=click.Path(exists=True), 
                 help="control fasta files")                     
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
@@ -41,7 +41,7 @@ def motif_find(*args, **kwargs):
 
 
 @click.command(help = "Motif plot")
-@click.option('-mi', "--motifId", "motifid", cls=MultiOption, type=tuple, 
+@click.option('-mi', "--motifId", "motifid", cls=MultiOption, type=str, 
                 required=True, help="motif id")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
                 help="RBP motif database")
@@ -60,11 +60,11 @@ def motif_plot(*args, **kwargs):
 
 
 @click.command(help = "generate motif map")
-@click.option('-fa', '--fasta', required=True, cls=MultiOption, type=tuple, 
-                help="fasta files")
-@click.option('-n', '--name', cls=MultiOption, type=tuple, default=(),
+@click.option('-fa', '--fasta', cls=MultiOption, type=click.Path(exists=True), 
+                required=True, help="fasta files")
+@click.option('-n', '--name', cls=MultiOption, type=str,
                 help="fasta file names")
-@click.option('-c', '--center', cls=MultiOption, type=tuple, default=(),
+@click.option('-c', '--center', cls=MultiOption, type=str,
                 help="fasta files names")                
 @click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
                 help="meme motif file")

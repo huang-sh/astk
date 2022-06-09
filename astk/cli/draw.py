@@ -3,12 +3,12 @@ from astk import draw
 
 
 @click.command(help="Gene Set Enrichment Analysis ploting")
-@click.option('-id', '--id', "termid", cls=MultiOption, type=tuple, 
-                required=True, help="term id")
+@click.option('-id', '--id', "termid", cls=MultiOption, type=str, 
+                help="term id")
 @click.option('-o', '--output', help="output figure path")
 @click.option('-rd', '--RData', help="output figure path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format") 
+                default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
@@ -18,13 +18,13 @@ def gseplot(*args, **kwargs):
 @click.command(help="draw UpSet plots for AS events")
 @click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)           
 @click.option('-o', '--output', required=True, help="output figure path")
-@click.option('-xl', '--xlabel', cls=MultiOption, type=tuple, 
+@click.option('-xl', '--xlabel', cls=MultiOption, type=str, 
                 help="x xlabel")
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("This flag is present then a dpsi file will divide "
                   "two part according to |dpsi| > 0 and |dpsi| < 0"))                     
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format") 
+                default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
@@ -36,7 +36,7 @@ def upset(*args, **kwargs):
 @click.argument('file', type=click.Path(exists=True), required=True)     
 @click.option('-o', '--output', help="output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format") 
+                default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
@@ -48,7 +48,7 @@ def volcano(*args, **kwargs):
 @click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)     
 @click.option('-o', '--output', required=True, help="figure output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format") 
+                default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
@@ -73,13 +73,13 @@ def heatmap(*args, **kwargs):
 @click.command(help="barplot ")
 @click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-xl', '--xlabel', cls=MultiOption, type=tuple, default=(),
+@click.option('-xl', '--xlabel', cls=MultiOption, type=str,
              help="input dpsi names")
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("This flag is present then a dpsi file will divide "
                   "two part according to |dpsi| > 0 and |dpsi| < 0"))             
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format")
+                default="png", help="out figure format")
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
 @click.option('-h', '--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")

@@ -60,8 +60,7 @@ def enrich(*args, **kwargs):
                 help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three. default=BP")                  
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-xl', '--xlabel', cls=MultiOption, type=tuple, 
-                help="xlabel")
+@click.option('-xl', '--xlabel', cls=MultiOption, type=str, help="xlabel")
 @click.option('-gene_id', '--gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")                      
 @click.option('-orgdb', '--orgdb', required=True,
@@ -71,7 +70,7 @@ def enrich(*args, **kwargs):
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="pdf", help="out figure format") 
+                default="pdf", help="out figure format")
 @click.option('-w', '--width', default=10, help="fig width, default=6 inches")
 @click.option('-h', '--height', default=12, help="fig height, default=6 inches")                
 def enrich_cmp(*args, **kwargs):
