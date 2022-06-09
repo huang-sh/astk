@@ -535,3 +535,38 @@ class TpmWriter(Writer, TpmParser):
             line.append(str(value[x]))
         return line
 
+
+class EWriter:
+    def __init__(self, all_events, output_name, etype, boundary):
+        """
+        Creates 'write to' buckets
+        """
+        self.wdict = {}
+        for event in all_events:
+            if event == 'SS':
+                self.wdict['A3'] = open(f'{output_name}_A3_{boundary}.{etype}', 'w')
+
+                self.wdict['A5'] = open(f'{output_name}_A5_{boundary}.{etype}', 'w')
+            elif event == 'FL':
+                self.wdict['AF'] = open(f'{output_name}_AF_{boundary}.{etype}', 'w')
+                self.wdict['AL'] = open(f'{output_name}_AL_{boundary}.{etype}', 'w')
+            else:
+                self.wdict[event] = open(f'{output_name}_{event}_{boundary}.{etype}', 'w')
+        for bucket in self.wdict:
+            if etype == 'ioe':
+                self.wdict[bucket].write("seqname\tgene_id\tevent_id\talternative_transcripts\ttotal_transcripts\n")
+            if etype == 'gtf':
+                self.wdict[bucket].write("track name={} visibility=2\n".format(bucket))
+
+    def write(self, line, bucket):
+        """
+        Given writes the line to the given bucket
+        """
+        self.wdict[bucket].write(line)
+
+    def close(self):
+        """
+        Closes all files in writer
+        """
+        for idx in self.wdict:
+            self.wdict[idx].close()

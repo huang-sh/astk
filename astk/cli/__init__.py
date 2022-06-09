@@ -6,20 +6,24 @@ from .gsea import *
 from .as_event import *
 from .epi import *
 from .draw import *
+from .suppa import *
 from .config import CustomMultiCommand
-
 
 @click.group(cls=CustomMultiCommand, 
         context_settings=dict(help_option_names=['-h', '--help']))
 def cli_fun():
      pass
 
+## suppa2 module
+cli_fun.add_command(generateEvents, name=["generateEvent", "ge"])
+cli_fun.add_command(psiPerEvent, name=["generatePsi", "gp", "psiPerEvent"])
+
+cli_fun.add_command(diff_splice, name=["diffSplice", "ds"])
 
 ## AS event processing module
 cli_fun.add_command(len_dist, name=["lenDist", "ld"])
 cli_fun.add_command(len_cluster, name=["lenCluster", "lc"])
 cli_fun.add_command(len_pick, name=["lenPick", "lp"])
-cli_fun.add_command(diff_splice, name=["diffSplice", "ds"])
 cli_fun.add_command(sigfilter, name=["sigfilter", "sf"])
 cli_fun.add_command(psi_filter, name=["psiFilter", "pf"])
 cli_fun.add_command(intersect, name=["intersect"])
@@ -63,3 +67,4 @@ cli_fun.add_command(getmeme)
 cli_fun.add_command(getcoor)
 cli_fun.add_command(list_, name=["list", "ls"])
 cli_fun.add_command(mktxdb)
+cli_fun.add_command(getgene)

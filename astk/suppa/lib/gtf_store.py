@@ -174,6 +174,7 @@ class Transcript():
     def __init__(self):
         self.exons = set()
         self.span = (float('inf'), float('-inf'))
+        self.TSS = None
 
     def add_exon(self, start, stop):
         """
