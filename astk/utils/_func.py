@@ -1,8 +1,9 @@
-from ast import Pass
 import sys
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Sequence, Union
+
 
 import astk.ChromHMM as ch
 from astk.constant import *
@@ -86,15 +87,38 @@ def anchor(file, output, index, sideindex, offset5, offset3, strand_sp):
         print(e)
  
 
-def getcoor(file, output, start, end, strand_sp, anchor, upstream_w, downstream_w, fasta):
+def getcoor(file: Union[str, Path],
+            output: Union[str, Path],
+            start: int,
+            end: int,
+            strand_sp: bool, 
+            anchor: Sequence[int], 
+            upstream_w: int, 
+            downstream_w: int, 
+            fasta: Union[str, Path]
+    ):
+    
+    if not any([start, end, anchor]):
+        from .event_id import SuppaEventID
 
-    try:
-        coor_df = ulf.get_coor_bed(file, start, end, strand_sp, anchor, upstream_w, downstream_w)
-        coor_df.to_csv(output, index=False, header=False, sep="\t")
-        if fasta:
-            ulf.get_coor_fa(coor_df, fasta, Path(output).with_suffix(".fa"))
-    except BaseException as e:
-        print(e)
+        with open(file, "r") as f:
+            next(f)
+            line = f.readline()
+            line.split()[0]
+        ei = SuppaEventID(line.split()[0])
+        anchors = list(range(1, len(ei.coordinates)+1))
+    else:
+        anchors = [anchor]
+
+    for  a in anchors:
+        try:
+            coor_df = ulf.get_coor_bed(file, start, end, strand_sp, a, upstream_w, downstream_w)
+            out_bed = Path(output).with_suffix(f".a{a}.bed")
+            coor_df.to_csv(out_bed, index=False, header=False, sep="\t")
+            if fasta:
+                ulf.get_coor_fa(coor_df, fasta, Path(output).with_suffix(f".a{a}.fa"))
+        except BaseException as e:
+            print(e)
 
 
 def mkTxDb(gtf, organism, output):
@@ -110,3 +134,17 @@ def mkTxDb(gtf, organism, output):
     }
     param_ls = ulf.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])    
+
+def getgene(file, output, unique):
+    import pandas as pd
+    from .event_id import SuppaEventID
+
+    dpsi_df = pd.read_csv(file, sep="\t", index_col=0)
+    gene_df = pd.DataFrame(
+        {"geneID": [SuppaEventID(i).gene_id for i in dpsi_df.index]}
+    )
+    if unique:
+        gene_df.drop_duplicates(inplace=True)
+    if output is None:
+        output = sys.stdout
+    gene_df.to_csv(output, index=False, header=False, sep="\t")

@@ -78,14 +78,15 @@ def anchor(*args, **kwargs):
 @click.option('-s', '--start', type=int, help="start index")
 @click.option('-e', '--end', type=int, help="end index")
 @click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
-@click.option('-a', '--anchor', type=int, help="splice site index, 1-based")
-@click.option('-u', '--upstreamWidth', "upstream_w", type=int, default=150, help="width of right flank")
-@click.option('-d', '--downstreamWidth', "downstream_w", type=int, default=150, help="width of left flank")
-@click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
+@click.option('-a', '--anchor', cls=MultiOption, type=int,
+                help="splice site index, 1-based")
+@click.option('-u', '--upstreamWidth', "upstream_w", type=int, default=150, 
+                help="width of right flank")
+@click.option('-d', '--downstreamWidth', "downstream_w", type=int, default=150, 
+                help="width of left flank")
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
                 help="Input FASTA file. if set, the fasta sequence will be extracted")
 def getcoor(*args, **kwargs):
-    print(args)
     ul.getcoor(*args, **kwargs)
 
 
