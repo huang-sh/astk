@@ -15,12 +15,20 @@ parser$add_argument("--out")
 parser$add_argument("--markmerge", action='store_true')
 parser$add_argument("--normalmethod")
 parser$add_argument("--pairedend", action='store_true')
+parser$add_argument("--ASType")
+
 
 
 args <- parser$parse_args()
 
-anchors <- seq(1, 4)
-names(anchors) <- paste("a", anchors, sep="")
+if (args$ASType == "SE"){
+    anchors <- seq(1, 4)
+    names(anchors) <- paste("a", anchors, sep="")    
+} else if (args$ASType == "RI") {
+    anchors <- seq(2, 3)
+    names(anchors) <- paste("a", anchors, sep="")    
+}
+
 
 binsize <- args$binsize
 width <- args$width
@@ -66,28 +74,42 @@ peParam <-  args$pairedend
 names(region_files) <- region_name
 coor_ls <- lapply(region_files, function(file) {
     df <- read.table(file, skip = 1)
-    strand <- sapply(str_split( df$V1, ":"), function(subs) { subs[5] })
-    chr <- sapply(str_split( df$V1, ":"), function(subs) { subs[2] })
+    as_type  <- unique(sapply(str_split( df$V1, ";"), function(subs) { substr(subs[2], 1, 2) }))
+    strand <- sapply(str_split( df$V1, ":"), function(subs) { subs[length(subs)] })
+    chr <- sapply(str_split( df$V1, ":"), function(subs) { subs[2] })    
+    if (as_type == "SE"){
+        a12s <- lapply(str_split( df$V1, ":"), function(subs) { str_split(subs[3], "-")[[1]] })
+        a1 <- sapply(a12s, function(x) {x[1]})
+        a2 <- sapply(a12s, function(x) {x[2]})
 
-    a12s <- lapply(str_split( df$V1, ":"), function(subs) { str_split(subs[3], "-")[[1]] })
-    a1 <- sapply(a12s, function(x) {x[1]})
-    a2 <- sapply(a12s, function(x) {x[2]})
-
-    a34s <- lapply(str_split( df$V1, ":"), function(subs) { str_split(subs[4], "-")[[1]] })
-    a3 <- sapply(a34s, function(x) {x[1]})
-    a4 <- sapply(a34s, function(x) {x[2]})
-    data.frame(
-        event_id = df$V1,
-        chr = chr,
-        a1 = a1,
-        a2 = a2,
-        a3 = a3,
-        a4 = a4,
-        strand = strand
-    )
+        a34s <- lapply(str_split( df$V1, ":"), function(subs) { str_split(subs[4], "-")[[1]] })
+        a3 <- sapply(a34s, function(x) {x[1]})
+        a4 <- sapply(a34s, function(x) {x[2]})
+        cdf <- data.frame(
+            event_id = df$V1,
+            chr = chr,
+            a1 = a1,
+            a2 = a2,
+            a3 = a3,
+            a4 = a4,
+            strand = strand
+        )
+    }else if (as_type == "RI") {
+        a2 <- sapply(str_split( df$V1, ":"), function(subs) { str_split(subs[4], "-")[[1]][1] })
+        a3 <- sapply(str_split( df$V1, ":"), function(subs) { str_split(subs[4], "-")[[1]][2] })
+        cdf <- data.frame(
+            event_id = df$V1,
+            chr = chr,
+            a2 = a2,
+            a3 = a3,
+            strand = strand
+        )
+    }
+    cdf
 })
 
-data_ls <- lapply(anchors, function(i) {
+# data_ls <- lapply(anchors, function(i) {
+data_ls <- lapply(seq(1, length(anchors)), function(i) {
 
     lapply(seq(1, length(coor_ls)) , function(dfi) {
         df <- coor_ls[[dfi]]
@@ -113,7 +135,6 @@ data_ls <- lapply(anchors, function(i) {
                     saf_$End <- saf_$Start + binsize -1
                     saf_
                 })
-
         ns_saf_ls <- lapply(bin_num[1:length(bin_num)-1], function(x) {
                     saf_ <- ns_saf  
                     bin_id <- paste("bin", x, sep = "")
@@ -133,8 +154,8 @@ data_ls <- lapply(anchors, function(i) {
 })
 
 data_ls <- lapply(coor_ls, function(df) {
-
-    lapply(anchors , function(i) {
+    # anchors
+    lapply(seq(1, length(anchors)) , function(i) {
         anchor_pos <- as.numeric(df[, 2 + i])
         start <- anchor_pos - flank_width[i]
         end <- anchor_pos + flank_width[i]
@@ -178,6 +199,7 @@ data_ls <- lapply(coor_ls, function(df) {
 
 
 ps_count_ls <- lapply(data_ls, function(cdi) {
+    
     lapply(cdi, function(df) {
         res <- Rsubread::featureCounts(
             bam_files,
@@ -223,12 +245,23 @@ ns_count_ls <- lapply(data_ls, function(cdi) {
 mark_idx <- seq(1, length(bam_files))
 names(mark_idx) <- mark
 
+save.image("/home/huangshenghui/project/astk/dev/tmp/epi.RData")
+
 count_ls <- lapply(mark_idx, function(m) {
     region_count_ls <- lapply(seq(1, length(ps_count_ls)), function(ri) {
-        lapply(anchors, function(ai) {
+        # anchors
+        lapply(seq(1, length(anchors)), function(ai) {
             ps_mtx <- ps_count_ls[[ri]][[ai]][[m]]
             ns_mtx <- ns_count_ls[[ri]][[length(anchors)-ai+1]][[m]][, seq(length(bin_num)-1, 1)]
+            print(dim(ps_mtx))
+            print(dim(ns_mtx))
             mtx <- rbind(ps_mtx, ns_mtx)
+            # if (is.null(ns_mtx)){
+            #     mtx <- rbind(ps_mtx, matrix(ns_mtx))
+            # } else{
+            #     mtx <- rbind(ps_mtx, ns_mtx)
+            # }
+            
             bins <- paste("bin", seq(1, dim(mtx)[2]), sep = "")
             colnames(mtx) <- paste(mark[m], region_name[ri], names(anchors)[ai], bins, sep = "_")
             mtx
@@ -262,3 +295,7 @@ if (markMerge){
        })
    })
 }
+
+# save.image("/home/huangshenghui/project/astk/dev/diff/test.RData")
+
+# load("/home/huangshenghui/project/astk/dev/diff/test.RData")

@@ -45,28 +45,34 @@ enrichGOSep <- function(gene,
                     qvalueCutoff  = qval,
                     readable      = TRUE,
                     pool          = FALSE)
-    if (dim(as.data.frame(ego))[1] == 0){
-      next()
-    }
-    print(ont)
-    p_title <- ont
-    outputf <- file.path(output, paste(name, ".%s.qval%s_pval%s.%s", sep = ""))  
-
-    emap.dir <- file.path(output, "emap")
-    if (!dir.exists(emap.dir)) {
-      dir.create(emap.dir, recursive = T)
-    }
 
     simgo.dir <- file.path(output, "simgo")
     if (!dir.exists(simgo.dir)) {
       dir.create(simgo.dir, recursive = T)
     }
+    
+    outputf <- file.path(output, paste(name, ".%s.qval%s_pval%s.%s", sep = "")) 
+    out.pdf <- sprintf(outputf, ont, qval, pval, format)
+
+    if (dim(as.data.frame(ego))[1] == 0){
+      outputsc.pdf <- file.path(simgo.dir, paste(name, "_%s_simple.pdf", sep = ""))
+      pdf(sprintf(outputsc.pdf, ont) ,width = 12, height = 10)
+      dev.off()
+      pdf(out.pdf ,width = 12, height = 10)
+      dev.off()
+      return()
+    }
+    print(ont)
+    p_title <- ont
+     
+    emap.dir <- file.path(output, "emap")
+    if (!dir.exists(emap.dir)) {
+      dir.create(emap.dir, recursive = T)
+    }
 
     out.csv <- file.path(output, paste(name, ".%s.qval%s_pval%s.csv", sep = ""))
     
     write.csv(as.data.frame(ego), file = sprintf(out.csv, ont, qval, pval))
-
-    out.pdf <- sprintf(outputf, ont, qval, pval, format)
 
     if (ont == "ALL"){
       p <- dotplot(ego, split="ONTOLOGY", showCategory = 15, title = p_title) + 
@@ -83,7 +89,6 @@ enrichGOSep <- function(gene,
                 guides(size = guide_legend(override.aes=list(shape=1))) +
                 theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
                       panel.grid.major.x = element_blank())
-
                           
        simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)
        simple.ego <- enrichplot::pairwise_termsim(simple.ego)   
@@ -104,12 +109,13 @@ enrichGOSep <- function(gene,
       emat  <-  simplifyEnrichment::GO_similarity(ego$ID, ont)
 
       pdf(sprintf(outputsc.pdf, ont) ,width = 12, height = 10)
+
       df = tryCatch({
         df <- simplifyEnrichment::simplifyGO(emat)
       }, warning = function(w) {
           print(w)
       }, error = function(e) {
-        file.remove(sprintf(outputsc.pdf, ont))
+        # file.remove(sprintf(outputsc.pdf, ont))
          return(F)
       }
       )
@@ -152,22 +158,42 @@ compareClusterSep <- function(gene_ls,
         } else {
           onts <- c(ont)
         }
+        
         for (ont.i in onts){
-          cpk <- compareCluster(gene_ls, 
-                                fun          = "enrichGO", 
-                                pvalueCutoff = pval,
-                                qvalueCutoff = qval,
-                                OrgDb        = OrgDb,
-                                ont          = ont.i,
-                                keyType      = keyType,
-                                readable     = TRUE) 
-
-          if (dim(as.data.frame(cpk))[1] == 0){
-            next()
-          }
           outputf <- file.path(output, paste(name, ".cmp.%s.qval%s_pval%s.%s", sep = "")) 
           out.pdf <- sprintf(outputf, ont.i, qval, pval, format)
-          
+
+          df = tryCatch({
+              cpk <- compareCluster(gene_ls, 
+                                    fun          = "enrichGO", 
+                                    pvalueCutoff = pval,
+                                    qvalueCutoff = qval,
+                                    OrgDb        = OrgDb,
+                                    ont          = ont.i,
+                                    keyType      = keyType,
+                                    readable     = TRUE) 
+
+              }, warning = function(w) {
+                  print(w)
+              }, error = function(e) {
+
+                pdf(out.pdf ,width = 12, height = 10)
+                dev.off()            
+                cpk  <- data.frame()
+                return(cpk)
+              }
+              )
+          if (class(df) == "data.frame"){
+            cpk <- df
+          }
+
+          if (dim(as.data.frame(cpk))[1] == 0){
+
+            pdf(out.pdf ,width = 12, height = 10)
+            dev.off()
+            next()           
+          }
+
           p <- dotplot(cpk, title = sprintf("%s_%s",name, ont.i)) + 
                 scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
                                       guide   = guide_colorbar(reverse=TRUE, order=1)) +

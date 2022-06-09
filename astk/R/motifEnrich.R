@@ -47,13 +47,20 @@ res_ls <- lapply(file_ls, function(files){
 # file_names <- sapply(files, function(file)tools::file_path_sans_ext(basename(file)))
 # names(res_ls) <- file_names
 
+df = tryCatch({
+        data <- res_ls %>% 
+            dplyr::bind_rows(.id = "condition") %>% 
+            dplyr::group_by(condition) %>% 
+            dplyr:: slice_head(n = 20) %>%   ## 选取了前20个motif
+            dplyr::ungroup()
 
-data <- res_ls %>% 
-    dplyr::bind_rows(.id = "condition") %>% 
-    dplyr::group_by(condition) %>% 
-    dplyr:: slice_head(n = 20) %>%   ## 选取了前20个motif
-    dplyr::ungroup()
+        plot <- plot_ame_heatmap(data, group = condition)
 
-plot <- plot_ame_heatmap(data, group = condition)
+        ggplot2::ggsave(file.path(args$outdir, "heatmap.pdf"), plot = plot, width = 10)
 
-ggplot2::ggsave(file.path(args$outdir, "heatmap.pdf"), plot = plot, width = 10)
+    }, warning = function(w) {
+        print(w)
+    }, error = function(e) {    
+    
+    }
+    )

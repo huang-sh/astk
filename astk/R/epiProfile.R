@@ -28,6 +28,9 @@ regions <- unique(sapply(str_split(cols, "_"), function(x) {x[2]}))
 anchors <- unique(sapply(str_split(cols, "_"), function(x) {x[3]}))
 
 names(marks) <- marks
+print(anchors)
+print(regions)
+print(marks)
 
 split_coverage <- lapply(marks, function(m) {
   
@@ -38,22 +41,29 @@ split_coverage <- lapply(marks, function(m) {
             df_cols <- colnames(df)
             ncol <- df_cols[str_detect(df_cols, ra)]
             if (length(ncol)){
-                sdf <- df[, ncol]
+                if (length(ncol) == 1){
+                    sdf <- data.frame("nol" = df[, ncol])
+                    colnames(sdf) <- ncol
+                }else{
+                    sdf <- df[, ncol]
+                }
+                
                 break()
             }
         }
         sdf
     })
 })
+print(length(split_coverage[[1]]))
 
-
-ci_df <- metagene2:::calculate_matrices_ci(
+save(split_coverage, file="/home/huangshenghui/project/astk/dev/tmp/t1.RData")
+          ci_df <- metagene2:::calculate_matrices_ci(
             split_coverage,
             1000, 
             0.05,
             "bin",
-            metagene2:::Parallel_Job$new(5))
-
+            NULL)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             # metagene2:::Parallel_Job$new(1)
+print(length(split_coverage))
 ci_df <- as.data.frame(ci_df)
 ci_df$group <- factor(sapply(str_split(ci_df$region, "_"), function(x) {x[2]}))
 p <- plot_metagene(ci_df, facet_by=~group, group_by="region") + ggplot2::ggtitle(title)
