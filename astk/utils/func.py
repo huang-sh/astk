@@ -116,33 +116,6 @@ def ioe_event(gtf, event_type, edge_exon_len, pool_genes=False):
          logger.info("Loading cache data.")
     return output_dir  
 
-def ioe_psi(event_row, tpm):
-    alternative_transcripts = event_row["alternative_transcripts"].split(",")
-    total_transcripts = event_row["total_transcripts"].split(",")
-    al_tpts_val = [i for i in alternative_transcripts if i in tpm.index]
-    all_tpts_val = [i for i in total_transcripts if i in tpm.index]
-
-    if len(all_tpts_val) == 0:
-        psi_ls = ["nan" for _ in tpm.columns]
-    elif len(al_tpts_val) == 0 and len(all_tpts_val) > 0:
-        psi_ls = [0 for _ in tpm.columns]
-    else:
-        get_val = lambda tid, colid: tpm.loc[tid, colid]
-        psi_ls = []
-        for colid in tpm.columns:
-            get_val = lambda tid: tpm.loc[tid, colid]
-            al_tpts_abundance = sum(map(get_val, al_tpts_val))
-            all_tpts_abundance = sum(map(get_val, all_tpts_val))
-            if all_tpts_abundance < 0.001:
-                psi_ls.append("nan")
-                continue
-            try:
-                psi = al_tpts_abundance / all_tpts_abundance
-            except ZeroDivisionError:
-                psi = "nan"
-            psi_ls.append(psi)
-    return psi_ls
-
 
 def len_hist(len_counts, width, max_len):
     import numpy as np
@@ -288,7 +261,6 @@ class DiffSplice:
         for gn, (tpm1, tpm2) in self.tpm.items():
             _get_psi1 = partial(self._get_psi, tpm=tpm1)
             _get_psi2 = partial(self._get_psi, tpm=tpm2)
-            self._get_psi(ioe_df.iloc[1, :], tpm1)
 
             psi1 = ioe_df.apply(_get_psi1, axis=1)
             psi2 = ioe_df.apply(_get_psi2, axis=1)
@@ -309,7 +281,7 @@ class DiffSplice:
         if len(all_tpts_val) == 0:
             psi_ls = ["nan" for _ in tpm.columns]
         elif len(al_tpts_val) == 0 and len(all_tpts_val) > 0:
-            psi_ls = [0 for _ in tpm.columns]
+            psi_ls = ["nan"  for _ in tpm.columns]
         else:
             get_val = lambda tid, colid: tpm.loc[tid, colid]
             psi_ls = []
@@ -410,7 +382,7 @@ class DiffSplice:
                 dpis_file = self.dpsi_dir / f"{gn}_{as_type}"
                 ioe_file = self.ioe_dir / f"annotation_{as_type}_strict.ioe"
                 mca(method, psi_files, expr_files, ioe_file, 1000, 0, 
-                    False, True, 0.05, True, False, False, 1, 0, str(dpis_file))
+                    False, True, 0.05, True, False, False, 0, 0, str(dpis_file))
 
                 self.dpsi_files[as_type][gn] = dpis_file.with_suffix(".dpsi")
         
@@ -457,7 +429,7 @@ def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
     else:
         print("param error")
         sys.exit()
-    return eid.Chr, s, e, event_id
+    return eid.Chr, s, e, event_id, 0, eid.strand
 
 
 def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstream_w):
@@ -466,10 +438,11 @@ def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstrea
     wget_coor_coor = partial(get_coor, start=start, end=end, strand_sp=strand_sp,
                     anchor=anchor, upstream_w=upstream_w, downstream_w=downstream_w)
     dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
+    dpsi_df.drop_duplicates(inplace=True)
     dpsi_df["event_id"] = dpsi_df.index
     coors = dpsi_df["event_id"].apply(wget_coor_coor)
     coor_df = pd.DataFrame(coors.tolist())
-    coor_df.drop_duplicates(inplace=True)
+    
     return coor_df
 
 def get_coor_fa(df, fasta, out):
@@ -512,10 +485,10 @@ def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp
             sideindex=sideindex, offset5=offset5, offset3=offset3, 
             strand_sp=strand_sp)
     dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
+    dpsi_df.drop_duplicates(inplace=True)
     dpsi_df["event_id"] = dpsi_df.index
     coors = dpsi_df["event_id"].apply(wget_anchor_coor)
     coor_df = pd.DataFrame(coors.tolist())
-    coor_df.drop_duplicates(inplace=True)
     coor_df.to_csv(out, index=False, header=False, sep="\t")
 
 
@@ -524,9 +497,11 @@ def parse_cmd_r(**param_dic):
     for k, v in param_dic.items():
         if isinstance(v, (tuple, list)) and bool(v):
             param_ls.append(f"--{k}")
-            param_ls.extend(v)
+            param_ls.extend([str(i) for i in v])
         elif isinstance(v, bool):
             if v: param_ls.append(f"--{k}")
+        elif v is None:
+            pass
         else:
             param_ls.append(f"--{k}")
             param_ls.append(str(v))
