@@ -116,9 +116,9 @@ def intersect(file_a, file_b, output):
     dfb = pd.read_csv(fb, sep="\t", index_col=0)
 
     share_id = list(set(dfa.index) & set(dfb.index))
-
-    out_a = Path(f"{output}_a").with_suffix(fa.suffix)
-    out_b = Path(f"{output}_b").with_suffix(fb.suffix)
-    
+    outname = Path(output).stem
+    outdir = Path(output).parent
+    out_a = outdir / Path(f"{outname}_a{fa.suffix}")
+    out_b = outdir / Path(f"{outname}_b{fb.suffix}")
     dfa.loc[share_id, :].to_csv(out_a, sep="\t")
     dfb.loc[share_id, :].to_csv(out_b, sep="\t")
