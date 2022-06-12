@@ -6,10 +6,10 @@ from astk import epi
 
 
 @click.command(help="epi feature extract")
-@click.option('-e', '--eventFile', "event_file", cls=MultiOption, type=tuple, 
-                default=(), help="AS event files that including AS event id")
-@click.option('-el', '--eventLabel', "event_label", cls=MultiOption, type=tuple, 
-                default=(), help="AS event files label")
+@click.option('-e', '--eventFile', "event_file", cls=MultiOption, type=click.Path(exists=True),
+                help="AS event files that including AS event id")
+@click.option('-el', '--eventLabel', "event_label", cls=MultiOption, type=str, 
+                help="AS event files label")
 @click.option('-bam', '--bamFile', "bam_file", cls=MultiOption, type=click.Path(exists=True),
                 help="AS event files that including AS event id")
 @click.option('-bl', '--bamLabel', "bam_label", cls=MultiOption, type=str,

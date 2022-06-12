@@ -2,7 +2,7 @@ import sys
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Sequence, Union
+from typing import Sequence, Union, Tuple
 
 
 import astk.ChromHMM as ch
@@ -89,15 +89,14 @@ def anchor(file, output, index, sideindex, offset5, offset3, strand_sp):
 
 def getcoor(file: Union[str, Path],
             output: Union[str, Path],
-            start: int,
-            end: int,
-            strand_sp: bool, 
             anchor: Sequence[int], 
             upstream_w: int, 
             downstream_w: int, 
+            interval: Tuple[int, int],
+            strand_sp: bool,
             fasta: Union[str, Path]
     ):
-    
+    start, end = interval
     if not any([start, end, anchor]):
         from .event_id import SuppaEventID
 
@@ -108,7 +107,7 @@ def getcoor(file: Union[str, Path],
         ei = SuppaEventID(line.split()[0])
         anchors = list(range(1, len(ei.coordinates)+1))
     else:
-        anchors = [anchor]
+        anchors = anchor
 
     for  a in anchors:
         try:

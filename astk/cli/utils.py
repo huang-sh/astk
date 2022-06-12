@@ -75,15 +75,15 @@ def anchor(*args, **kwargs):
 @click.command(help = "generate bed file according to selected coordinates")
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('-o', '--output', required=True, help="file output path")
-@click.option('-s', '--start', type=int, help="start index")
-@click.option('-e', '--end', type=int, help="end index")
-@click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
-@click.option('-a', '--anchor', cls=MultiOption, type=int,
-                help="splice site index, 1-based")
-@click.option('-u', '--upstreamWidth', "upstream_w", type=int, default=150, 
-                help="width of right flank")
-@click.option('-d', '--downstreamWidth', "downstream_w", type=int, default=150, 
-                help="width of left flank")
+@click.option('-a', '--anchor', cls=MultiOption, type=int, 
+                help="splice site index. if not set, it will use all splice sites. 1-based")
+@click.option('-uw', '--upstreamWidth', "upstream_w", type=int, default=50,
+                help="flank width of splice site upstream")
+@click.option('-dw', '--downstreamWidth', "downstream_w", type=int, default=50,
+                help="flank width of splice site downstream")
+@click.option('--interval', type=(int, int), default=(None, None),
+                help="splice site start and end index, 1-based")
+@click.option('--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
                 help="Input FASTA file. if set, the fasta sequence will be extracted")
 def getcoor(*args, **kwargs):
