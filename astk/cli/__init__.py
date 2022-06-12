@@ -8,6 +8,7 @@ from .epi import *
 from .draw import *
 from .suppa import *
 from .config import CustomMultiCommand
+from .seqfeature import *
 
 @click.group(cls=CustomMultiCommand, 
         context_settings=dict(help_option_names=['-h', '--help']))
@@ -68,3 +69,7 @@ cli_fun.add_command(getcoor)
 cli_fun.add_command(list_, name=["list", "ls"])
 cli_fun.add_command(mktxdb)
 cli_fun.add_command(getgene)
+
+## seq feature
+cli_fun.add_command(sc_extract, name=["seqfeature", "seqf"])
+cli_fun.add_command(sc_seqlogo, name=["seqlogo"])
