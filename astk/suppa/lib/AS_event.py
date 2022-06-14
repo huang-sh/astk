@@ -209,8 +209,8 @@ class AlternativeSplicing:
     def to_ioe(self, type: Optional[str] = None):
         if type is None:
             events = self.AS_events.copy()
-            events.update(self.start_codon_event)
-            events.update(self.stop_codon_event)
+            events.update(self.start_codon_events)
+            events.update(self.stop_codon_events)
         elif type == "start_codon":
             events = self.start_codon_events
         elif type == "stop_codon":
