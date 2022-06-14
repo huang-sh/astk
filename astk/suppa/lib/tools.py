@@ -562,7 +562,8 @@ class EWriter:
         """
         Given writes the line to the given bucket
         """
-        self.wdict[bucket].write(line)
+        self.wdict[bucket].write(line.strip())
+        self.wdict[bucket].write("\n")
 
     def close(self):
         """

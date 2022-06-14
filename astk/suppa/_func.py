@@ -29,7 +29,7 @@ def gtf_parse_cache(gtf):
     
 
 
-def generate_events(gtf, event_types, output, promoterSplit):
+def generate_events(gtf, event_types, output, split):
     import time
     T1 = time.time()
 
@@ -57,7 +57,7 @@ def generate_events(gtf, event_types, output, promoterSplit):
     else:
         event_types = [event_types]
 
-    make_events(event_types, genome, output, promoterSplit)
+    make_events(event_types, genome, output, split)
 
     T3 =time.time()
     print('程序运行时间:%s秒' % ((T3 - T1)))

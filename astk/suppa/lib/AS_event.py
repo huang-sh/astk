@@ -4,7 +4,7 @@ Modified version of suppa.lib.event module.
 from pathlib import Path
 from typing import TypeVar
 from typing import Sequence
-
+from typing import Optional
 # Gene = TypeVar("Gene")
 
 from .gtf_parse import Exon, Gene, Transcript
@@ -131,6 +131,8 @@ class AlternativeSplicing:
         self.gene_id = gene.id
         self.chr = gene.chr
         self.AS_events = {}
+        self.start_codon_events = {}
+        self.stop_codon_events = {}
 
     def construct_events(self):
         for transcript in self.gene.transcripts.values():
@@ -144,44 +146,80 @@ class AlternativeSplicing:
             event = self.AS_events[eid]
             if event.status == "infer":
                 del self.AS_events[eid]
+        self.inner_AS_events = self.AS_events.copy()
 
     def filter_promoter_event(self):
         """filter AS events that exon overlap with promoter
         """
         self.promoter_event = {}
-        events_id = list(self.AS_events.keys())
+        events_id = list(self.inner_AS_events.keys())
         for eid in events_id:
-            event = self.AS_events[eid]
+            event = self.inner_AS_events[eid]
             for tx in event.splicein_tx:
                 if event.strand == "+":
                     if int(tx.TSS) + 2000 > int(event.splicein_exon[0].start):
-                        self.promoter_event.setdefault(eid, self.AS_events.pop(eid))
+                        self.promoter_event.setdefault(eid, self.inner_AS_events.pop(eid))
                         break
                 else:
                     if int(event.splicein_exon[-1].end) + 2000 > int(tx.TSS):
-                        self.promoter_event.setdefault(eid, self.AS_events.pop(eid))
+                        self.promoter_event.setdefault(eid, self.inner_AS_events.pop(eid))
                         break
-               
+
+    def filter_start_codon(self):
+        """filter AS events that exon overlap with promoter
+        """
+        events_id = list(self.inner_AS_events.keys())
+        for eid in events_id:
+            event = self.inner_AS_events[eid]
+            for tx in event.splicein_tx:
+                if event.strand == "+":
+                    if event.splicein_exon[0].start == tx.cds[0]:
+                        if eid not in self.start_codon_events:
+                            self.start_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                else:
+                    if event.splicein_exon[-1].end == tx.cds[1]:
+                        if eid not in self.start_codon_events:
+                            self.start_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                
+    def filter_stop_codon(self):
+        """filter AS events that exon overlap with promoter
+        """
+        events_id = list(self.inner_AS_events.keys())
+        for eid in events_id:
+            event = self.inner_AS_events[eid]
+            for tx in event.splicein_tx:
+                if event.strand == "+":
+                    if event.splicein_exon[-1].end == tx.cds[1]:
+                        if eid not in self.stop_codon_events:
+                            self.stop_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                else:
+                    if event.splicein_exon[0].start == tx.cds[0]:
+                        if eid not in self.stop_codon_events:
+                            self.stop_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+
     def to_ioe_list(self, event: "ASEvent"):
-            splicein_tx = [i.id for i in event.splicein_tx]
-            spliceout_tx = [i.id for i in event.spliceout_tx]
-            all_tx = splicein_tx + spliceout_tx
-            full_event_id = f"{self.gene_id};{self.etype}:{event.id}"
-            line = [self.chr, self.gene_id, full_event_id, ",".join(splicein_tx), ",".join(all_tx)]
-            return line
+        # print(event)
+        splicein_tx = [i.id for i in event.splicein_tx]
+        spliceout_tx = [i.id for i in event.spliceout_tx]
+        all_tx = splicein_tx + spliceout_tx
+        full_event_id = f"{self.gene_id};{self.etype}:{event.id}"
+        line = [self.chr, self.gene_id, full_event_id, ",".join(splicein_tx), ",".join(all_tx)]
+        return line
 
-    def to_ioe(self):
-        if events := self.AS_events.values():
-            lines = [self.to_ioe_list(e) for e in events]
+    def to_ioe(self, type: Optional[str] = None):
+        if type is None:
+            events = self.AS_events.copy()
+            events.update(self.start_codon_event)
+            events.update(self.stop_codon_event)
+        elif type == "start_codon":
+            events = self.start_codon_events
+        elif type == "stop_codon":
+            events = self.stop_codon_events
+        elif type == "inner":
+            events = self.inner_AS_events
         else:
-            lines = []
-        return lines
-
-    def to_tss_ioe(self):
-        if events := self.promoter_event.values():
-            lines = [self.to_ioe_list(e) for e in events]
-        else:
-            lines = []
+            events = {}
+        lines = [self.to_ioe_list(e) for e in events.values()]
         return lines
 
         # data = {"seqname":[], "gene_id":[], "event_id":[], "alternative_transcripts":[], "total_transcripts": []}
@@ -269,7 +307,7 @@ def process_events(my_gene, event_cls, output, promoterSplit):
     # gene_event.export_events_ioe(output)
 
 
-def make_events(events, genome, output, promoterSplit, b_type="S", th=10):
+def make_events(events, genome, output, AS_split, b_type="S", th=10):
     """
     Controls event creation and writing for each gene
     """
@@ -281,29 +319,43 @@ def make_events(events, genome, output, promoterSplit, b_type="S", th=10):
     event_cls_dic = {k: v for k, v in event_cls_dic.items() if k in events}
     import time
     T1 = time.time()
-    if promoterSplit:
-        pm_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_pm", "ioe", boundary)
-        gb_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_gb", "ioe", boundary)
-    else:
+    handle_ls = []
+    if "startCodon" in AS_split:
+        sc_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_start", "ioe", boundary)
+        handle_ls.append(sc_ioe_writer)
+    if "stopCodon" in AS_split:
+        se_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_stop", "ioe", boundary)
+        handle_ls.append(se_ioe_writer)
+    if "inner" in AS_split:
+        mid_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_inner", "ioe", boundary)
+        handle_ls.append(mid_ioe_writer)
+    if not AS_split:
         ioe_writer = EWriter(event_cls_dic.keys(), output, "ioe", boundary)
+        handle_ls.append(ioe_writer)
 
     from tqdm import tqdm
     for t, event_cls in event_cls_dic.items():
-        print(t)
         for gene in tqdm(genome.genes.values(), desc=f"Calculating {t} events"):
             gene_event = event_cls(gene)
-            if promoterSplit:
-                gene_event.filter_promoter_event()
-                for line in gene_event.to_ioe():
-                    gb_ioe_writer.write("\t".join(line), t)
-                    gb_ioe_writer.write("\n", t)     
-                for line in gene_event.to_tss_ioe():
-                    pm_ioe_writer.write("\t".join(line), t)
-                    pm_ioe_writer.write("\n", t)
-            else:
+            gene_event.filter_start_codon()
+            gene_event.filter_stop_codon()
+
+            if "startCodon" in AS_split:    
+                for line in gene_event.to_ioe(type="start_codon"):
+                    sc_ioe_writer.write("\t".join(line), t)
+            if "stopCodon" in AS_split:
+                for line in gene_event.to_ioe(type="stop_codon"):
+                    se_ioe_writer.write("\t".join(line), t)
+            if "inner" in AS_split:
+                for line in gene_event.to_ioe(type="inner"):
+                    mid_ioe_writer.write("\t".join(line), t)
+            if not AS_split:
                 for line in gene_event.to_ioe():
                     ioe_writer.write("\t".join(line), t)
-                    ioe_writer.write("\n", t)
+    
+    for i in handle_ls:
+        i.close()
+    
 
         # ioe_dfs = [event_cls(gene).to_ioe() for gene in genome.genes.values()]
         # df = pd.concat(ioe_dfs)

@@ -15,8 +15,9 @@ from astk.constant import AS_type
                 default="ALL", help="AS event Type")
 @click.option('-o', '--output', required=True, 
                 help="name of the output file without any extension")         
-@click.option('-ps', '--promoterSplit', "promoterSplit", is_flag=True, 
-                help="save AS event that within promoter to a new ioe file")
+@click.option('--split', cls=MultiOption, type=click.Choice(['inner', 'startCodon', 'stopCodon']), 
+                default=(), help="AS event exon that first exon or last exon overlapping \
+                    startCodon and stopCodon will save separately")
 def generateEvents(*args, **kwargs):
     generate_events(*args, **kwargs)
 
