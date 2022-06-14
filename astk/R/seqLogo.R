@@ -11,7 +11,7 @@ args <- parser$parse_args()
 pwm <- universalmotif::read_matrix(args$pwm, headers = ">", positions = "rows")
 
 
-p <- universalmotif::view_motifs(pwm)
+p <- universalmotif::view_motifs(pwm, use.type = "PPM")
 # motif <- universalmotif::convert_type(pwm, "PPM")
 # ## Only need the matrix itself
 # motif <- motif["motif"]
