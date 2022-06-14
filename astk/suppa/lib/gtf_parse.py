@@ -3,7 +3,7 @@ Modified version of suppa.lib.gtf_store module.
 """
 
 import sys
-
+from astk.constant import GTF_COLUMNS
 
 
 class Genome:
@@ -105,18 +105,6 @@ Exon = namedtuple('Exon',('id, chr, start, end, strand, attr'))
 #         self.id = id
 #         self.attr = kwargs
 
-
-GTF_COLUMNS = [
-    "seqname",
-    "source",
-    "feature",
-    "start",
-    "end",
-    "score",
-    "strand",
-    "frame",
-    "attribute",
-]
 
 
 # def parse_gtf_line(line, idx):

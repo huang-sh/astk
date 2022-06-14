@@ -44,3 +44,17 @@ NEASE_DATABASE = [
 AS_type = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
 
 BASE_DIR = Path(__file__).parent
+
+
+
+GTF_COLUMNS = [
+    "seqname",
+    "source",
+    "feature",
+    "start",
+    "end",
+    "score",
+    "strand",
+    "frame",
+    "attribute",
+]
