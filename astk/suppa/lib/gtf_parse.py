@@ -1,8 +1,10 @@
 """
 Modified version of suppa.lib.gtf_store module.
 """
+import mmap
+from collections import namedtuple
+from typing import Optional, Sequence
 
-import sys
 from astk.constant import GTF_COLUMNS
 
 
@@ -85,38 +87,10 @@ class Transcript:
     
     def get_exon_coordinates(self):
         self.sort_exons()
-        coordinates = ((eid, (ec.start, ec.end)) for eid, ec in self.exons.items())
-        return coordinates
-    
 
-from collections import namedtuple
 
 Exon = namedtuple('Exon',('id, chr, start, end, strand, attr'))
 
-# class Exon:
-#     # __slots__ = ("seqname", "chr", "start", "end", "strand", "id", "attr")
-
-#     def __init__(self, id, seqname, start, end, strand, **kwargs):
-#         self.seqname = seqname
-#         self.chr = seqname
-#         self.start = start
-#         self.end = end
-#         self.strand = strand
-#         self.id = id
-#         self.attr = kwargs
-
-
-
-# def parse_gtf_line(line, idx):
-#     line = line.strip().split('\t')
-#     if len(line) != 9:
-#         print(f'Missmatch in number of Fields. skipping line {idx}')
-#         return    
-#     info_dic = {k:v for k, v in zip(GTF_COLUMNSv[:8], line[:8])}
-#     attributes = [att.split() for att in line[-1][:-1].split('; ')]
-#     for att in attributes:
-#         info_dic.update({att[0]: att[1].strip('"')})
-#     return info_dic
 
 def parse_gtf_line(line, feature=["gene", "exon", "transcript"]):
     line = line.strip().split('\t')
@@ -131,7 +105,6 @@ def parse_gtf_line(line, feature=["gene", "exon", "transcript"]):
     info_dic.update(dict(attributes_ls))
     return info_dic
 
-import mmap
 
 def get_num_lines(file_path):
     fp = open(file_path, "r+")
@@ -140,6 +113,7 @@ def get_num_lines(file_path):
     while buf.readline():
         lines += 1
     return lines
+
 
 def construct_genome(gtf):
     from tqdm import tqdm
@@ -159,20 +133,14 @@ def construct_genome(gtf):
             strand = dic.pop("strand")        
             if dic["feature"] == "gene":
                 gene_id = dic.pop("gene_id")
-                # c += 1
                 gene = Gene(gene_id, seqname, start, end, strand, **dic)
                 genome.add_gene(gene)
-                # genome.genes.setdefault(gene.id, gene)
-                
             elif dic["feature"] == "transcript":
                 transcript_id = dic.pop("transcript_id")
                 tx = Transcript(transcript_id, seqname, start, end, strand, **dic)
                 genome.add_transcript(tx, tx.attr["gene_id"])
-                # genome.genes[tx.attr["gene_id"]].add_transcript(tx)
-
             if dic["feature"] == "exon":
                 exon_id = dic.pop("exon_id")
                 exon = Exon(exon_id, seqname, start, end, strand, dic)
-                # genome.add_exon(exon, gene_id, exon.attr["transcript_id"])
                 genome.genes[gene_id].transcripts[exon.attr["transcript_id"]].add_exon(exon)
     return genome
