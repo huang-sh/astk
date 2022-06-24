@@ -11,13 +11,13 @@ from astk.constant import AS_type
 
 @click.command(help="generate the events from the GTF file")
 @click.option('-gtf', '--gtf', type=click.Path(exists=True), help="a GTF format file")
-@click.option('-et', '--eventType', "event_types", type=click.Choice(['ALL', 'SE', "RI"]), 
+@click.option('-et', '--eventType', "event_types", type=click.Choice(['ALL'] + AS_type), 
                 default="ALL", help="AS event Type")
 @click.option('-o', '--output', required=True, 
                 help="name of the output file without any extension")         
-@click.option('--split', cls=MultiOption, type=click.Choice(['inner', 'startCodon', 'stopCodon']), 
-                default=(), help="AS event exon that first exon or last exon overlapping \
-                    startCodon and stopCodon will save separately")
+@click.option('--split', cls=MultiOption, type=click.Choice(['inner', 'FTE', 'LTE']), 
+                default=(), help="AS event exon that overlapping the transcript first or last \
+                                 terminal exon startCodon and stopCodon will save separately")
 def generateEvents(*args, **kwargs):
     generate_events(*args, **kwargs)
 
