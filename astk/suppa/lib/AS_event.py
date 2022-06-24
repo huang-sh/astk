@@ -1,17 +1,17 @@
 """
+astk.suppa.lib.AS_event
+~~~~~~~~~~~~~~~~~
 Modified version of suppa.lib.event module.
 """
-from pathlib import Path
-from typing import TypeVar
+import copy
+from itertools import product
 from typing import Sequence
 from typing import Optional
-# Gene = TypeVar("Gene")
+from typing import Sequence
 
 from .gtf_parse import Exon, Gene, Transcript
 from .tools import EWriter
 
-
-from typing import Sequence
 
 class ASEvent:
 
@@ -26,6 +26,7 @@ class ASEvent:
         self.splicein_tx = set(splicein_tx)
         self.spliceout_tx = set(spliceout_tx) 
         self.transcript = {}
+        self.status = "infer"
         if splicein_exon and spliceout_exon:
             self.validate()
 
@@ -52,7 +53,7 @@ class ASEvent:
         pass
 
 
-class SkippingExonEvent(ASEvent):
+class SEEvent(ASEvent):
 
     def __init__(
         self, 
@@ -68,9 +69,6 @@ class SkippingExonEvent(ASEvent):
             spliceout_tx
         )
         self.etype = 'SE'
-        self.status = "infer"
-        if splicein_exon:
-            self.set_basic_info(splicein_exon)
 
     def validate(self):
         si1, si2, si3 = self.splicein_exon
@@ -80,17 +78,18 @@ class SkippingExonEvent(ASEvent):
                 si3.start == so2.start,
                 so1.end < si2.start < si2.end < so2.start
         ]
-        if all(fbool):        
+        if all(fbool): 
             self.status = "review"
+            self.set_basic_info()
             return self
 
-    def set_basic_info(self, exons: Sequence["Exon"]):
-        e1, e2, e3 = exons
+    def set_basic_info(self):
+        e1, e2, e3 = self.splicein_exon
         self.strand =  e1.strand
         self.id = f"{e1.chr}:{e1.end}-{e2.start}:{e2.end}-{e3.start}:{e1.strand}"
 
 
-class RetainedIntronEvent(ASEvent):
+class RIEvent(ASEvent):
 
     def __init__(
         self, 
@@ -106,9 +105,6 @@ class RetainedIntronEvent(ASEvent):
             spliceout_tx
         )
         self.etype = 'RI'
-        self.status = "infer"
-        if spliceout_exon:
-            self.set_basic_info(spliceout_exon)
        
     def validate(self):
         e1, e2 = self.spliceout_exon
@@ -116,12 +112,256 @@ class RetainedIntronEvent(ASEvent):
         fbool = [e.start == e1.start, e.end == e2.end, e1.end < e2.start]
         if all(fbool):
             self.status = "review"
+            self.set_basic_info()
             return self
     
-    def set_basic_info(self, exons: Sequence["Exon"]):
-        e1, e2 = exons
+    def set_basic_info(self):
+        e1, e2 = self.spliceout_exon
         self.strand =  e1.strand
         self.id = f"{e1.chr}:{e1.start}:{e1.end}-{e2.start}:{e2.end}:{e2.strand}"
+
+
+class MXEvent(ASEvent):
+
+    def __init__(
+        self, 
+        splicein_exon: Sequence["Exon"] = [],
+        spliceout_exon: Sequence["Exon"] = [],
+        splicein_tx: Sequence["Transcript"] = [],
+        spliceout_tx: Sequence["Transcript"] = [],        
+    ):
+        super().__init__(
+            splicein_exon,
+            spliceout_exon,
+            splicein_tx,
+            spliceout_tx
+        )
+        self.etype = 'MX'
+
+    def validate(self):
+        si1, si2, si4 = self.splicein_exon
+        so1, so3, so4 = self.spliceout_exon
+
+        # use <= for get same result to suppa2, 
+        # but it should to consider to classify a new AS type
+        fbool = [
+                si1.end == so1.end, 
+                si4.start == so4.start,
+                si2.start < si2.end < so3.start <= so3.end  
+        ]
+        if all(fbool):        
+            self.status = "review"
+            self.set_basic_info()
+            return self
+
+    def set_basic_info(self):
+        e1, e2, e4 = self.splicein_exon
+        e1, e3, e4 = self.spliceout_exon
+        self.strand =  e1.strand
+        self.id = (f"{e1.chr}:{e1.end}-{e2.start}:{e2.end}-"
+                   f"{e4.start}:{e1.end}-{e3.start}:{e3.end}-{e4.start}:{self.strand}")
+
+    def set_tid(self, exons: Sequence["Exon"]):
+        """just for AS event inferring
+        """
+        e1, e2, e3 = exons
+        # coor_str = ":".join([f"{e.start}-{e.end}" for e in exons])
+        coor_str = f"S-{e1.end}:{e2.start}-{e2.end}:{e3.start}-E"
+        self.tid = f"{self.etype}:{coor_str}"
+    
+    def set_boundary():
+        pass
+
+
+class A5Event(ASEvent):
+
+    def __init__(
+        self, 
+        splicein_exon: Sequence["Exon"] = [],
+        spliceout_exon: Sequence["Exon"] = [],
+        splicein_tx: Sequence["Transcript"] = [],
+        spliceout_tx: Sequence["Transcript"] = [],        
+    ):
+        super().__init__(
+            splicein_exon,
+            spliceout_exon,
+            splicein_tx,
+            spliceout_tx
+        )
+        self.etype = 'A5'
+
+    def validate(self):
+        """It is not exact when exon is not adjacent.
+        """
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        if so1.strand == "+":
+            fbool = [
+                si2.start == so2.start, 
+                si1.start < so1.end < si1.end < so2.start,
+
+            ]
+        elif so1.strand == "-":
+            fbool = [
+                si1.end == so1.end, 
+                si1.end < si2.start < so2.start < si2.end
+            ]
+        else:
+            fbool = []
+        if all(fbool):        
+            self.status = "review"
+            self.set_basic_info()
+            return self
+
+    def set_basic_info(self):
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        self.strand = si1.strand
+        self.id = f"{si1.chr}:{si1.end}-{si2.start}:{so1.end}-{so2.start}:{self.strand}"
+
+
+class A3Event(ASEvent):
+
+    def __init__(
+        self, 
+        splicein_exon: Sequence["Exon"] = [],
+        spliceout_exon: Sequence["Exon"] = [],
+        splicein_tx: Sequence["Transcript"] = [],
+        spliceout_tx: Sequence["Transcript"] = [],        
+    ):
+        super().__init__(
+            splicein_exon,
+            spliceout_exon,
+            splicein_tx,
+            spliceout_tx
+        )
+        self.etype = 'A3'
+
+    def validate(self):
+        """It is not exact when exon is not adjacent.
+        """
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        if so1.strand == "-":
+            fbool = [
+                si2.start == so2.start, 
+                si1.start < so1.end < si1.end < si2.start
+            ]
+        elif so1.strand == "+":
+            fbool = [
+                si1.end == so1.end, 
+                si1.end < si2.start < so2.start < si2.end
+            ]
+        else:
+            fbool = []
+        if all(fbool):        
+            self.status = "review"
+            self.set_basic_info()
+            return self
+
+    def set_basic_info(self):
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        self.strand = si1.strand
+        self.id = f"{si1.chr}:{si1.end}-{si2.start}:{so1.end}-{so2.start}:{self.strand}"
+
+
+class AFEvent(ASEvent):
+
+    def __init__(
+        self, 
+        splicein_exon: Sequence["Exon"] = [],
+        spliceout_exon: Sequence["Exon"] = [],
+        splicein_tx: Sequence["Transcript"] = [],
+        spliceout_tx: Sequence["Transcript"] = [],        
+    ):
+        super().__init__(
+            splicein_exon,
+            spliceout_exon,
+            splicein_tx,
+            spliceout_tx
+        )
+        self.etype = 'AF'
+
+    def validate(self):
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        if so1.strand == "+":
+            fbool = [
+                si2.start == so2.start, 
+                si1.end < so1.start < so1.end < si2.start
+            ]
+        elif so1.strand == "-":
+            fbool = [
+                si1.end == so1.end, 
+                si1.end < so2.start < so2.end < si2.start
+            ]
+        else:
+            fbool = []
+        if all(fbool):        
+            self.status = "review"
+            self.set_basic_info()
+            return self
+
+    def set_basic_info(self):
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        self.strand = si1.strand
+        if self.strand == "+":
+            self.id = (f"{si1.chr}:{si1.start}:{si1.end}-{si2.start}:"
+                        f"{so1.start}:{so1.end}-{so2.start}:{self.strand}")
+        elif self.strand == "-":
+            self.id = (f"{si1.chr}:{so1.end}-{so2.start}:{so2.end}:"
+                        f"{si1.end}-{si2.start}:{si2.end}:{self.strand}")
+ 
+ 
+class ALEvent(ASEvent):
+
+    def __init__(
+        self, 
+        splicein_exon: Sequence["Exon"] = [],
+        spliceout_exon: Sequence["Exon"] = [],
+        splicein_tx: Sequence["Transcript"] = [],
+        spliceout_tx: Sequence["Transcript"] = [],        
+    ):
+        super().__init__(
+            splicein_exon,
+            spliceout_exon,
+            splicein_tx,
+            spliceout_tx
+        )
+        self.etype = 'AL'
+
+    def validate(self):
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        if si1.strand == "-":
+            fbool = [
+                si2.start == so2.start, 
+                si1.end < so1.start < so1.end < si2.start
+            ]
+        elif si1.strand == "+":
+            fbool = [
+                si1.end == so1.end, 
+                si1.end < so2.start < so2.end < si2.start
+            ]
+        else:
+            fbool = []
+        if all(fbool):        
+            self.status = "review"
+            self.set_basic_info()
+            return self
+
+    def set_basic_info(self):
+        si1, si2 = self.splicein_exon
+        so1, so2 = self.spliceout_exon
+        self.strand = si1.strand
+        if self.strand == "-":
+            self.id = (f"{si1.chr}:{si1.start}:{si1.end}-{si2.start}:"
+                        f"{so1.start}:{so1.end}-{so2.start}:{self.strand}")
+        elif self.strand == "+":
+            self.id = (f"{si1.chr}:{so1.end}-{so2.start}:{so2.end}:"
+                        f"{si1.end}-{si2.start}:{si2.end}:{self.strand}")
 
 
 class AlternativeSplicing:
@@ -131,110 +371,82 @@ class AlternativeSplicing:
         self.gene_id = gene.id
         self.chr = gene.chr
         self.AS_events = {}
-        self.start_codon_events = {}
-        self.stop_codon_events = {}
-
-    def construct_events(self):
-        for transcript in self.gene.transcripts.values():
-            self.add_putative_events(transcript)
-        for transcript in self.gene.transcripts.values():
-            self.add_real_events(transcript)
-
-    def clear_invlaid(self):
-        events_ids = list(self.AS_events.keys())
-        for eid in events_ids:
-            event = self.AS_events[eid]
-            if event.status == "infer":
-                del self.AS_events[eid]
-        self.inner_AS_events = self.AS_events.copy()
+        self.FT_events = {}
+        self.LT_events = {}
 
     def filter_promoter_event(self):
         """filter AS events that exon overlap with promoter
         """
         self.promoter_event = {}
         events_id = list(self.inner_AS_events.keys())
-        for eid in events_id:
-            event = self.inner_AS_events[eid]
+        for etid in events_id:
+            event = self.inner_AS_events[etid]
             for tx in event.splicein_tx:
                 if event.strand == "+":
                     if int(tx.TSS) + 2000 > int(event.splicein_exon[0].start):
-                        self.promoter_event.setdefault(eid, self.inner_AS_events.pop(eid))
+                        self.promoter_event.setdefault(etid, self.inner_AS_events.pop(etid))
                         break
                 else:
                     if int(event.splicein_exon[-1].end) + 2000 > int(tx.TSS):
-                        self.promoter_event.setdefault(eid, self.inner_AS_events.pop(eid))
+                        self.promoter_event.setdefault(etid, self.inner_AS_events.pop(etid))
                         break
 
-    def filter_start_codon(self):
+    def filter_FT(self):
         """filter AS events that exon overlap with promoter
         """
-        events_id = list(self.inner_AS_events.keys())
-        for eid in events_id:
-            event = self.inner_AS_events[eid]
+        events_tid = list(self.inner_AS_events.keys())
+        for etid in events_tid:
+            event = self.inner_AS_events[etid]
             for tx in event.splicein_tx:
                 if event.strand == "+":
                     if event.splicein_exon[0].start == tx.cds[0]:
-                        if eid not in self.start_codon_events:
-                            self.start_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                        if etid not in self.FT_events:
+                            self.FT_events.setdefault(etid, self.inner_AS_events.pop(etid))
                 else:
                     if event.splicein_exon[-1].end == tx.cds[1]:
-                        if eid not in self.start_codon_events:
-                            self.start_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                        if etid not in self.FT_events:
+                            self.FT_events.setdefault(etid, self.inner_AS_events.pop(etid))
                 
-    def filter_stop_codon(self):
+    def filter_LT(self):
         """filter AS events that exon overlap with promoter
         """
         events_id = list(self.inner_AS_events.keys())
-        for eid in events_id:
-            event = self.inner_AS_events[eid]
+        for etid in events_id:
+            event = self.inner_AS_events[etid]
             for tx in event.splicein_tx:
                 if event.strand == "+":
                     if event.splicein_exon[-1].end == tx.cds[1]:
-                        if eid not in self.stop_codon_events:
-                            self.stop_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                        if etid not in self.LT_events:
+                            self.LT_events.setdefault(etid, self.inner_AS_events.pop(etid))
                 else:
                     if event.splicein_exon[0].start == tx.cds[0]:
-                        if eid not in self.stop_codon_events:
-                            self.stop_codon_events.setdefault(eid, self.inner_AS_events.pop(eid))
+                        if etid not in self.LT_events:
+                            self.LT_events.setdefault(etid, self.inner_AS_events.pop(etid))
 
     def to_ioe_list(self, event: "ASEvent"):
-        # print(event)
+
         splicein_tx = [i.id for i in event.splicein_tx]
         spliceout_tx = [i.id for i in event.spliceout_tx]
         all_tx = splicein_tx + spliceout_tx
         full_event_id = f"{self.gene_id};{self.etype}:{event.id}"
         line = [self.chr, self.gene_id, full_event_id, ",".join(splicein_tx), ",".join(all_tx)]
         return line
-
+ 
     def to_ioe(self, type: Optional[str] = None):
         if type is None:
             events = self.AS_events.copy()
-            events.update(self.start_codon_events)
-            events.update(self.stop_codon_events)
-        elif type == "start_codon":
-            events = self.start_codon_events
-        elif type == "stop_codon":
-            events = self.stop_codon_events
+            events.update(self.FT_events)
+            events.update(self.LT_events)
+        elif type == "FTE":
+            events = self.FT_events
+        elif type == "LTE":
+            events = self.LT_events
         elif type == "inner":
             events = self.inner_AS_events
         else:
             events = {}
         lines = [self.to_ioe_list(e) for e in events.values()]
         return lines
-
-        # data = {"seqname":[], "gene_id":[], "event_id":[], "alternative_transcripts":[], "total_transcripts": []}
-        # if self.AS_events.values():
-        #     ioe_df = pd.DataFrame([self.to_ioe_list(event) for event in self.AS_events.values()])
-        #     ioe_df.columns = list(data.keys())
-        # else:
-        #     ioe_df = pd.DataFrame(data)
-        # return ioe_df
-
-    def add_putative_events(self, transcript):
-        pass
-
-    def add_real_events(self, transcript):
-        pass
 
 
 class SkippingExon(AlternativeSplicing):
@@ -245,26 +457,47 @@ class SkippingExon(AlternativeSplicing):
         super().__init__(gene)
         self.etype = 'SE'  
         self.construct_events()
-        self.clear_invlaid()
 
-    def add_putative_events(self, transcript: "Transcript"):
-        exons = sorted(transcript.exons.values(), key=lambda e: e.start)
-        if len(exons) < 3:
-            return
-        for i in range(len(exons) - 2):
-            event = SkippingExonEvent(splicein_exon=exons[i:i+3])
-            self.AS_events.setdefault(event.id, event)
-            self.AS_events[event.id].add_splicein_tx(transcript)
+    def _infer_splicein_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 2]
+        for tx in transcripts:
+            exons = sorted(tx.exons.values(), key=lambda e: e.start)
+            for i in range((len(exons)-2)):
+                tid = f"{exons[i].end}-{exons[i+2].start}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[i:i+3], "tx": tx})
+        return pe_dic
 
-    def add_real_events(self, transcript: "Transcript"):
-        exons = sorted(transcript.exons.values(), key=lambda e: e.start)
-        if len(exons) < 2:
-            return
-        for eid, event in self.AS_events.items():
+    def _infer_spliceout_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 1]
+        for tx in transcripts:
+            exons = sorted(tx.exons.values(), key=lambda e: e.start)
             for i in range((len(exons)-1)):
-                if event.set_spliceout_exon(exons[i:i+2]):
-                    event.add_spliceout_tx(transcript)
-                    break
+                tid = f"{exons[i].end}-{exons[i+1].start}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        psi_dic = self._infer_splicein_events()
+        pso_dic = self._infer_spliceout_events()
+        shared_keys = set(psi_dic.keys()) & set(pso_dic.keys())
+        for tid in shared_keys:
+            for se, so in product(psi_dic[tid], pso_dic[tid]):
+                if se["tx"] == so["tx"]:
+                    continue
+                event = SEEvent(splicein_exon=se["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(se["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+
+        self.inner_AS_events = self.AS_events.copy()
 
 
 class RetainedIntron(AlternativeSplicing):
@@ -275,36 +508,255 @@ class RetainedIntron(AlternativeSplicing):
         super().__init__(gene)
         self.etype = 'RI'  
         self.construct_events()
-        self.clear_invlaid()
 
-    def add_putative_events(self, transcript: "Transcript"):
-        exons = sorted(transcript.exons.values(), key=lambda e: e.start)
-        for i in range(len(exons) - 1):
-            event = RetainedIntronEvent(spliceout_exon=exons[i:i+2])
-            self.AS_events.setdefault(event.id, event)
-            self.AS_events[event.id].add_spliceout_tx(transcript)
+    def _infer_splicein_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = self.gene.transcripts.values()
+        for tx in transcripts:
+            exons = sorted(tx.exons.values(), key=lambda e: e.start)
+            for i in range(len(exons)):
+                tid = f"{exons[i].start}-{exons[i].end}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[i:i+1], "tx": tx})
+        return pe_dic
 
-    def add_real_events(self, transcript: "Transcript"):
-        for event in self.AS_events.values():
-            for exon in transcript.exons.values():
-                if event.set_splicein_exon([exon]):
-                    event.add_splicein_tx(transcript)
-                    break
+    def _infer_spliceout_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 1]
+        for tx in transcripts:
+            exons = sorted(tx.exons.values(), key=lambda e: e.start)
+            for i in range((len(exons)-1)):
+                tid = f"{exons[i].start}-{exons[i+1].end}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        psi_dic = self._infer_splicein_events()
+        pso_dic = self._infer_spliceout_events()
+        shared_keys = set(psi_dic.keys()) & set(pso_dic.keys())
+        for tid in shared_keys:
+            for se, so in product(psi_dic[tid], pso_dic[tid]):
+                if se["tx"] == so["tx"]:
+                    continue
+                event = RIEvent(splicein_exon=se["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(se["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+
+        self.inner_AS_events = self.AS_events.copy()
 
 
-def process_events(my_gene, event_cls, output, promoterSplit):
+class MutuallyExclusiveExon(AlternativeSplicing):
     """
-    Generates specified event occurrences in gene and writes the GTF/IOE output
+    Mutually Exclusive Exon
     """
-    gene_event = event_cls(my_gene)
-    print(gene_event.AS_events)
-    # if promoterSplit:
-    #     gene_event.filter_promoter_event()
-    #     pout = Path(output).with_suffix(".tss.ioe")
-    #     gene_event.export_promoter_events_ioe(pout)
+    def __init__(self, gene: "Gene"):
+        super().__init__(gene)
+        self.etype = 'MX'  
+        self.construct_events()
 
-    #     output = Path(output).with_suffix(".gb.ioe")
-    # gene_event.export_events_ioe(output)
+    def _infer_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 2]
+        for tx in transcripts:
+            exons = sorted(tx.exons.values(), key=lambda e: e.start)
+            for i in range((len(exons)-2)):
+                tid = f"{exons[i].end}-{exons[i+2].start}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[i:i+3], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        events = self._infer_events()
+        for item in events.values():
+            for si, so in product(item, item):
+                if si["tx"] == so["tx"]:
+                    continue
+                event = MXEvent(splicein_exon=si["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(si["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+        self.inner_AS_events = self.AS_events.copy()
+
+
+class Alternative5SS(AlternativeSplicing):
+    """
+    Alternative 5' Splice-site
+    """
+    def __init__(self, gene: "Gene"):
+        super().__init__(gene)
+        self.etype = 'A5'  
+        self.construct_events()
+
+    def _infer_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 1]
+        if strand == "+":
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                for i in range((len(exons)-1)):
+                    tid = f"{exons[i+1].start}:{strand}"
+                    pe_dic.setdefault(tid, [])
+                    pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
+        else:
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                for i in range((len(exons)-1)):
+                    tid = f"{exons[i].end}:{strand}" 
+                    pe_dic.setdefault(tid, [])
+                    pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        events = self._infer_events()
+        for item in events.values():
+            for si, so in product(item, item):
+                if si["tx"] == so["tx"]:
+                    continue
+                event = A5Event(splicein_exon=si["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(si["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+        self.inner_AS_events = self.AS_events.copy()
+
+
+class Alternative3SS(AlternativeSplicing):
+    """
+    Alternative 3' Splice-site
+    """
+    def __init__(self, gene: "Gene"):
+        super().__init__(gene)
+        self.etype = 'A3'
+        self.construct_events()
+
+    def _infer_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 1]
+        if strand == "-":
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                for i in range((len(exons)-1)):
+                    tid = f"{exons[i+1].start}:{strand}"
+                    pe_dic.setdefault(tid, [])
+                    pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
+        else:
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                for i in range((len(exons)-1)):
+                    tid = f"{exons[i].end}:{strand}" 
+                    pe_dic.setdefault(tid, [])
+                    pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        events = self._infer_events()
+        for item in events.values():
+            for si, so in product(item, item):
+                if si["tx"] == so["tx"]:
+                    continue
+                event = A3Event(splicein_exon=si["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(si["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+        self.inner_AS_events = self.AS_events.copy()
+
+
+class AlternativeFirstExon(AlternativeSplicing):
+    """
+    Alternative First Exon
+    """
+    def __init__(self, gene: "Gene"):
+        super().__init__(gene)
+        self.etype = 'AF'  
+        self.construct_events()
+
+    def _infer_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 1]
+        if strand == "+":
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                tid = f"{exons[1].start}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[:2], "tx": tx})
+        else:
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                tid = f"{exons[-2].end}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[-2:], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        events = self._infer_events()
+        for item in events.values():
+            for si, so in product(item, item):
+                if si["tx"] == so["tx"]:
+                    continue
+                event = AFEvent(splicein_exon=si["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(si["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+        self.inner_AS_events = self.AS_events.copy()
+
+
+class AlternativeLastExon(AlternativeSplicing):
+    """
+    Alternative Last Exon
+    """
+    def __init__(self, gene: "Gene"):
+        super().__init__(gene)
+        self.etype = 'AL'
+        self.construct_events()
+
+    def _infer_events(self):
+        pe_dic = {}
+        strand = self.gene.strand
+        transcripts = [tx for tx in self.gene.transcripts.values() if len(tx.exons) > 1]
+        if strand == "-":
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                tid = f"{exons[1].start}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[:2], "tx": tx})
+        else:
+            for tx in transcripts:
+                exons = sorted(tx.exons.values(), key=lambda e: e.start)
+                tid = f"{exons[-2].end}:{strand}"
+                pe_dic.setdefault(tid, [])
+                pe_dic[tid].append({"exons": exons[-2:], "tx": tx})
+        return pe_dic
+
+    def construct_events(self):
+        events = self._infer_events()
+        for item in events.values():
+            for si, so in product(item, item):
+                if si["tx"] == so["tx"]:
+                    continue
+                event = ALEvent(splicein_exon=si["exons"],
+                                spliceout_exon=so["exons"])
+                if event.status == "review":
+                    self.AS_events.setdefault(event.id, event)
+                    self.AS_events[event.id].splicein_tx.add(si["tx"])
+                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+        self.inner_AS_events = self.AS_events.copy()
 
 
 def make_events(events, genome, output, AS_split, b_type="S", th=10):
@@ -313,18 +765,21 @@ def make_events(events, genome, output, AS_split, b_type="S", th=10):
     """
     boundary = 'variable_{}'.format(th) if b_type == 'V' else 'strict'
 
-    # my_ioe_writer = EWriter(events, output_name, 'ioe', boundary)
-
-    event_cls_dic = {"SE": SkippingExon, "RI": RetainedIntron}
+    event_cls_dic = {
+                    "MX": MutuallyExclusiveExon,
+                    "SE": SkippingExon, "RI": RetainedIntron, 
+                    "A5": Alternative5SS, "A3": Alternative3SS,
+                    "AF": AlternativeFirstExon, "AL": AlternativeLastExon
+                }
     event_cls_dic = {k: v for k, v in event_cls_dic.items() if k in events}
     import time
     T1 = time.time()
     handle_ls = []
-    if "startCodon" in AS_split:
-        sc_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_start", "ioe", boundary)
+    if "FTE" in AS_split:
+        sc_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_FT", "ioe", boundary)
         handle_ls.append(sc_ioe_writer)
-    if "stopCodon" in AS_split:
-        se_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_stop", "ioe", boundary)
+    if "LTE" in AS_split:
+        se_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_LT", "ioe", boundary)
         handle_ls.append(se_ioe_writer)
     if "inner" in AS_split:
         mid_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_inner", "ioe", boundary)
@@ -337,14 +792,14 @@ def make_events(events, genome, output, AS_split, b_type="S", th=10):
     for t, event_cls in event_cls_dic.items():
         for gene in tqdm(genome.genes.values(), desc=f"Calculating {t} events"):
             gene_event = event_cls(gene)
-            gene_event.filter_start_codon()
-            gene_event.filter_stop_codon()
+            gene_event.filter_FT()
+            gene_event.filter_LT()
 
-            if "startCodon" in AS_split:    
-                for line in gene_event.to_ioe(type="start_codon"):
+            if "FTE" in AS_split:
+                for line in gene_event.to_ioe(type="FTE"):
                     sc_ioe_writer.write("\t".join(line), t)
-            if "stopCodon" in AS_split:
-                for line in gene_event.to_ioe(type="stop_codon"):
+            if "LTE" in AS_split:
+                for line in gene_event.to_ioe(type="LTE"):
                     se_ioe_writer.write("\t".join(line), t)
             if "inner" in AS_split:
                 for line in gene_event.to_ioe(type="inner"):
@@ -355,427 +810,3 @@ def make_events(events, genome, output, AS_split, b_type="S", th=10):
     
     for i in handle_ls:
         i.close()
-    
-
-        # ioe_dfs = [event_cls(gene).to_ioe() for gene in genome.genes.values()]
-        # df = pd.concat(ioe_dfs)
-        # output = Path(output).with_suffix(".ioe")
-        # df.to_csv(output, sep="\t")
-
-        # for gene in tqdm(genome.genes.values(), desc=f"Calculating {t} events"):
-        #     # print(gene)
-        #     process_events(gene, event_cls, output, promoterSplit)
-    # my_ioe_writer.close()
-    # T2 =time.time()
-    # print('程序运行时间:%s秒' % ((T2 - T1)))
-
-
-# class ARSS(Event):
-#     """
-#     Alternative 'Right' Splice Site
-#     """
-#     def __init__(self, gene, *_):
-#         super().__init__(self, gene)
-#         if self.gene.strand == '-':
-#             self.etype = 'A3'
-#         else:
-#             self.etype = 'A5'
-#         self.positive_coords = {}
-#         self.negative_coords = {}
-
-#         self.construct_events(gene)
-
-#     def add_putative_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         for i in range(len(exons) - 1):
-#             firstexon = exons[i]
-#             secondexon = exons[i + 1]
-#             search_coords = (firstexon[1], secondexon[0])
-#             self.negative_coords[search_coords] = self.negative_coords.get(search_coords, []) + [transcript]
-
-#     def add_real_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         for i in range(len(exons) - 1):
-#             firstexon = exons[i]
-#             secondexon = exons[i + 1]
-#             self.create_arss(firstexon[0], firstexon[1], secondexon[0], transcript)
-
-#     def create_arss(self, coord1, coord2, coord3, transcript):
-#         gene = self.gene
-#         for neg1, neg2 in self.negative_coords:
-#             if neg2 == coord3 and (coord1 < neg1 < coord2):
-#                 eventid = '{}:{}-{}:{}-{}:{}'.format(gene.chr, coord2, coord3, neg1, neg2, gene.strand)
-#                 self.positive_ids[eventid] = self.positive_ids.get(eventid, []) + [transcript]
-#                 self.negative_ids[eventid] = self.negative_coords[(neg1, neg2)]
-
-#     def export_events_gtf(self, edge):
-#         """
-#         Generator of GTF lines
-#         """
-#         strand = self.gene.strand
-#         for event in self.positive_ids:
-#             full_event = '{}:{}'.format(self.etype, event)
-#             e_vals = full_event.replace('-', ':').split(':')
-
-#             line1 = self.gtf_string.format(int(e_vals[4]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line1, self.etype
-
-#             line2 = self.gtf_string.format(e_vals[3], int(e_vals[3]) + edge, strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line2, self.etype
-
-#             line3 = self.gtf_string.format(int(e_vals[4]) - edge, e_vals[4], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line3, self.etype
-
-#             line4 = self.gtf_string.format(e_vals[5], int(e_vals[5]) + edge, strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line4, self.etype
-
-
-# class ALSS(Event):
-#     """
-#     Alternative 'Left' Splice Site
-#     """
-#     def __init__(self, gene, *_):
-#         super().__init__(self, gene)
-#         if self.gene.strand == '-':
-#             self.etype = 'A5'
-#         else:
-#             self.etype = 'A3'
-#         self.positive_coords = {}
-#         self.negative_coords = {}
-
-#         self.construct_events(gene)
-
-#     def add_putative_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         for i in range(len(exons) - 1):
-#             firstexon = exons[i]
-#             secondexon = exons[i + 1]
-#             search_coords = (firstexon[1], secondexon[0])
-#             self.negative_coords[search_coords] = self.negative_coords.get(search_coords, []) + [transcript]
-
-#     def add_real_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         for i in range(len(exons) - 1):
-#             firstexon = exons[i]
-#             secondexon = exons[i + 1]
-#             self.create_alss(firstexon[1], secondexon[0], secondexon[1], transcript)
-
-#     def create_alss(self, coord1, coord2, coord3, transcript):
-#         gene = self.gene
-#         for neg1, neg2 in self.negative_coords:
-#             if neg1 == coord1 and (coord2 < neg2 < coord3):
-#                 eventid = '{}:{}-{}:{}-{}:{}'.format(gene.chr, coord1, coord2, neg1, neg2, gene.strand)
-#                 self.positive_ids[eventid] = self.positive_ids.get(eventid, []) + [transcript]
-#                 self.negative_ids[eventid] = self.negative_coords[(neg1, neg2)]
-
-#     def export_events_gtf(self, edge):
-#         """
-#         Generator of GTF lines
-#         """
-#         strand = self.gene.strand
-#         for event in self.positive_ids:
-#             full_event = '{}:{}'.format(self.etype, event)
-#             e_vals = full_event.replace('-', ':').split(':')
-
-#             line1 = self.gtf_string.format(int(e_vals[2]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line1, self.etype
-
-#             line2 = self.gtf_string.format(e_vals[3], int(e_vals[5]) + edge, strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line2, self.etype
-
-#             line3 = self.gtf_string.format(int(e_vals[2]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line3, self.etype
-
-#             line4 = self.gtf_string.format(e_vals[5], int(e_vals[5]) + edge, strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line4, self.etype
-
-
-# class ALTL(Event):
-#     """
-#     Alternative on 'left' side of the gene
-#     """
-#     def __init__(self, gene, *_):
-#         super().__init__(self, gene)
-#         if self.gene.strand == '-':
-#             self.etype = 'AL'
-#         else:
-#             self.etype = 'AF'
-#         self.positive_coords = {}
-#         self.negative_coords = {}
-
-#         self.construct_events(gene)
-
-#     def add_putative_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         firstexon = exons[0]
-#         secondexon = exons[1]
-#         search_coords = (firstexon[0], firstexon[1], secondexon[0])
-#         self.negative_coords[search_coords] = self.negative_coords.get(search_coords, []) + [transcript]
-
-#     def add_real_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         firstexon = exons[0]
-#         secondexon = exons[1]
-#         self.create_altl(firstexon[0], firstexon[1], secondexon[0], transcript)
-
-#     def create_altl(self, coord1, coord2, coord3, transcript):
-#         """
-#         Find and create alternative events
-#         """
-#         gene = self.gene
-#         for neg1, neg2, neg3 in self.negative_coords:
-#             if neg3 == coord3 and coord2 < neg1:
-#                 eventid = '{}:{}:{}-{}:{}:{}-{}:{}'.format(gene.chr, coord1, coord2, coord3,
-#                                                            neg1, neg2, neg3, gene.strand)
-#                 self.positive_ids[eventid] = self.positive_ids.get(eventid, []) + [transcript]
-#                 self.negative_ids[eventid] = self.negative_coords[(neg1, neg2, neg3)]
-
-#     def export_events_gtf(self, edge):
-#         """
-#         Generator of GTF lines
-#         """
-#         strand = self.gene.strand
-#         for event in self.positive_ids:
-#             full_event = '{}:{}'.format(self.etype, event)
-#             e_vals = full_event.replace('-', ':').split(':')
-
-#             line1 = self.gtf_string.format(e_vals[2], e_vals[3], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line1, self.etype
-
-#             line2 = self.gtf_string.format(e_vals[4], int(e_vals[4]) + edge, strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line2, self.etype
-
-#             line3 = self.gtf_string.format(e_vals[5], e_vals[6], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line3, self.etype
-
-#             line4 = self.gtf_string.format(int(e_vals[7]), int(e_vals[7]) + edge, strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line4, self.etype
-
-
-# class ALTR(Event):
-#     """
-#     Alternative on 'Right' side of the gene
-#     """
-#     def __init__(self, gene, *_):
-#         super().__init__(self, gene)
-#         if self.gene.strand == '-':
-#             self.etype = 'AF'
-#         else:
-#             self.etype = 'AL'
-#         self.positive_coords = {}
-#         self.negative_coords = {}
-
-#         self.construct_events(gene)
-
-#     def add_putative_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         firstexon = exons[-2]
-#         secondexon = exons[-1]
-#         search_coords = (firstexon[1], secondexon[0], secondexon[1])
-#         self.negative_coords[search_coords] = self.negative_coords.get(search_coords, []) + [transcript]
-
-#     def add_real_events(self, exons, transcript):
-#         if len(exons) < 2:
-#             return
-#         firstexon = exons[-2]
-#         secondexon = exons[-1]
-#         self.create_altr(firstexon[1], secondexon[0], secondexon[1], transcript)
-
-#     def create_altr(self, coord1, coord2, coord3, transcript):
-#         """
-#         Find and create alternative events
-#         """
-#         gene = self.gene
-#         for neg1, neg2, neg3 in self.negative_coords:
-#             if neg1 == coord1 and neg2 > coord3:
-#                 eventid = '{}:{}-{}:{}:{}-{}:{}:{}'.format(gene.chr, coord1, coord2, coord3,
-#                                                            neg1, neg2, neg3, gene.strand)
-#                 self.positive_ids[eventid] = self.positive_ids.get(eventid, []) + [transcript]
-#                 self.negative_ids[eventid] = self.negative_coords[(neg1, neg2, neg3)]
-
-#     def export_events_gtf(self, edge):
-#         """
-#         Generator of GTF lines
-#         """
-#         strand = self.gene.strand
-#         for event in self.positive_ids:
-#             full_event = '{}:{}'.format(self.etype, event)
-#             e_vals = full_event.replace('-', ':').split(':')
-
-#             line1 = self.gtf_string.format(int(e_vals[2]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line1, self.etype
-
-#             line2 = self.gtf_string.format(e_vals[3], e_vals[4], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line2, self.etype
-
-#             line3 = self.gtf_string.format(int(e_vals[2]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line3, self.etype
-
-#             line4 = self.gtf_string.format(e_vals[6], e_vals[7], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line4, self.etype
-
-
-# class MXE(Event):
-#     """
-#     Mutually exclusive exons event
-#     """
-#     def __init__(self, gene, *_):
-#         super().__init__(self, gene)
-#         self.etype = 'MX'
-#         self.positive_coords = {}
-#         self.negative_coords = {}
-
-#         self.construct_events(gene)
-
-#     def add_putative_events(self, exons, transcript):
-#         if len(exons) < 3:
-#             return
-#         for i in range(len(exons) - 2):
-#             firstexon = exons[i]
-#             midexon = exons[i + 1]
-#             lastexon = exons[i + 2]
-#             search_coords = firstexon[1], midexon[0], midexon[1], lastexon[0]
-#             self.negative_coords[search_coords] = self.negative_coords.get(search_coords, []) + [transcript]
-
-#     def add_real_events(self, exons, transcript):
-#         if len(exons) < 3:
-#             return
-#         for i in range((len(exons) - 2)):
-#             firstexon = exons[i]
-#             midexon = exons[i + 1]
-#             lastexon = exons[i + 2]
-#             search_coords = firstexon[1], midexon[0], midexon[1], lastexon[0]
-
-#             for eventid, neg_coord in self.coord_match(search_coords):
-#                 self.negative_ids[eventid] = self.negative_ids.get(eventid, []) + [transcript]
-#                 self.positive_ids[eventid] = self.negative_coords[neg_coord]
-
-#     def coord_match(self, new_coords):
-#         """
-#         Creates and returns event IDs that match tupled with
-#         alternative IDs
-#         """
-#         all_events = []
-#         gene = self.gene
-
-#         for orig_cord in self.negative_coords:
-#             compare_f = orig_cord[0] + orig_cord[-1]
-#             compare_t = new_coords[0] + new_coords[-1]
-#             mm_f = orig_cord[2]
-#             mm_t = new_coords[1]
-
-#             if compare_f == compare_t and mm_f < mm_t:
-#                 eventid = ('{}:{}-{}:{}-{}:{}-{}:{}-{}:{}'
-#                            .format(gene.chr, orig_cord[0], orig_cord[1], orig_cord[2], orig_cord[3],
-#                                    new_coords[0], new_coords[1], new_coords[2], new_coords[3], gene.strand))
-#                 all_events.append([eventid, orig_cord])
-#         return all_events
-
-#     def export_events_gtf(self, edge):
-#         """
-#         Generator of GTF lines
-#         """
-#         strand = self.gene.strand
-#         for event in self.positive_ids:
-#             full_event = '{}:{}'.format(self.etype, event)
-#             e_vals = full_event.replace('-', ':').split(':')
-
-#             line1 = self.gtf_string.format(int(e_vals[2]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line1, self.etype
-
-#             line2 = self.gtf_string.format(e_vals[3], e_vals[4], strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line2, self.etype
-
-#             line3 = self.gtf_string.format(e_vals[9], int(e_vals[9]) + edge, strand, full_event, full_event,
-#                                            'alternative1')
-#             yield line3, self.etype
-
-#             line4 = self.gtf_string.format(int(e_vals[2]) - edge, e_vals[2], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line4, self.etype
-
-#             line5 = self.gtf_string.format(e_vals[7], e_vals[8], strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line5, self.etype
-
-#             line6 = self.gtf_string.format(e_vals[9], int(e_vals[9]) + edge, strand, full_event, full_event,
-#                                            'alternative2')
-#             yield line6, self.etype
-
-
-# class RI(Event):
-#     """
-#     Retained intro event
-#     """
-#     def __init__(self, gene, *_):
-#         super().__init__(self, gene)
-#         self.etype = 'RI'
-
-#         self.construct_events(gene)
-
-#     def add_putative_events(self, exons, transcript):
-#         gene = self.gene
-#         for i in range(len(exons) - 1):
-#             firstexon = exons[i]
-#             secondexon = exons[i + 1]
-#             eventid = '{}:{}:{}-{}:{}:{}'.format(gene.chr, firstexon[0], firstexon[1], secondexon[0],
-#                                                  secondexon[1], gene.strand)
-
-#             self.negative_ids[eventid] = self.negative_ids.get(eventid, []) + [transcript]
-#             search_coord = (firstexon[0], secondexon[1])
-#             search = self.alt_search.get(search_coord, set())
-#             search.add(eventid)
-#             self.alt_search[search_coord] = search
-
-#     def add_real_events(self, exons, transcript):
-#         for i in range(len(exons)):
-#             search_coord = exons[i]
-
-#             if search_coord in self.alt_search:
-#                 eventids = self.alt_search[search_coord]
-#                 for eventid in eventids:
-#                     self.positive_ids[eventid] = self.positive_ids.get(eventid, []) + [transcript]
-
-#     def export_events_gtf(self, *_):
-#         """
-#         Generator of GTF lines
-#         """
-#         strand = self.gene.strand
-#         for event in self.positive_ids:
-#             full_event = '{}:{}'.format(self.etype, event)
-#             e_vals = full_event.replace('-', ':').split(':')
-
-#             line1 = self.gtf_string.format(e_vals[2], e_vals[3], strand, full_event, full_event, 'alternative2')
-#             yield line1, self.etype
-
-#             line2 = self.gtf_string.format(e_vals[4], e_vals[5], strand, full_event, full_event, 'alternative2')
-#             yield line2, self.etype
-
-#             line3 = self.gtf_string.format(e_vals[2], e_vals[5], strand, full_event, full_event, 'alternative1')
-#             yield line3, self.etype
-
