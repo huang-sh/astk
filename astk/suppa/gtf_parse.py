@@ -1,11 +1,12 @@
 """
+astk.suppa.gtf_parse
+~~~~~~~~~~~~~~~~~~~~~
 Modified version of suppa.lib.gtf_store module.
 """
-import mmap
 from collections import namedtuple
-from typing import Optional, Sequence
 
 from astk.constant import GTF_COLUMNS
+from astk.utils.func import get_num_lines
 
 
 class Genome:
@@ -31,8 +32,8 @@ class Genome:
 
 
 class Gene:
-    __slots__ = ("seqname", "chr", "start", "end", "strand", "id", "attr",
-                "transcripts")
+    __slots__ = ("seqname", "chr", "start", "end", "strand", "id", 
+                "attr", "transcripts")
 
     def __init__(self, id, seqname, start, end, strand, **kwargs):
         self.seqname = seqname
@@ -104,15 +105,6 @@ def parse_gtf_line(line, feature=["gene", "exon", "transcript"]):
     attributes_ls = [att.split() for att in attributes_str.split('; ')]
     info_dic.update(dict(attributes_ls))
     return info_dic
-
-
-def get_num_lines(file_path):
-    fp = open(file_path, "r+")
-    buf = mmap.mmap(fp.fileno(), 0)
-    lines = 0
-    while buf.readline():
-        lines += 1
-    return lines
 
 
 def construct_genome(gtf):

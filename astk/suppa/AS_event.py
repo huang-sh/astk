@@ -1,16 +1,13 @@
 """
-astk.suppa.lib.AS_event
-~~~~~~~~~~~~~~~~~
+astk.suppa.AS_event
+~~~~~~~~~~~~~~~~~~~~
 Modified version of suppa.lib.event module.
 """
-import copy
 from itertools import product
-from typing import Sequence
-from typing import Optional
-from typing import Sequence
+from typing import Sequence, Optional
 
-from .gtf_parse import Exon, Gene, Transcript
-from .tools import EWriter
+from .gtf_parse import Exon, Gene, Transcript, Genome
+from .lib.tools import EWriter
 
 
 class ASEvent:
@@ -759,7 +756,13 @@ class AlternativeLastExon(AlternativeSplicing):
         self.inner_AS_events = self.AS_events.copy()
 
 
-def make_events(events, genome, output, AS_split, b_type="S", th=10):
+def make_events(output: str,
+                genome: "Genome",            
+                events: Sequence[str],                
+                AS_split: Sequence[str], 
+                b_type: str = "S", 
+                th: int = 10
+    ):
     """
     Controls event creation and writing for each gene
     """
@@ -772,8 +775,7 @@ def make_events(events, genome, output, AS_split, b_type="S", th=10):
                     "AF": AlternativeFirstExon, "AL": AlternativeLastExon
                 }
     event_cls_dic = {k: v for k, v in event_cls_dic.items() if k in events}
-    import time
-    T1 = time.time()
+
     handle_ls = []
     if "FTE" in AS_split:
         sc_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_FT", "ioe", boundary)
