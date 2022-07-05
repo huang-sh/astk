@@ -1,14 +1,11 @@
 import sys
-import json
-import hashlib
-import logging
+import mmap
 from pathlib import Path
 from functools import partial
 
 from astk.constant import OrgDb_dic, BASE_DIR
-from astk.suppa.lib.event import make_events
-from astk.suppa.lib.gtf_store import *
-from astk.suppa.lib.tools import *
+# from astk.suppa.lib.gtf_store import *
+# from astk.suppa.lib.tools import *
 from . import event_id as ei
 
 
@@ -25,6 +22,7 @@ def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
         keep = (abs(dpsi_df.loc[:, "dpsi"]) > abs_dpsi) & keep
     fdf = dpsi_df.loc[keep, ]
     return fdf
+
 
 def compute_feature_len(df):
     import pandas as pd
@@ -52,69 +50,6 @@ def extract_info(df):
     len_df.index = new_df.index
     new_df = pd.concat([new_df, len_df], axis=1)
     return new_df
-
-def check_gtf_used(gtf):
-    gtf = Path(gtf)
-    gtf_hash = hashlib.blake2b()
-    gtf_size = gtf.stat().st_size
-    gtf_hash.update(str(gtf_size).encode('utf-8'))
-    f = gtf.open("rb")
-    for _ in range(10):
-        gtf_hash.update(f.readline().strip())
-    hash_val = gtf_hash.hexdigest()
-    return hash_val
-
-def ioe_event(gtf, event_type, edge_exon_len, pool_genes=False):
-
-    mode = "logging.INFO" 
-
-    # Setting logging preferences
-    logger = logging.getLogger(__name__)
-    logger.setLevel(eval(mode))
-
-    # Setting the level of the loggers in lib
-    # setToolsLoggerLevel(mode)
-
-    home = Path.home()
-    laas_dir = home / f".astk"
-    laas_dir.mkdir(exist_ok=True)
-
-    ref_dir = laas_dir / "ref"
-    ref_dir.mkdir(exist_ok=True)
-
-    gtf_hash = check_gtf_used(gtf)
-    output_dir = ref_dir / gtf_hash
-    
-    if not output_dir.exists():
-        output_dir.mkdir(exist_ok=True)
-        my_genome = Genome()
-        logger.info("Reading input data.")
-        try:
-            fetched_exons = gtf_reader(gtf, logger)
-        except UnicodeDecodeError as e:
-            print(e)
-            sys.exit(1)
-
-        if len(fetched_exons) == 0:
-            logger.info("No exons found. Check format and content of your GTF file.")
-            sys.exit(1)
-
-        for exon_meta in fetched_exons:
-            my_genome.add_to_genes(exon_meta)
-        
-        my_genome.sort_transcripts()
-
-        if pool_genes:
-            my_genome.split_genes()
-            logger.info("Pooling genes")
-            my_genome.poll_genes()
-
-        out_prefix = output_dir / "annotation"
-        make_events(event_type, my_genome, gtf, out_prefix, edge_exon_len,
-                logger, b_type="S", th=10)
-    else:
-         logger.info("Loading cache data.")
-    return output_dir  
 
 
 def len_hist(len_counts, width, max_len):
@@ -211,182 +146,6 @@ def cluster_len(df, out, n_cls=5, width=10, max_len=500, len_weight=5):
     cluster_info.to_csv(Path(out).with_suffix(".cls.csv") )
     print(df.head())
     return df
-
-
-class DiffSplice:
-    def __init__(self, outdir, meta, gtf, as_types,
-                 exon_len, pool_genes) -> None:
-        self.psi = {}
-        self.mk_outdir(outdir)
-        self.ioe_dir = self.get_ioe_event(gtf, exon_len, pool_genes)
-        self.parse_meta(meta)
-        for at in as_types:
-            self.get_psi(at)
-        self.write_data()
-   
-    @staticmethod
-    def get_ioe_event(gtf, exon_len, pool_genes):
-        events = ['SE', "SS", "MX", "RI", 'FL']
-        ioe_dir = ioe_event(gtf, events, exon_len, pool_genes=pool_genes)
-        return ioe_dir
-    
-    def parse_meta(self, meta):
-        import pandas as pd
-
-        self.tpm = {}
-        tpm_col = 4
-        self.meta_file = meta
-        with open(meta, "r") as f:
-            try:
-                meta_dic = json.load(f)
-            except json.decoder.JSONDecodeError:
-                print("ERROR: JSON file is excepted!")
-                sys.exit()
-            self.meta = meta_dic
-        read_tpm = partial(self.read_tpm, tpm_col=tpm_col)
-        for gn, gdic in meta_dic.items():
-            control_tpms = [read_tpm(sp["path"], sp["name"]) for sp in gdic["control"]["samples"]]
-            treatment_tpms = [read_tpm(sp["path"], sp["name"]) for sp in gdic["treatment"]["samples"]]
-            control_tpm = pd.concat(control_tpms, axis=1)
-            treatment_tpm = pd.concat(treatment_tpms, axis=1)
-            self.tpm[gn] = [control_tpm, treatment_tpm]
-
-    def get_psi(self, as_type):
-        import pandas as pd
-
-        self.psi.setdefault(as_type, {})
-
-        ioe_file = Path(self.ioe_dir) / f"annotation_{as_type}_strict.ioe"
-        ioe_df = pd.read_csv(ioe_file, sep="\t")        
-        for gn, (tpm1, tpm2) in self.tpm.items():
-            _get_psi1 = partial(self._get_psi, tpm=tpm1)
-            _get_psi2 = partial(self._get_psi, tpm=tpm2)
-
-            psi1 = ioe_df.apply(_get_psi1, axis=1)
-            psi2 = ioe_df.apply(_get_psi2, axis=1)
-
-            psi1_df = pd.DataFrame(psi1.tolist(), 
-                        columns=tpm1.columns, index=ioe_df["event_id"])
-            psi2_df = pd.DataFrame(psi2.tolist(), 
-                        columns=tpm2.columns, index=ioe_df["event_id"])
-            self.psi[as_type][gn] = [psi1_df, psi2_df]
-
-    @staticmethod
-    def _get_psi(event_row, tpm):
-        alter_tpt = event_row["alternative_transcripts"].split(",")
-        total_tpt = event_row["total_transcripts"].split(",")
-        al_tpts_val = [i for i in alter_tpt if i in tpm.index]
-        all_tpts_val = [i for i in total_tpt if i in tpm.index]
-
-        if len(all_tpts_val) == 0:
-            psi_ls = ["nan" for _ in tpm.columns]
-        elif len(al_tpts_val) == 0 and len(all_tpts_val) > 0:
-            psi_ls = ["nan"  for _ in tpm.columns]
-        else:
-            get_val = lambda tid, colid: tpm.loc[tid, colid]
-            psi_ls = []
-            for colid in tpm.columns:
-                get_val = lambda tid: tpm.loc[tid, colid]
-                al_tpts_abundance = sum(map(get_val, al_tpts_val))
-                all_tpts_abundance = sum(map(get_val, all_tpts_val))
-                if all_tpts_abundance < 0.001:
-                    psi_ls.append("nan")
-                    continue
-                try:
-                    psi = al_tpts_abundance / all_tpts_abundance
-                except ZeroDivisionError:
-                    psi = "nan"
-                psi_ls.append(psi)
-        return psi_ls
-
-
-    @staticmethod
-    def read_tpm(file, colname, tpm_col):
-        import pandas as pd
-
-        quant_df = pd.read_csv(file, sep = "\t")
-        tpm_df = pd.DataFrame({colname: quant_df.iloc[:, tpm_col-1]})
-        tpm_df.index = quant_df.iloc[:, 0]
-        return tpm_df
-
-    def mk_outdir(self, outdir):
-        outdir = Path(outdir)
-        outdir.mkdir(exist_ok=True)
-        tpm_dir = outdir / "tpm"
-        tpm_dir.mkdir(exist_ok=True)
-        psi_dir = outdir / "psi"
-        psi_dir.mkdir(exist_ok=True)
-        dpsi_dir =outdir / "dpsi"
-        dpsi_dir.mkdir(exist_ok=True)
-
-        self.outdir = outdir
-        self.tpm_dir = tpm_dir
-        self.psi_dir = psi_dir
-        self.dpsi_dir = dpsi_dir
-
-    def update_meta(self):
-        meta = self.meta
-        for as_type, group_dic in self.psi_files.items():
-           
-            for gn, (psi1, psi2) in group_dic.items():
-                meta[gn].setdefault("dpsi", {})
-                meta[gn]["control"].setdefault("psi", {})
-                meta[gn]["control"]["psi"][as_type] = str(psi1)
-                meta[gn]["treatment"].setdefault("psi", {})
-                meta[gn]["treatment"]["psi"][as_type] = str(psi2)
-                meta[gn]["control"]["tpm"] = str(self.tpm_files[gn][0])
-                meta[gn]["treatment"]["tpm"] = str(self.tpm_files[gn][1])
-                meta[gn]["dpsi"][as_type] = str(self.dpsi_files[as_type][gn])
-
-        with open(self.meta_file, "w") as f:
-            json.dump(meta, f, indent=4)
-
-    def write_data(self):
-        tpm_dir = self.tpm_dir
-        psi_dir = self.psi_dir
-        self.tpm_files = {}
-        self.psi_files = {}
-        for gn, (tpm1, tpm2) in self.tpm.items():
-            tpm1_file = tpm_dir / f"{gn}_c1.tpm"
-            tpm2_file = tpm_dir / f"{gn}_c2.tpm"
-            tpm1.to_csv(tpm1_file, sep="\t")
-            tpm2.to_csv(tpm2_file, sep="\t")
-            self.tpm_files[gn] = [tpm1_file, tpm2_file]
-
-        for as_type, group_dic in self.psi.items():
-            self.psi_files.setdefault(as_type, {})
-            for gn, (psi1, psi2) in group_dic.items():
-                psi1_file = psi_dir / f"{gn}_{as_type}_c1.psi"
-                psi2_file = psi_dir / f"{gn}_{as_type}_c2.psi"
-                psi1.to_csv(psi1_file, sep="\t")
-                psi2.to_csv(psi2_file, sep="\t")
-                self.psi_files[as_type][gn] = [psi1_file, psi2_file]
-
-    #TODO 
-    def ds(self, method):
-        import shutil
-        try:
-            shutil.copytree(self.ioe_dir, self.outdir / "ref")
-        except FileExistsError as e:
-            print(e)
-            # print(f"please rm {self.outdir}/ref directory")
-        self.method = method
-        self.dpsi_files = {}
-        from astk.suppa.lib.diff_tools import multiple_conditions_analysis
-        mca = multiple_conditions_analysis
-
-        for as_type, group_dic in self.psi_files.items():
-            self.dpsi_files.setdefault(as_type, {})
-            for gn, psi_files in group_dic.items():
-                expr_files = self.tpm_files[gn]
-                dpis_file = self.dpsi_dir / f"{gn}_{as_type}"
-                ioe_file = self.ioe_dir / f"annotation_{as_type}_strict.ioe"
-                mca(method, psi_files, expr_files, ioe_file, 1000, 0, 
-                    False, True, 0.05, True, False, False, 0, 0, str(dpis_file))
-
-                self.dpsi_files[as_type][gn] = dpis_file.with_suffix(".dpsi")
-        
-        self.update_meta()
 
 
 def select_OrgDb(org):
@@ -590,3 +349,11 @@ def coSpliceNet(file, output):
         )
         .render(output)
     )
+
+def get_num_lines(file_path):
+    fp = open(file_path, "r+")
+    buf = mmap.mmap(fp.fileno(), 0)
+    lines = 0
+    while buf.readline():
+        lines += 1
+    return lines

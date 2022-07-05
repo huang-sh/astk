@@ -41,7 +41,7 @@ NEASE_DATABASE = [
 ]
 
 
-AS_type = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
+AS_TYPE = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
 
 BASE_DIR = Path(__file__).parent
 

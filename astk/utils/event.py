@@ -2,7 +2,6 @@ from pathlib import Path
 
 import astk.utils.func  as ul
 import astk.utils.select as sl
-from astk.constant import AS_type
 
 
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
@@ -74,20 +73,6 @@ def len_pick(infile, output, len_range):
     pdf.to_csv(output, index=True, sep="\t", na_rep="nan", index_label=False)
 
 
-def diff_splice(outdir, metadata, gtf, event_type, method, exon_len, poolgenes, tpm_col):
-
-    from .func import DiffSplice
-    if event_type == "all":
-        event_types = AS_type
-    else:
-        event_types = [event_type]
-    try:
-        dsi = DiffSplice(outdir, metadata, gtf, event_types, exon_len, poolgenes)
-        dsi.ds(method)
-    except BaseException as e:
-        print(e)
-
-
 def sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
 
     for idx, dpsi_file in enumerate(files):
@@ -108,12 +93,12 @@ def psi_filter(file, output, psi, quantile):
   
 
 def intersect(file_a, file_b, output):
-    import pandas as pd
+    from pandas import read_csv
 
     fa = Path(file_a)
     fb = Path(file_b)
-    dfa = pd.read_csv(fa, sep="\t", index_col=0)
-    dfb = pd.read_csv(fb, sep="\t", index_col=0)
+    dfa = read_csv(fa, sep="\t", index_col=0)
+    dfb = read_csv(fb, sep="\t", index_col=0)
 
     share_id = list(set(dfa.index) & set(dfb.index))
     outname = Path(output).stem
