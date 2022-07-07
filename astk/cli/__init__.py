@@ -31,7 +31,7 @@ cli_fun.add_command(psi_filter, name=["psiFilter", "pf"])
 cli_fun.add_command(intersect, name=["intersect"])
 
 # co-splicing network module
-cli_fun.add_command(coSpliceNet, name=["coSpliceNet", "csnet"])
+cli_fun.add_command(sc_coSpliceNet, name=["coSpliceNet", "csnet"])
 
 # motif analysis module
 cli_fun.add_command(motif_enrich, name=["motifEnrich", "me"])

@@ -204,6 +204,7 @@ def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstrea
     
     return coor_df
 
+
 def get_coor_fa(df, fasta, out):
     import pybedtools
 
@@ -299,56 +300,6 @@ def df_len_select(infile, outfile, s, e):
     pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
     pdf.to_csv(outfile, index=True, sep="\t", na_rep="nan", index_label=False)
 
-
-def coSpliceNet(file, output):
-    from collections import Counter
-    from pyecharts import options as opts
-    from pyecharts.charts import Graph
-    import pandas as pd
-
-    link_df = pd.read_csv(file)
-    link_sort = link_df.sort_values(by=["cor", "pval"], key=abs, ascending=False)
-    link_fil = link_sort.drop_duplicates(subset=["rbp", "event"])
-
-    rbp_symbol = []
-    event_id = []
-    links = []
-
-    for row in link_fil.itertuples():
-        rbp = row[-1].split(":")[0]
-        event = row[-2]
-        rbp_symbol.append(rbp)
-        event_id.append(event)
-        links.append({"source": rbp, "target": event})
-
-    rbp_nodes = []
-    for k, v in Counter(rbp_symbol).items():
-        node = {"name": k, "symbolSize": v, "category": k,
-                'label': {'normal': {'show': 'True'}}}
-        rbp_nodes.append(node)
-
-    category = [{"name": k} for k in set(rbp_symbol)]
-    event_nodes = [{"name": k, "symbolSize": max([v,5])} for k, v in Counter(event_id).items()]
-    nodes = rbp_nodes + event_nodes
-
-    c = (
-        Graph().add(
-            "",
-            nodes,
-            links,
-            category,
-            repulsion=50,
-            linestyle_opts=opts.LineStyleOpts(curve=0.2),
-            label_opts=opts.LabelOpts(is_show=False),
-            edge_symbol=[None, 'arrow'],
-            edge_symbol_size=4
-        )
-        .set_global_opts(
-            legend_opts=opts.LegendOpts(is_show=False),
-            title_opts=opts.TitleOpts(title="Co-splicing network"),
-        )
-        .render(output)
-    )
 
 def get_num_lines(file_path):
     fp = open(file_path, "r+")
