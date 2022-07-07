@@ -37,28 +37,3 @@ def get_ioe_psi(ioe_df, tpm_df, tpm_th=1):
     """
     psi_ls = ioe_df.apply(ioe_df_row, axis=1, args=(tpm_df, tpm_th))
     return psi_ls.tolist()
-
-
-def read_tpm(tpm_file, tpm_col=2, tx_col=0):
-    import pandas as pd
-
-    tpm_df = pd.read_csv(tpm_file, sep = "\t", index_col=tx_col)
-    cols = list(tpm_df.columns)
-    cols[tpm_col] = "TPM"
-    tpm_df.columns = cols
-    return tpm_df
-
-
-def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
-    import pandas as pd
-    ioe_df = pd.read_csv(ioe, sep="\t")
-
-    psi_dic = {}
-    for tf in tpm_files:
-        sf_name = Path(tf).parent.name  # only consider salmon output, now
-        tpm_df = read_tpm(tf, tpm_col=tpm_col, tx_col=tx_col)
-        psi_dic[sf_name] = get_ioe_psi(ioe_df, tpm_df, tpm_th=tpm_th)
-    
-    psi_df = pd.DataFrame(psi_dic)
-    psi_df.index = ioe_df["event_id"]
-    return psi_df

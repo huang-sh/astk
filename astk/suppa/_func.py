@@ -1,12 +1,13 @@
 import hashlib
-import pickle
+import sys
+import json
 from pathlib import Path
 
 from astk.types import *
 from .AS_event import make_events
+from .event_psi import get_ioe_psi
 from  .gtf_parse import construct_genome
 from astk.suppa.lib.diff_tools import multiple_conditions_analysis as mca
-from astk.constant import AS_TYPE
 
 
 def check_gtf_used(gtf):
@@ -30,31 +31,15 @@ def gtf_parse_cache(gtf):
     gtf_cache_path.mkdir(exist_ok=True)
     pkl = (gtf_cache_path / gtf_hash).with_suffix(".pkl")
     return pkl
-    
+
 
 def generate_events(gtf, event_types, output, split):
-    import time
-    T1 = time.time()
-
-    T21 =time.time()
-    print('程序运行时间:%s秒' % ((T21 - T1)))
-
     genome = construct_genome(gtf)
-    T2 =time.time()
-    print('程序运行时间:%s秒' % ((T2 - T21)))
-    
     if event_types == "ALL":
         event_types =  ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
     else:
         event_types = [event_types]
-
     make_events(output, genome, event_types, split)
-
-    T3 =time.time()
-    print('程序运行时间:%s秒' % ((T3 - T1)))
-
-
-FilePath = TypeVar('FilePath', str, Path)
 
 
 def diff_splice(psi_files: Sequence[FilePath],
@@ -65,3 +50,108 @@ def diff_splice(psi_files: Sequence[FilePath],
     ):
     mca(method, psi_files, exp_files, reference, 1000, 0, 
         False, True, 0.05, True, False, False, 0, 0, str(output))                 
+
+
+def read_tpm(file, colname, tpm_col):
+    import pandas as pd
+
+    quant_df = pd.read_csv(file, sep = "\t")
+    tpm_df = pd.DataFrame({colname: quant_df.iloc[:, tpm_col-1]})
+    tpm_df.index = quant_df.iloc[:, 0]
+    return tpm_df
+
+
+def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
+    import pandas as pd
+    ioe_df = pd.read_csv(ioe, sep="\t")
+
+    psi_dic = {}
+    for tf in tpm_files:
+        sf_name = Path(tf).parent.name  # only consider salmon output, now
+        tpm_df = read_tpm(tf, sf_name, tpm_col)
+        psi_dic[sf_name] = get_ioe_psi(ioe_df, tpm_df, tpm_th=tpm_th)
+    
+    psi_df = pd.DataFrame(psi_dic)
+    psi_df.index = ioe_df["event_id"]
+    return psi_df
+
+
+def parse_meta(meta_file: FilePath) -> Dict:
+
+    tpm_dic = {}
+    with open(meta_file, "r") as f:
+        try:
+            meta_dic = json.load(f)
+        except json.decoder.JSONDecodeError:
+            print("ERROR: JSON file is excepted!")
+            sys.exit()
+    for gn, gdic in meta_dic.items():
+        control_tpms = [(sp["path"], sp["name"]) for sp in gdic["control"]["samples"]]
+        treatment_tpms = [(sp["path"], sp["name"]) for sp in gdic["treatment"]["samples"]]
+        tpm_dic[gn] = {"ctrl": control_tpms, "case": treatment_tpms}
+    return tpm_dic
+
+
+def ds_flow(
+    meta: FilePath,
+    gtf: FilePath,
+    etypes: Sequence[str],
+    outdir: FilePath, 
+    method: str
+    ):
+    import pandas as pd
+
+    Path(outdir).mkdir(exist_ok=True)
+    tpm_dic = parse_meta(meta)
+    genome = construct_genome(gtf)
+    ref_dir = Path(outdir) / "ref"
+    ref_dir.mkdir(exist_ok=True)
+    make_events(ref_dir / "annotation", genome, etypes, [])
+    
+    tpm_dir =  Path(outdir) / "tpm"
+    psi_dir =  Path(outdir) / "psi"
+    dpsi_dir =  Path(outdir) / "dpsi"
+    tpm_dir.mkdir(exist_ok=True)
+    psi_dir.mkdir(exist_ok=True)
+    dpsi_dir.mkdir(exist_ok=True)
+
+    for gn, gn_dic in tpm_dic.items():
+        for et in etypes:
+            ioe = ref_dir / f"annotation_{et}_strict.ioe"
+            ioe_df = pd.read_csv(ioe, sep="\t")
+
+            ctrl_tpm_ls = []
+            case_tpm_ls = []
+            ctrl_psi_ls = []
+            case_psi_ls = []
+            for (cf, cn), (tf, tn) in zip(gn_dic["ctrl"], gn_dic["case"]):
+                cdf = read_tpm(cf, cn, 4)
+                tdf = read_tpm(tf, tn, 4)
+                ctrl_tpm_ls.append(cdf)
+                case_tpm_ls.append(tdf)
+
+                cpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, cdf), 
+                        columns=cdf.columns, index=ioe_df["event_id"])
+                tpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, tdf), 
+                        columns=tdf.columns, index=ioe_df["event_id"])
+                ctrl_psi_ls.append(cpsi_df)
+                case_psi_ls.append(tpsi_df)
+
+            ctrl_tpm = pd.concat(ctrl_tpm_ls, axis=1)
+            case_tpm = pd.concat(case_tpm_ls, axis=1)
+            ctrl_tpm_file = tpm_dir / f"{gn}_c1.tpm"
+            case_tpm_file = tpm_dir / f"{gn}_c2.tpm"
+            ctrl_tpm.to_csv(ctrl_tpm_file, sep="\t")
+            case_tpm.to_csv(case_tpm_file, sep="\t")
+
+            ctrl_psi = pd.concat(ctrl_psi_ls, axis=1)
+            case_psi = pd.concat(case_psi_ls, axis=1)
+            ctrl_psi_file = psi_dir / f"{gn}_{et}_c1.psi"
+            case_psi_file = psi_dir / f"{gn}_{et}_c2.psi"
+            ctrl_psi.to_csv(ctrl_psi_file, sep="\t")
+            case_psi.to_csv(case_psi_file, sep="\t")
+            psi_files = [ctrl_psi_file, case_psi_file]
+            exp_files = [ctrl_tpm_file, case_tpm_file]
+            dpsi_out = dpsi_dir / f"{gn}_{et}"
+            mca(method, psi_files, exp_files, ioe, 1000, 0, 
+                False, True, 0.05, True, False, False, 0, 0, str(dpsi_out))

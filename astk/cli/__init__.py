@@ -10,6 +10,7 @@ from .suppa import *
 from .config import CustomMultiCommand
 from .seqfeature import *
 
+
 @click.group(cls=CustomMultiCommand, 
         context_settings=dict(help_option_names=['-h', '--help']))
 def cli_fun():
@@ -17,9 +18,9 @@ def cli_fun():
 
 ## suppa2 module
 cli_fun.add_command(generateEvents, name=["generateEvent", "ge"])
-cli_fun.add_command(psiPerEvent, name=["generatePsi", "gp", "psiPerEvent"])
-
-cli_fun.add_command(diff_splice, name=["diffSplice", "ds"])
+cli_fun.add_command(compute_psi, name=["generatePsi", "gp", "psiPerEvent"])
+cli_fun.add_command(diffSplice, name=["diffSplice", "ds"])
+cli_fun.add_command(dsflow, name=["dsflow"])
 
 ## AS event processing module
 cli_fun.add_command(len_dist, name=["lenDist", "ld"])
