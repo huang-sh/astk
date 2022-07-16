@@ -6,7 +6,7 @@ This module provide sequence feature extraction cli api
 
 from email.policy import default
 from .config import *
-import astk.seq.feature as sf
+import astk.seqfeature.feature as sf
 
 
 

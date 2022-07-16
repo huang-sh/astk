@@ -10,6 +10,7 @@ import numpy as np
 from astk.constant import BASE_DIR
 import astk.utils.func  as ul
 
+
 def seq_aac(seq, k=1, gap=0, lam=0, count=False):
     """ extract amino acid sequence composition feature
     :param seq: an amino acid seq 
