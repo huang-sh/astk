@@ -4,22 +4,20 @@ from pathlib import Path
 def cal_psi(alter_tx, total_tx, tpm_df, tpm_th=1):
     alter_tx = [i for i in alter_tx if i in tpm_df.index]
     total_tx = [i for i in total_tx if i in tpm_df.index]
-    if len(total_tx) == 0:
+    if len(total_tx) == 0 or len(alter_tx) == 0:
         psi = "nan"
-    elif len(alter_tx) == 0 and len(total_tx) > 0:
-        psi = 0
     else:
         alter_tx_tpm = sum([tpm_df.at[i, tpm_df.columns[0]] for i in alter_tx])
-        total_tx_tpm = sum([tpm_df.at[i, tpm_df.columns[0]] for i in total_tx])
-        if total_tx_tpm <= tpm_th:
+        total_tx_tpms = [tpm_df.at[i, tpm_df.columns[0]] for i in total_tx]
+        if max(total_tx_tpms) < tpm_th:
             psi = "nan"
         elif alter_tx_tpm <= 0.0001:
             psi = 0
         else:
             try:
-                psi = alter_tx_tpm / total_tx_tpm
+                psi = alter_tx_tpm / sum(total_tx_tpms)
             except ZeroDivisionError:
-                psi = 0
+                psi = "nan"
     return psi
 
 
