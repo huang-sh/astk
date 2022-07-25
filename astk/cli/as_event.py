@@ -1,5 +1,4 @@
 from .config import *
-from astk.constant import AS_TYPE
 from astk.utils import event as et
 
 
@@ -81,8 +80,11 @@ def psi_filter(*args, **kwargs):
 
 
 @click.command(help="intersect AS event")
-@click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="file a")
-@click.option('-b', "file_b", type=click.Path(exists=True), required=True, help="file b")
+@click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="dpsi or psi file B")
+@click.option('-b', "file_b", type=click.Path(exists=True), help="dpsi or psi file B")
 @click.option('-o', "--output", required=True, help="output suffix")
+@click.option('-ioeb', "--ioeB", type=click.Path(exists=True), help="ioe file file B")
+@click.option('-ib', "--ignoreB", type=bool, default=False, help="ignore file B intersection output")
 def intersect(*args, **kwargs):
-    et.intersect(*args, **kwargs)
+    if any([kwargs.get("file_b"), kwargs.get("ioeb")]):
+        et.intersect(*args, **kwargs)

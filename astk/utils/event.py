@@ -2,6 +2,7 @@ from pathlib import Path
 
 import astk.utils.func  as ul
 import astk.utils.select as sl
+from astk.types import FilePath
 
 
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
@@ -92,18 +93,34 @@ def psi_filter(file, output, psi, quantile):
         pf.run(output)
   
 
-def intersect(file_a, file_b, output):
+def intersect(
+    file_a: FilePath,
+    file_b: FilePath,
+    output: FilePath, 
+    ioeb: FilePath, 
+    ignoreb: bool
+    ) -> None:
+
     from pandas import read_csv
 
-    fa = Path(file_a)
-    fb = Path(file_b)
-    dfa = read_csv(fa, sep="\t", index_col=0)
-    dfb = read_csv(fb, sep="\t", index_col=0)
-
-    share_id = list(set(dfa.index) & set(dfb.index))
     outname = Path(output).stem
     outdir = Path(output).parent
-    out_a = outdir / Path(f"{outname}_a{fa.suffix}")
-    out_b = outdir / Path(f"{outname}_b{fb.suffix}")
+    fa = Path(file_a)
+    dfa = read_csv(fa, sep="\t", index_col=0)
+
+    if file_b:
+        fb = Path(file_b)
+        dfb = read_csv(fb, sep="\t", index_col=0)
+        fb_idx = dfb.index
+        out_a = outdir / Path(f"{outname}_a{fa.suffix}")
+    elif ioeb:
+        dfb = read_csv(ioeb, sep="\t")
+        fb_idx = dfb["event_id"]
+        out_a = outdir / Path(f"{outname}{fa.suffix}")
+    
+    share_id = list(set(dfa.index) & set(fb_idx))   
     dfa.loc[share_id, :].to_csv(out_a, sep="\t")
-    dfb.loc[share_id, :].to_csv(out_b, sep="\t")
+
+    if file_b and (not ignoreb):
+        out_b = outdir / Path(f"{outname}_b{fb.suffix}")
+        dfb.loc[share_id, :].to_csv(out_b, sep="\t")
