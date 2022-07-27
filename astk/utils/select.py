@@ -7,7 +7,7 @@ This module provides data filter function.
 
 from pathlib import Path
 
-import pandas as pd
+from pandas import read_csv
 
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
@@ -40,7 +40,7 @@ class SigFilter:
         self.set_out(out)
  
     def filter_dpsi(self):
-        dpsi_df = pd.read_csv(self.dpsi_file, sep="\t", index_col=0)
+        dpsi_df = read_csv(self.dpsi_file, sep="\t", index_col=0)
         old_col = dpsi_df.columns
         dpsi_df.columns = ["dpsi", "pval"]
         filter_df = sig_filter(dpsi_df, dpsi=self.dpsi, abs_dpsi=self.abs_dpsi, pval=self.pval)
@@ -63,7 +63,7 @@ class SigFilter:
                        
     def filter_psi(self):
         for i, pf in enumerate(self.psi_file):
-            psi = pd.read_csv(pf, sep="\t")
+            psi = read_csv(pf, sep="\t")
             psi.index = psi["event_id"]
             if len(set(self.sig_event) & set(psi.index)) > 0:
                 sig_psi = psi.loc[self.sig_event, ]
@@ -105,7 +105,7 @@ class PsiFilter:
         self.file = file
         self.threshold = threshold
         self.quantile = quantile
-        self.psi_df = pd.read_csv(file, sep="\t", index_col=0).dropna()
+        self.psi_df = read_csv(file, sep="\t", index_col=0).dropna()
         self.mean_psi = self.psi_df.apply(lambda row: sum(row)/len(row), axis=1)   
 
     def value_filter(self):

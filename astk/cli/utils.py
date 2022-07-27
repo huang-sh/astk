@@ -5,7 +5,7 @@ This module provide some utility function
 """
 
 from .config import *
-import astk.utils as ul
+import astk.utils._cli_func as ul
 
 
 @click.command(help="generate metadata template file")
@@ -29,6 +29,7 @@ import astk.utils as ul
 def meta(*args, **kwargs):
     ul.meta(*args, **kwargs)
 
+
 @click.command(help = "install R packages")
 @click.option('-r', '--requirement', is_flag=True, default=False,
                 help="install astk requirement R packages")
@@ -43,6 +44,7 @@ def meta(*args, **kwargs):
                 help="use tsinghua mirrors.")
 def install(*args, **kwargs):
     ul.install(*args, **kwargs)
+
 
 @click.command(help = "get motif from meme file")
 @click.argument('motifId', nargs=-1, required=True)   
@@ -61,6 +63,7 @@ def getmeme(*args, **kwargs):
 def list_(*args, **kwargs):
     ul.list_(*args, **kwargs)
 
+
 @click.command(help = "generate ChromHMM anchor file")
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('-o', '--output', required=True, help="file output path")
@@ -72,6 +75,7 @@ def list_(*args, **kwargs):
 def anchor(*args, **kwargs):
     ul.anchor(*args, **kwargs)
  
+
 @click.command(help = "generate bed file according to selected coordinates")
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('-o', '--output', required=True, help="file output path")

@@ -4,7 +4,6 @@ astk.cli.seqfeature
 This module provide sequence feature extraction cli api
 """
 
-from email.policy import default
 from .config import *
 import astk.seqfeature.feature as sf
 

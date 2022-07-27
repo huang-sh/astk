@@ -10,7 +10,7 @@ import json
 from itertools import chain, repeat
 from pathlib import Path
 
-import pandas as pd
+from pandas import DataFrame, concat
 
 
 class Template:
@@ -59,7 +59,7 @@ class Template:
             ssym, sidx = split_param[0], split_param[1:]
             names = [sub_name(sidx, n.split(ssym)) for n in names]            
 
-        sdf = pd.DataFrame({
+        sdf = DataFrame({
             "group": group_ls,                                                                                                                                                                                                                                                                               
             "replicate": rep_ls,
             "name": names,
@@ -85,7 +85,7 @@ class Template:
             df2 = self.df_generate(group_name, repN2, path2, **kwargs)
             df1.insert(1, "condition", self.condition[0])
             df2.insert(1, "condition", self.condition[1])
-            df = pd.concat([df1, df2]).sort_values(by=["group", "condition"])
+            df = concat([df1, df2]).sort_values(by=["group", "condition"])
   
         else:
             if path1:
