@@ -3,6 +3,7 @@ from pathlib import Path
 import astk.utils.func  as ul
 import astk.utils.select as sl
 from astk.types import FilePath
+from ._func import SuppaEventID
 
 
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
@@ -10,21 +11,22 @@ def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
 
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
-        exit()                   
-    ioe_df = pd.read_csv(infile, sep="\t")
-    if "event_id" not in ioe_df.columns:
-        print("file does not support!")
         exit()
-
-    info_df = ul.extract_info(ioe_df)
-    info_df["event_id"] = ioe_df["event_id"]
-    output = Path(output).with_suffix(".png")
-    if custom_len:
-        lens = [int(i) for i in custom_len]
-        df = ul.custome_cluster_len(info_df, output, lens, width=width, max_len=max_len)
+    edf = pd.read_csv(infile, sep="\t", index_col=0)
+    ae_lens = [SuppaEventID(eid).alter_element_len for eid in edf.index]
+    counts, bin_edges = ul.len_hist(ae_lens, width, max_len)
+    cluster_ls = []
+    clens = [0] + list(custom_len)
+    print(clens)
+    for i in range(1, len(clens)):
+        print( clens[i-1], clens[i])
+        subset = [l for l in  ae_lens if clens[i-1] < l <= clens[i]]
+        cluster_ls.append(subset)
     else:
-        df = ul.cluster_len(info_df, output, n_cls=cluster, max_len=max_len, len_weight=len_weight, width=width)
-    df.to_csv(Path(output).parent / f"{Path(output).stem}_cls_info.csv", index=False)
+        subset = [l for l in  ae_lens if l > clens[-1]]
+        cluster_ls.append(subset)
+    output = Path(output).with_suffix(".png")
+    ul.plot_hist_cluster(output, cluster_ls, bin_edges)
 
 
 def len_cluster(files, indir, outdir, lenrange):
@@ -57,13 +59,12 @@ def len_cluster(files, indir, outdir, lenrange):
 
 
 def len_pick(infile, output, len_range):
-    import astk.utils.event_id as ei
     import pandas as pd
 
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()                   
-    AS_len = lambda x: ei.SuppaEventID(x).alter_element_len
+    AS_len = lambda x: SuppaEventID(x).alter_element_len
 
     df = pd.read_csv(infile, sep="\t", index_col=0)
     cols = df.columns
