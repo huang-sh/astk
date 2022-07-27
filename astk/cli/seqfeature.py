@@ -8,7 +8,6 @@ from .config import *
 import astk.seqfeature.feature as sf
 
 
-
 @click.command(help = "extract DNA sequence feature ")
 @click.option('-fa', '--fasta', cls=MultiOption, type=click.Path(exists=True), 
                 required=True, help="DNA sequence fasta file")
@@ -21,6 +20,7 @@ import astk.seqfeature.feature as sf
 @click.option('-FM', "--featureMerge", is_flag=True, default=False, help="feature count")
 def sc_extract(*args, **kwargs):
     sf.seq_extract(*args, **kwargs)
+
 
 @click.command(help = "draw seqLogo")
 @click.option('-fa', '--fasta', type=click.Path(exists=True), 
