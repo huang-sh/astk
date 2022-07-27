@@ -1,8 +1,43 @@
-from email.policy import default
 from pathlib import Path
 
 from .config import *
 from astk import epi
+
+plotType_help_text = """
+lines" will plot the profile line based on the average type selected. "fill" fills the region between zero and the profile curve. The fill in color is semi transparent to
+distinguish different profiles. "se" and "std" color the region between the profile and the standard error or standard deviation of the data. (default: lines)")
+"""
+
+@click.command(help="signal profile withing splicing sites")
+@click.option('-o', '--output', required=True, type=click.Path(),
+                help="output path")
+@click.option('-e', '--eventFile', "event_file", type=click.Path(exists=True),
+                help="AS event file that including AS event id")
+@click.option('-bw', '--bwFile', "bw_files", cls=MultiOption, type=click.Path(exists=True),
+                help="AS event files that including AS event id")
+@click.option('-bs', '--binSize', "bin_size", default=5, type=int, 
+                help="bin size, default=5")
+@click.option('-uw', '--upStreamWidth', "ups_width", default=150, type=int, 
+                help="upstream width, default=150")
+@click.option('-dw', '--downStreamWidth', "dws_width", default=150, type=int, 
+                help="downstream width, default=150")
+@click.option('-p', '--process', "threads", default=4, type=int, 
+                help="running processors, default=4")
+@click.option('--plotType', 'plot_type', type=click.Choice(['lines',"fill","se",'std']), 
+                default="lines", help=plotType_help_text)
+@click.option('--colorMap', 'color_map', default="RdYlBu", help="Color map to use for the heatmap.")
+@click.option('-fmt', '--figureFormat', "plot_format", type=click.Choice(['png',"pdf","svg",'plotly']), 
+                default="pdf", help="Image format type")
+@click.option('--height', 'fig_height', default=28, type=int, 
+                help="plot height in cm, default=28")
+@click.option('--width', 'fig_width', default=4, type=int, 
+                help="plot width in cm, default=4")
+@click.option('-ssl', '--splicingSiteLabel', "regionsLabel", cls=MultiOption, 
+                help="splicing site labels")
+@click.option('--samplesLabel', 'samplesLabel', cls=MultiOption, 
+                help="bw samples labels")
+def signal_profile(*args, **kwargs):
+    epi.signal_heatmap(*args, **kwargs)
 
 
 @click.command(help="epi feature extract")

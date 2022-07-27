@@ -49,9 +49,10 @@ cli_fun.add_command(nease_sc, name=["nease"])
 # cli_fun.add_command(enrich_lc, help=["enrichLenCluster", "elc"])
 
 ## epigenetic analysis module
-cli_fun.add_command(epi_sc, name=["epi"])
+#cli_fun.add_command(epi_sc, name=["epi"])
 # cli_fun.add_command(epihm)
-cli_fun.add_command(epi_profile_sc, name=["epiProfile", "ep"])
+# cli_fun.add_command(epi_profile_sc, name=["epiProfile", "ep"])
+cli_fun.add_command(signal_profile, name=["signalProfile", "sp"])
 
 ## drawing module
 cli_fun.add_command(gseplot)

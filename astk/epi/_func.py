@@ -1,16 +1,21 @@
+import os
 import sys
 import shutil
 import subprocess
 from pathlib import Path
 from functools import partial
-
-import pandas as pd
-import pysam
+from typing import Sequence
+from tempfile import NamedTemporaryFile
+from xxlimited import Str
 
 import astk.utils.func  as ul
 from astk.constant import *
+from astk.types import FilePath
+
 
 def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
+    import pandas as pd
+    import pysam
 
     def signal_func(chrN, start, end, sam, control_sam):
         if control_sam:
@@ -36,6 +41,9 @@ def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
 
 #TO-DO make it faster
 def epi_signal(out, achor_dic, bam_meta, width, binsize):
+    import pandas as pd
+    import pysam    
+
     df = pd.read_csv(bam_meta)
     cds = set(df.condition)
     df_ls = []
@@ -237,3 +245,67 @@ def epi_profile(file, output, title, ylim, fmt, width, height, resolution):
     param_ls = ul.parse_cmd_r(**param_dic)
     # print(param_ls)
     subprocess.run(["Rscript", rscript, *param_ls])
+
+
+def signal_heatmap(
+    output: FilePath,
+    event_file: FilePath,
+    bw_files: Sequence[FilePath],
+    bin_size: int,
+    ups_width: int,
+    dws_width: int,
+    threads: int,
+    plot_type: str,
+    color_map: str,
+    plot_format: str,
+    fig_height: float,
+    fig_width: float,
+    regionsLabel: Sequence[str],
+    samplesLabel: Sequence[str]
+) -> None:
+    from deeptools.computeMatrix import main as cpm
+    from deeptools.plotHeatmap import main as plothm
+    from pandas import concat
+
+    regionFiles = []
+    etype = ul.sniff_AS_type(event_file)
+
+    for i in range(1, SSN[etype]+1):
+        f = NamedTemporaryFile(delete=False)
+        f.close()
+        ps_coor_df = ul.get_coor_bed(event_file, None, None, False, i, 150, 150)
+        ns_coor_df = ul.get_coor_bed(event_file, None, None, False, 6-i, 150, 150)
+        ai_coor_df = concat([ps_coor_df.loc[ps_coor_df[5] == "+", ],
+                ns_coor_df.loc[ns_coor_df[5] == "-", ]])
+        ai_coor_df.to_csv(f.name, index=False, header=False, sep="\t")
+        regionFiles.append(f.name)
+    out = Path(output)
+    mtx_out = str(out.with_suffix(".mat.gz"))
+    fig_out = str(out.with_suffix(f".{plot_format}"))
+    mtx_args = [
+        "reference-point",
+        "-R", *regionFiles,
+        "-S", *bw_files,
+        "--referencePoint", "center",
+        "--beforeRegionStartLength", str(ups_width), 
+        "--afterRegionStartLength", str(dws_width), 
+        "--binSize", str(bin_size), 
+        "--numberOfProcessors", str(threads),
+        "--outFileName", mtx_out
+    ]
+    hm_args = [
+        "--matrixFile", mtx_out,
+        "--outFileName", fig_out,
+        "--plotType", plot_type, 
+        "--colorMap", color_map,
+        "--heatmapHeight", str(fig_height),
+        "--heatmapWidth", str(fig_width),
+        "--perGroup",
+        "--plotFileFormat", plot_format,
+        "--regionsLabel", *regionsLabel,
+        #"--samplesLabel", *samplesLabel,
+        "--refPointLabel", "SS"
+    ]
+    cpm(mtx_args)
+    plothm(hm_args)
+    [os.unlink(i) for i in regionFiles]
