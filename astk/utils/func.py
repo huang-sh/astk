@@ -3,8 +3,9 @@ import mmap
 from pathlib import Path
 from functools import partial
 
+from astk.event import SuppaEventID
 from astk.constant import OrgDb_dic, BASE_DIR
-from .event_id import SuppaEventID
+
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
     dpsi_df = df
@@ -32,7 +33,6 @@ def compute_feature_len(df):
 
 def extract_info(df):
     import pandas as pd
-    from .event_id import SuppaEventID
 
     AS_len = lambda x: SuppaEventID(x).alter_element_len
     chrs = df["event_id"].apply(lambda x: x.split(":")[1])
@@ -86,12 +86,13 @@ def custome_cluster_len(df, out, lens, width=10, max_len=500):
         cluster_ls.append(len_count[len_count > item])
         df.loc[len_count >= item, "cluster"] = idx + 2
 
-    lps = [1, *lens, max(bin_edges)]
-    cn_ls = [f"cluster{idx+1}" for i in range(len(lens)+1)]
-    range_ls = [f"{lps[i]}-{lps[i+1]}" for i in range(len(lps)-1)]
-    count_ls = [len(i) for i in cluster_ls]
-    cluster_info = pd.DataFrame({"cluster": cn_ls, "range": range_ls, "counts": count_ls})
-    cluster_info.to_csv(Path(out).with_suffix(".cluster.csv"))
+    ## cluster info saving
+    # lps = [1, *lens, max(bin_edges)]
+    # cn_ls = [f"cluster{idx+1}" for i in range(len(lens)+1)]
+    # range_ls = [f"{lps[i]}-{lps[i+1]}" for i in range(len(lps)-1)]
+    # count_ls = [len(i) for i in cluster_ls]
+    # cluster_info = pd.DataFrame({"cluster": cn_ls, "range": range_ls, "counts": count_ls})
+    # cluster_info.to_csv(Path(out).with_suffix(".cluster.csv"))
 
     plot_hist_cluster(out, cluster_ls, bin_edges)
     return df
