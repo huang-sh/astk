@@ -6,7 +6,7 @@ from pathlib import Path
 from astk.types import *
 from .AS_event import make_events
 from .event_psi import get_ioe_psi
-from  .gtf_parse import construct_genome
+from .gtf_parse import construct_genome
 from astk.suppa.lib.diff_tools import multiple_conditions_analysis as mca
 
 

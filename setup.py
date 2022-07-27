@@ -22,7 +22,8 @@ setup(
         "pybedtools",
         "nease",
         "biopython",
-        "pyecharts"
+        "pyecharts",
+        "deeptools"
     ],
     entry_points={
         "console_scripts": [

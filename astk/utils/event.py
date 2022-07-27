@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import utils.func  as ul
+import astk.utils.func  as ul
 import astk.utils.select as sl
 from astk.types import FilePath
 
