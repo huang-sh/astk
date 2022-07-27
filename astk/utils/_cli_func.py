@@ -8,8 +8,8 @@ from typing import Sequence, Union, Tuple
 import astk.ChromHMM as ch
 from astk.constant import *
 from . import func as ulf
-
 from astk.utils.meta_template import Template
+
 
 def meta(output, replicate, groupname, control, treatment, replicate1, replicate2, **kwargs):
 
@@ -87,31 +87,27 @@ def anchor(file, output, index, sideindex, offset5, offset3, strand_sp):
         print(e)
  
 
-def getcoor(file: Union[str, Path],
-            output: Union[str, Path],
-            anchor: Sequence[int], 
-            upstream_w: int, 
-            downstream_w: int, 
-            interval: Tuple[int, int],
-            strand_sp: bool,
-            fasta: Union[str, Path]
+def getcoor(
+    file: Union[str, Path],
+    output: Union[str, Path],
+    anchor: Sequence[int], 
+    upstream_w: int, 
+    downstream_w: int, 
+    interval: Tuple[int, int],
+    strand_sp: bool,
+    fasta: Union[str, Path]
     ):
     start, end = interval
     if not any([start, end, anchor]):
-        from .event_id import SuppaEventID
-
-        with open(file, "r") as f:
-            next(f)
-            line = f.readline()
-            line.split()[0]
-        ei = SuppaEventID(line.split()[0])
-        anchors = list(range(1, len(ei.coordinates)+1))
+        etype = ulf.sniff_AS_type(file)
+        anchors = list(range(1, SSN[etype]+1))
     else:
         anchors = anchor
 
     for  a in anchors:
         try:
             coor_df = ulf.get_coor_bed(file, start, end, strand_sp, a, upstream_w, downstream_w)
+            print(file, start, end, strand_sp, a, upstream_w, downstream_w)
             out_bed = Path(output).with_suffix(f".a{a}.bed")
             coor_df.to_csv(out_bed, index=False, header=False, sep="\t")
             if fasta:
@@ -134,6 +130,7 @@ def mkTxDb(gtf, organism, output):
     param_ls = ulf.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])    
 
+
 def getgene(file, output, unique):
     import pandas as pd
     from .event_id import SuppaEventID
@@ -147,3 +144,5 @@ def getgene(file, output, unique):
     if output is None:
         output = sys.stdout
     gene_df.to_csv(output, index=False, header=False, sep="\t")
+
+    

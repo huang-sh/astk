@@ -4,10 +4,7 @@ from pathlib import Path
 from functools import partial
 
 from astk.constant import OrgDb_dic, BASE_DIR
-# from astk.suppa.lib.gtf_store import *
-# from astk.suppa.lib.tools import *
-from . import event_id as ei
-
+from .event_id import SuppaEventID
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
     dpsi_df = df
@@ -26,12 +23,12 @@ def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
 
 def compute_feature_len(df):
     import pandas as pd
-    from .event_id import SuppaEventID
 
     AS_len = lambda x: SuppaEventID(x).alter_element_len
     lens = df["event_id"].apply(AS_len)
     len_df = pd.DataFrame(lens.tolist())
     return len_df
+
 
 def extract_info(df):
     import pandas as pd
@@ -168,7 +165,7 @@ def check_kegg_RData(org):
 
 
 def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
-    eid = ei.SuppaEventID(event_id)
+    eid = SuppaEventID(event_id)
     if eid.strand == "-" and strand_sp:
         coordinates = eid.coordinates[::-1]
     else:
@@ -191,6 +188,7 @@ def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
     return eid.Chr, s, e, event_id, 0, eid.strand
 
 
+#TODO re-code it
 def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstream_w):
     import pandas as pd
 
@@ -214,7 +212,7 @@ def get_coor_fa(df, fasta, out):
 
 
 def get_anchor_coor(event_id, index, sideindex, offset5, offset3, strand_sp):
-    eid = ei.SuppaEventID(event_id)
+    eid = SuppaEventID(event_id)
     if eid.strand == "-" and strand_sp:
         coordinates = eid.coordinates[::-1]
     else:
@@ -292,7 +290,7 @@ def sep_name(name, sep, *idx):
 def df_len_select(infile, outfile, s, e):
     import pandas as pd
 
-    AS_len = lambda x: ei.SuppaEventID(x).alter_element_len
+    AS_len = lambda x: SuppaEventID(x).alter_element_len
     df = pd.read_csv(infile, sep="\t", index_col=0)
     cols = df.columns
     df["event_id"] = df.index
@@ -308,3 +306,14 @@ def get_num_lines(file_path):
     while buf.readline():
         lines += 1
     return lines
+
+
+def sniff_AS_type(file):
+    with open(file, "r") as f:
+        next(f)
+        lines = f.readlines()
+        events = [SuppaEventID(line.split()[0]) for line in lines]
+        if len(set([e.AS_type for e in events])) != 1:
+            exit()
+        
+    return events[0].AS_type

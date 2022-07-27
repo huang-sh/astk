@@ -58,3 +58,13 @@ GTF_COLUMNS = [
     "frame",
     "attribute",
 ]
+
+SSN = {
+    "SE": 4,
+    "MX": 6,
+    "A5": 3,
+    "A3": 3,
+    "RI": 4,   # In fact, it only has two
+    "AF": 5,   # In fact, it only has four
+    "AL": 5    # In fact, it only has four
+}
