@@ -1,12 +1,12 @@
 from .config import *
-from astk.utils import event as et
+from astk.event import _cli_func as et
 
 
 @click.command(help="length distribution")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True),
                 required=True,  help='AS ioe file')
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-cl', '--custom_len', 'custom_len', cls=MultiOption, type=tuple, help="custom length")
+@click.option('-cl', '--custom_len', 'custom_len', cls=MultiOption, type=int, help="custom length")
 @click.option('-nc', '--cluster', type=int, default=4, help="number of cluster")
 @click.option('-bw', '--width', type=int, default=3, help="bin width")
 @click.option('-lw', '--len_weight', type=float, default=2, help="length weight")
