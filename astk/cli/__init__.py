@@ -26,7 +26,7 @@ cli_fun.add_command(dsflow, name=["dsflow"])
 cli_fun.add_command(len_dist, name=["lenDist", "ld"])
 cli_fun.add_command(len_cluster, name=["lenCluster", "lc"])
 cli_fun.add_command(len_pick, name=["lenPick", "lp"])
-cli_fun.add_command(sigfilter, name=["sigfilter", "sf"])
+cli_fun.add_command(sigfilter, name=["sigFilter", "sf"])
 cli_fun.add_command(psi_filter, name=["psiFilter", "pf"])
 cli_fun.add_command(intersect, name=["intersect"])
 
