@@ -90,8 +90,8 @@ def sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
 def psi_filter(file, output, psi, quantile):
 
     if file:
-        pf = sl.PsiFilter(file, psi, quantile)
-        pf.run(output)
+        pf = sl.PsiFilter(file, output, psi, quantile)
+        pf.run()
   
 
 def intersect(

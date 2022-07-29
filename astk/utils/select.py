@@ -101,8 +101,9 @@ class SigFilter:
 
 class PsiFilter:
 
-    def __init__(self, file, threshold, quantile) -> None:
+    def __init__(self, file, output, threshold, quantile) -> None:
         self.file = file
+        self.output = output
         self.threshold = threshold
         self.quantile = quantile
         self.psi_df = read_csv(file, sep="\t", index_col=0).dropna()
@@ -121,19 +122,18 @@ class PsiFilter:
         qt = self.quantile
         mp = self.mean_psi
         th = mp.quantile(abs(qt))
-        print(th)
         if qt >= 0:
             filter_idx = mp[mp > th].index
         else:
             filter_idx = mp[mp <th].index
         return self.psi_df.loc[filter_idx, ]
     
-    def run(self, out):
+    def run(self):
         if self.threshold:
             psi_df = self.value_filter()
         elif self.quantile:
             psi_df = self.quantile_filter()
         else:
             psi_df = self.psi_df    
-        psi_df.to_csv(out, sep="\t", index_label=False)
+        psi_df.to_csv(self.output, sep="\t", index_label=False)
         
