@@ -42,12 +42,13 @@ def generate_events(gtf, event_types, output, split):
     make_events(output, genome, event_types, split)
 
 
-def diff_splice(psi_files: Sequence[FilePath],
-                exp_files: Sequence[FilePath],
-                reference: FilePath,
-                output: FilePath,
-                method: str
-    ):
+def diff_splice(
+    psi_files: Sequence[FilePath],
+    exp_files: Sequence[FilePath],
+    reference: FilePath,
+    output: FilePath,
+    method: str
+):
     mca(method, psi_files, exp_files, reference, 1000, 0, 
         False, True, 0.05, True, False, False, 0, 0, str(output))                 
 
@@ -66,14 +67,16 @@ def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
     ioe_df = pd.read_csv(ioe, sep="\t")
 
     psi_dic = {}
+    tpm_ls = []
     for tf in tpm_files:
         sf_name = Path(tf).parent.name  # only consider salmon output, now
         tpm_df = read_tpm(tf, sf_name, tpm_col)
         psi_dic[sf_name] = get_ioe_psi(ioe_df, tpm_df, tpm_th=tpm_th)
-    
+        tpm_ls.append(tpm_df)
+    tpm_df = pd.concat(tpm_ls, axis=1)
     psi_df = pd.DataFrame(psi_dic)
     psi_df.index = ioe_df["event_id"]
-    return psi_df
+    return psi_df, tpm_df
 
 
 def parse_meta(meta_file: FilePath) -> Dict:
