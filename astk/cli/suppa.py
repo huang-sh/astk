@@ -33,9 +33,13 @@ def generateEvents(*args, **kwargs):
 @click.option('--txCol', "tx_col", type=int, default=0, 
                 help="transcript ID columns index, 0-based")
 def compute_psi(*args, **kwargs):
+    from pathlib import Path
+    
     output = kwargs.pop("output")
-    psi_df = calculate_psi(*args, **kwargs)
+    psi_df, tpm_df = calculate_psi(*args, **kwargs)
     psi_df.to_csv(output, sep="\t")
+    tpm_df.to_csv(Path(output).with_suffix(".tpm"), sep="\t")
+
 
 
 @click.command(help="differential splicing analysis")
