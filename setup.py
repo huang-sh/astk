@@ -18,6 +18,7 @@ setup(
         "matplotlib>=3.4.0",
         "scikit-learn>=0.24.0",
         "statsmodels>= 0.12.0",
+        "tqdm",
         "pysam",
         "pybedtools",
         "nease",
