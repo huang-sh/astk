@@ -34,7 +34,8 @@ def len_pick(*args, **kwargs):
 
 
 @click.command(help="filter significant result")
-@click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)  
+@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-od', '--outDir', required=True, help="output directory")
 @click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value")
 @click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
@@ -50,7 +51,8 @@ def sigfilter(*args, **kwargs):
 
 
 @click.command(help="filter psi result")
-@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', "file", type=click.Path(exists=True),
+                help="input psi file")
 #@click.option('-md', '--metadata', type=click.Path(exists=True), help="metadata file")
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-psi', '--psi', type=float, default=0, help="psi threshold value")
