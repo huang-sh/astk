@@ -27,8 +27,7 @@ if (args$requirement){
     ## Install packages from Cran
 
     cran.packages <- c("tidyverse", "ggplot2", "argparse", 
-                       "UpSetR", "eoffice", "ggnewscale", 
-                       "ggsignif")
+                       "UpSetR", "eoffice", "ggnewscale")
 
     for(i in cran.packages){
     if(!(i %in% rownames(installed.packages()))){

@@ -84,7 +84,8 @@ def mmap(*args, **kwargs):
 
 
 @click.command(help="Eukaryotic Linear Motif Searching")
-@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', "file", type=click.Path(exists=True),
+                help="input file")
 @click.option('-o', '--output', type=click.Path(), help="output path")
 @click.option('-g', '--genome', type=click.Choice(['mm10', 'hg38']),
                   required=True, help="genome assembly")

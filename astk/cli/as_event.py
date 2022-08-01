@@ -16,7 +16,8 @@ def len_dist(*args, **kwargs):
 
 
 @click.command(help="length cluster")
-@click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-id', '--inDir', type=click.Path(exists=True), help='input direcory')
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-lr', '--lenRange', cls=MultiOption, type=int,
