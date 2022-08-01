@@ -1,0 +1,182 @@
+{
+    "fb_e11_12": {
+        "control": {
+            "samples": [
+                {
+                    "name": "fb_e11.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e11.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e11.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e11.5_rep2/quant.sf"
+                }
+            ]
+        },
+        "treatment": {
+            "samples": [
+                {
+                    "name": "fb_e12.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e12.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e12.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e12.5_rep2/quant.sf"
+                }
+            ]
+        }
+    },
+    "fb_e11_13": {
+        "control": {
+            "samples": [
+                {
+                    "name": "fb_e11.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e11.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e11.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e11.5_rep2/quant.sf"
+                }
+            ]
+        },
+        "treatment": {
+            "samples": [
+                {
+                    "name": "fb_e13.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e13.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e13.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e13.5_rep2/quant.sf"
+                }
+            ]
+        }
+    },
+    "fb_e11_14": {
+        "control": {
+            "samples": [
+                {
+                    "name": "fb_e11.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e11.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e11.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e11.5_rep2/quant.sf"
+                }
+            ]
+        },
+        "treatment": {
+            "samples": [
+                {
+                    "name": "fb_e14.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e14.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e14.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e14.5_rep2/quant.sf"
+                }
+            ]
+        }
+    },
+    "fb_e11_15": {
+        "control": {
+            "samples": [
+                {
+                    "name": "fb_e11.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e11.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e11.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e11.5_rep2/quant.sf"
+                }
+            ]
+        },
+        "treatment": {
+            "samples": [
+                {
+                    "name": "fb_e15.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e15.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e15.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e15.5_rep2/quant.sf"
+                }
+            ]
+        }
+    },
+    "fb_e11_16": {
+        "control": {
+            "samples": [
+                {
+                    "name": "fb_e11.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e11.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e11.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e11.5_rep2/quant.sf"
+                }
+            ]
+        },
+        "treatment": {
+            "samples": [
+                {
+                    "name": "fb_e16.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e16.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e16.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e16.5_rep2/quant.sf"
+                }
+            ]
+        }
+    },
+    "fb_e11_p0": {
+        "control": {
+            "samples": [
+                {
+                    "name": "fb_e11.5_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_e11.5_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_e11.5_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_e11.5_rep2/quant.sf"
+                }
+            ]
+        },
+        "treatment": {
+            "samples": [
+                {
+                    "name": "fb_p0_rep1",
+                    "replicate": 1,
+                    "path": "data/quant/fb_p0_rep1/quant.sf"
+                },
+                {
+                    "name": "fb_p0_rep2",
+                    "replicate": 2,
+                    "path": "data/quant/fb_p0_rep2/quant.sf"
+                }
+            ]
+        }
+    }
+}
