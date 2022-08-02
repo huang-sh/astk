@@ -3,23 +3,25 @@ import astk.motif as mo
 
 
 @click.command(["motifEnrich", "me"], help = "Motif Enrichment")
-@click.option('-tf', "--tfasta", cls=MultiOption, type=click.Path(exists=True), 
-                required=True, help="input fasta files")
-@click.option('-cf', "--cfasta", cls=MultiOption, type=click.Path(exists=True), 
-                help="control fasta files")                
+@click.option('-te', "--tevent", type=click.Path(exists=True), 
+                required=True, help="treatment event file")
+@click.option('-ce', "--cevent", type=click.Path(exists=True), 
+                help="control  event file")  
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
                  default="CISBP-RNA", help="RBP motif database default=CISBP-RNA")
 @click.option('-org', '--organism', help="RBP organism")
+@click.option('-fi', 'fasta', type=click.Path(exists=True), 
+                help="Input FASTA file. if set, the fasta sequence will be extracted")
 # @click.option('-mm', '--meme', type=click.Path(exists=True), 
 #                 required=True, help="path to .meme format file")
 def motif_enrich(*args, **kwargs):
     mo.motif_enrich(*args, **kwargs)
 
 @click.command(help = "Motif Discovery and similarity comparision")
-@click.option('-tf', "--tfasta", cls=MultiOption, type=click.Path(exists=True), 
+@click.option('-te', "--tevent", type=click.Path(exists=True), 
                 required=True, help="fasta file")
-@click.option('-cf', "--cfasta", cls=MultiOption, type=click.Path(exists=True), 
+@click.option('-ce', "--cevent", type=click.Path(exists=True), 
                 help="control fasta files")                     
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
@@ -33,9 +35,11 @@ def motif_enrich(*args, **kwargs):
 @click.option('-eval', '--evalue', type=float, default=0.5,
                 help="motif comparison pvalue cutoff, default=0.5")
 @click.option('-minw', '--minw', type=int, default=5,
-                 help="minimal motifs width,default=5")                    
+                 help="minimal motifs width,default=5")
 @click.option('-maxw', '--maxw', type=int, default=15,
-                 help="maximal motifs width, default=15")               
+                 help="maximal motifs width, default=15")
+@click.option('-fi', 'fasta', type=click.Path(exists=True), 
+                help="Input FASTA file. if set, the fasta sequence will be extracted")                        
 def motif_find(*args, **kwargs):
     mo.motif_find(*args, **kwargs)
 
