@@ -3,8 +3,9 @@ import mmap
 from pathlib import Path
 from functools import partial
 
+from astk.types import FilePath
 from astk.event import SuppaEventID
-from astk.constant import OrgDb_dic, BASE_DIR
+from astk.constant import OrgDb_dic, BASE_DIR, SSN
 
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
@@ -249,6 +250,26 @@ def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp
     coors = dpsi_df["event_id"].apply(wget_anchor_coor)
     coor_df = pd.DataFrame(coors.tolist())
     coor_df.to_csv(out, index=False, header=False, sep="\t")
+
+
+def get_evnet_ss_bed(
+    event_file: FilePath, 
+    ups_width: int, 
+    dws_width: int
+    ):
+    from pandas import concat
+    dic = {}
+    etype = sniff_AS_type(event_file)
+    for i in range(1, SSN[etype]+1):
+        ps_coor_df = get_coor_bed(event_file, None, None, False, 
+                        i, ups_width, dws_width)
+        ns_coor_df = get_coor_bed(event_file, None, None, False, 
+                        SSN[etype]+1-i, dws_width, ups_width)
+        ai_coor_df = concat([
+                        ps_coor_df.loc[ps_coor_df[5] == "+", ],
+                        ns_coor_df.loc[ns_coor_df[5] == "-", ]])
+        dic[f"SS{i}"] = ai_coor_df
+    return dic
 
 
 def parse_cmd_r(**param_dic):

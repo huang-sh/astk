@@ -6,7 +6,6 @@ from pathlib import Path
 from functools import partial
 from typing import Sequence
 from tempfile import NamedTemporaryFile
-from xxlimited import Str
 
 import astk.utils.func  as ul
 from astk.constant import *
@@ -268,17 +267,14 @@ def signal_heatmap(
     from pandas import concat
 
     regionFiles = []
-    etype = ul.sniff_AS_type(event_file)
 
-    for i in range(1, SSN[etype]+1):
+    df_dic = ul.get_evnet_ss_bed(event_file, 150, 150)
+    for df in df_dic.values():
         f = NamedTemporaryFile(delete=False)
         f.close()
-        ps_coor_df = ul.get_coor_bed(event_file, None, None, False, i, 150, 150)
-        ns_coor_df = ul.get_coor_bed(event_file, None, None, False, 6-i, 150, 150)
-        ai_coor_df = concat([ps_coor_df.loc[ps_coor_df[5] == "+", ],
-                ns_coor_df.loc[ns_coor_df[5] == "-", ]])
-        ai_coor_df.to_csv(f.name, index=False, header=False, sep="\t")
+        df.to_csv(f.name, index=False, header=False, sep="\t")
         regionFiles.append(f.name)
+        
     out = Path(output)
     mtx_out = str(out.with_suffix(".mat.gz"))
     fig_out = str(out.with_suffix(f".{plot_format}"))
