@@ -107,7 +107,6 @@ def getcoor(
     for  a in anchors:
         try:
             coor_df = ulf.get_coor_bed(file, start, end, strand_sp, a, upstream_w, downstream_w)
-            print(file, start, end, strand_sp, a, upstream_w, downstream_w)
             out_bed = Path(output).with_suffix(f".a{a}.bed")
             coor_df.to_csv(out_bed, index=False, header=False, sep="\t")
             if fasta:
@@ -133,7 +132,7 @@ def mkTxDb(gtf, organism, output):
 
 def getgene(file, output, unique):
     import pandas as pd
-    from .event_id import SuppaEventID
+    from astk.event import SuppaEventID
 
     dpsi_df = pd.read_csv(file, sep="\t", index_col=0)
     gene_df = pd.DataFrame(
