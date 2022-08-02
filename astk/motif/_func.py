@@ -134,13 +134,26 @@ def motif_plot(motifid, database, organism, meme, output, fmt, width, height, re
     subprocess.run(["Rscript", rscript, *param_ls])
 
 
-def mmap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height, resolution):
+def mmap(event, fasta, name, center, meme, outdir, binsize, step, fmt, width, height, resolution):
 
     rscript = BASE_DIR / "R" / "motifMap.R"
-    Path(outdir).mkdir(exist_ok=True)
+    outdir = Path(outdir)
+    outdir.mkdir(exist_ok=True)
+    case_fa_ls = []
+    df_dic = ul.get_evnet_ss_bed(event, 150, 150)
+    for ssi, df in df_dic.items():
+        ssi_dir = outdir / ssi
+        ssi_dir.mkdir(exist_ok=True)
+        ssi_bed = ssi_dir / f"{ssi}.bed"
+        ssi_fa = ssi_dir / f"{ssi}.fa"
+        ## ## the complete event_id may cause some bug in motif analysis, eg fimo 
+        df[3] = [f"event{i}" for i in range(df.shape[0])]
+        df.to_csv(ssi_bed, index=False, header=False, sep="\t")
+        ul.get_coor_fa(df, fasta, ssi_fa)
+        case_fa_ls.append(ssi_fa)
 
     param_dic = {
-        "fasta": fasta,
+        "fasta": case_fa_ls,
         "outdir": outdir, 
         "meme": meme,
         "width": width, 
@@ -149,8 +162,8 @@ def mmap(fasta, name, center, meme, outdir, binsize, step, fmt, width, height, r
         "bin": binsize,
         "step": step,
         "fmt": fmt,
-        "center": center if len(center) ==len(fasta) else ["0"] * len(fasta),
-        "seqid": name if len(name)==len(fasta) else [Path(i).stem for i in fasta]
+        "center": center if len(center) ==len(case_fa_ls) else ["0"] * len(case_fa_ls),
+        "seqid": name if len(name)==len(case_fa_ls) else [Path(i).stem for i in case_fa_ls]
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])

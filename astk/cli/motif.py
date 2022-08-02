@@ -20,9 +20,9 @@ def motif_enrich(*args, **kwargs):
 
 @click.command(help = "Motif Discovery and similarity comparision")
 @click.option('-te', "--tevent", type=click.Path(exists=True), 
-                required=True, help="fasta file")
+                required=True, help="AS treatment event file")
 @click.option('-ce', "--cevent", type=click.Path(exists=True), 
-                help="control fasta files")                     
+                help="AS treatment control event files")                     
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
 # @click.option('-mcmp', '--motifcmp', is_flag=True, 
@@ -64,8 +64,10 @@ def motif_plot(*args, **kwargs):
 
 
 @click.command(help = "generate motif map")
-@click.option('-fa', '--fasta', cls=MultiOption, type=click.Path(exists=True), 
-                required=True, help="fasta files")
+@click.option('-e', "--event", type=click.Path(exists=True), 
+                required=True, help="AS event file")
+@click.option('-fi', '--fasta', type=click.Path(exists=True), 
+                required=True, help="genome fasta file")
 @click.option('-n', '--name', cls=MultiOption, type=str,
                 help="fasta file names")
 @click.option('-c', '--center', cls=MultiOption, type=str,
@@ -73,7 +75,7 @@ def motif_plot(*args, **kwargs):
 @click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
                 help="meme motif file")
 @click.option('-od', '--outdir', default=".", type=click.Path(), 
-                help="meme motif file")
+                help="output directory")
 @click.option('-b', '--binsize', default=20, 
                 help="the window width for scanning motif, default=20")
 @click.option('-s', '--step', default=10, 
@@ -81,7 +83,7 @@ def motif_plot(*args, **kwargs):
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="png", help="out figure format")
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
-@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
+@click.option('--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def mmap(*args, **kwargs):
     mo.mmap(*args, **kwargs)
