@@ -286,6 +286,8 @@ the output of **sigFilter**  contain five types  of files (with - adpsi):
 ```bash
 $ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
     -psi 0.8 -o result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi
+$ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
+    -psi -0.2 -o result/fb_e11_based/psi/fb_e11_p0_SE_c2_02.psi
 ```
 
 **psiFilter** arguments
@@ -323,6 +325,10 @@ $ astk hm -i result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
     result/fb_e11_based/sig01/fb_e11_1*_SE_c2.sig.psi \
     -o img/fb_hm.png -fmt png
 
+docker run -v ~/project/astk/demo:/project/demo -e LOCAL_USER_ID=$(id -u) astk:0.0.1b \
+    astk hm -i demo/result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
+        demo/result/fb_e11_based/sig01/fb_e11_1*_SE_c2.sig.psi \
+        -o demo/img/fb_hm1.png -fmt png
 ```
 
 **heatmap** arguments
@@ -433,6 +439,100 @@ $ astk ecmp -i result/fb_e11_based/sig01_*/fb_e11_12_SE.sig.dpsi \
 ![GO.cmp.BP.png](demo/img/ecmp/fb_e11_12_SE_sig_cmp/GO.cmp.BP.qval0.1_pval0.1.png)
 
 
+#### motifEnrich
+
+**motifEnrich** is used for performing motif enrichment within splicing sites flanking sequence using RBP motif database. me is short alias.
+
+```bash
+$ astk me -te result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
+    -ce result/fb_e11_based/psi/fb_e11_p0_SE_c2_02.psi \
+    -od img/motif/fb_e11_p0_SE_me -org mm \
+    -fi GRCm38.primary_assembly.genome.fa
+
+```
+
+Arguments:
+
+* -te: input treatment event file
+* -ce: input control event file
+* -od: output directory
+* -org: organism
+* -fi: genome fasta, need indexed
+
+
+#### motifFind
+
+**motifFind** is used for performing motif discovery and the compared to known RBP motif. mf is short alias.
+
+```bash
+astk mf -te result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
+    -od img/motif/fb_e11_p0_SE_mf -org mm \
+    -fi GRCm38.primary_assembly.genome.fa
+```
+
+Arguments:
+
+* -te: input treatment event file
+* -od: output directory
+* -org: organism
+
+
+#### getmeme
+
+**getmeme** is used for querying ASTK built-in motif data.
+
+```bash 
+astk getmeme M316_0.6 M083_0.6 -db CISBP-RNA \
+    -org mm -o img/motif/query.meme
+```
+
+Arguments:
+
+* MOTIFID...: input motif IDs
+* -db: motif database
+* -org: organism
+* -o: output file path
+* 
+
+#### motifPlot
+
+**motifPlot** is used for drawing motif figure using motif meme data
+
+```bash
+astk mp -mi M316_0.6 M083_0.6 -mm img/motif/query.meme \
+    -o img/motif/motif_plot.png
+```
+
+Arguments:
+
+* MOTIFID...: input motif IDs
+* -db: motif database
+* -org: organism
+* -o: output file path
+
+![motif_plot.png](demo/img/motif/motif_plot.png)
+
+
+#### mmap
+
+**mmap** is used for generating motif map to show motif distribution.
+
+```bash
+astk mmap -e result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
+    -n a1 a2 a3 a4 -c 150 150 150 150 \
+    -mm img/motif/query.meme -od img/motif/motif_map \
+    -fi GRCm38.primary_assembly.genome.fa
+```
+
+Arguments:
+
+* -fa: input fasta files
+* -n: fasta files names
+* -c: center positions
+* -mm: motif meme file
+* -od: output directory
+* 
+
 #### signalProfile
 
 **signalProfile** is used to profile chromatin signal of splicing sites flank.
@@ -441,7 +541,7 @@ $ astk ecmp -i result/fb_e11_based/sig01_*/fb_e11_12_SE.sig.dpsi \
 astk pf -i result/fb_e11_based/psi/fb_e11_16_AF_c2.psi \
     -psi 0.8 -o result/fb_e11_based/psi/fb_16_AF_08.psi
 
-astk signalProfile -o demo/img/fb_16_AF_low_ATAC.png \
+astk signalProfile -o img/fb_16_AF_low_ATAC.png \
     -e result/fb_e11_based/psi/fb_16_AF_08.psi \
     -bw /home/huangshenghui/project/AD/others/astk/ATAC.e16.5.fb.bigwig \
     -ssl A1 A2 A3 A4 A5 -fmt png
@@ -471,4 +571,3 @@ Arguments:
 * -i: dpsi file path
 * -g: genome assembly
 * -o: output
-
