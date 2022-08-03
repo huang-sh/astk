@@ -45,7 +45,7 @@ def motif_find(*args, **kwargs):
 
 
 @click.command(help = "Motif plot")
-@click.option('-mi', "--motifId", "motifid", cls=MultiOption, type=str, 
+@click.option('-mi', "--motifId", "motifid", type=str, # cls=MultiOption, multiple motif plot will ccause bug
                 required=True, help="motif id")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
                 help="RBP motif database")
