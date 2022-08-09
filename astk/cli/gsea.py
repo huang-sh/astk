@@ -108,8 +108,9 @@ def enrich_lc(*args, **kwargs):
                 help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-db', '--database', type=click.Choice(NEASE_DATABASE), 
-                default="Reactome", help="nease enrich database")
+@click.option('-db', '--database', cls=MultiOption, type=click.Choice(NEASE_DATABASE), 
+                default="Reactome", help="nease enrich database, \
+                [PharmGKB|HumanCyc|Wikipathways|Reactome|KEGG|SMPDB|Signalink|NetPath|EHMN|INOH|BioCarta|PID]")
 @click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
                 help="organism") 
 def nease_sc(*args, **kwargs):
