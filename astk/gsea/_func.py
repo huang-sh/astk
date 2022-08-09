@@ -3,7 +3,7 @@ from pathlib import Path
 
 from astk.constant import BASE_DIR
 import astk.utils.func  as ul
-
+from astk.event import SuppaEventID
                 
 def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
     Path(outdir).mkdir(exist_ok=True)
@@ -158,11 +158,10 @@ def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Hum
 
 def nease_sc(file, outdir, pvalue, database, organism):
     import pandas as pd
-    import utils.event_id as ei
 
-    get_geneid = lambda x: ei.SuppaEventID(x).gene_id.split(".")[0]
-    get_start = lambda x: ei.SuppaEventID(x).alter_element_coor[0]
-    get_end = lambda x: ei.SuppaEventID(x).alter_element_coor[1]
+    get_geneid = lambda x: SuppaEventID(x).gene_id.split(".")[0]
+    get_start = lambda x: SuppaEventID(x).alter_element_coor[0]
+    get_end = lambda x: SuppaEventID(x).alter_element_coor[1]
 
     df = pd.read_csv(file, sep="\t", index_col=0)
     df["event_id"] = df.index
