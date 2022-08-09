@@ -18,6 +18,7 @@ setup(
         "matplotlib>=3.4.0",
         "scikit-learn>=0.24.0",
         "statsmodels>= 0.12.0",
+        "gseapy==0.10.8",  ## Temporarily specified version, the latest version has bugs when install 
         "tqdm",
         "pysam",
         "pybedtools",
