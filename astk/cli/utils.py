@@ -77,7 +77,8 @@ def anchor(*args, **kwargs):
  
 
 @click.command(help = "generate bed file according to selected coordinates")
-@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', 'file', type=click.Path(exists=True),
+                required=True,  help='AS event file')
 @click.option('-o', '--output', required=True, help="file output path")
 @click.option('-a', '--anchor', cls=MultiOption, type=int, 
                 help="splice site index. if not set, it will use all splice sites. 1-based")
