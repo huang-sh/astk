@@ -14,6 +14,7 @@ parser$add_argument("--maxw",  help=" maximal motifs width")
 parser$add_argument("--database", help="database")
 parser$add_argument("--organism", help="organism")
 parser$add_argument("--eval", help="eval")
+parser$add_argument("--meme_path ", help="meme_path ")
 
 args <- parser$parse_args()
 
@@ -52,7 +53,8 @@ res_ls <- lapply(file_ls, function(files){
                     minw   = args$minw,
                     maxw   = args$maxw,
                     pvt    = args$thresh,
-                    alph   = "rna"
+                    alph   = "rna",
+                    meme_path = args$meme_path
                     )
     memes::runTomTom(
         streme_out,
@@ -61,7 +63,8 @@ res_ls <- lapply(file_ls, function(files){
         thresh = args$eval,
         min_overlap = 5,
         evalue = TRUE,
-        silent = TRUE
+        silent = TRUE,
+         meme_path = args$meme_path
         )
 
 })

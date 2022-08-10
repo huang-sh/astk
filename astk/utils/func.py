@@ -339,3 +339,10 @@ def sniff_AS_type(file):
             exit()
         
     return events[0].AS_type
+
+
+def get_meme_path():
+    import os
+
+    meme_path = Path(os.popen("which meme").read().strip())
+    return str(Path(meme_path).parent)
