@@ -14,7 +14,6 @@ parser$add_argument("--organism", help="organism")
 parser$add_argument("--meme_path ", help="meme_path ")
 
 args <- parser$parse_args()
-print(args)
 
 motif_dir <- file.path(dirname(dirname(script_path)), "data/motif")
 if (args$database == "CISBP-RNA"){
