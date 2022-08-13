@@ -49,16 +49,16 @@ def motif_find(*args, **kwargs):
                 required=True, help="motif id")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
                 help="RBP motif database")
-@click.option('-org', '--organism', help="RBP organism")                
+@click.option('-org', '--organism', help="RBP organism")
 @click.option('-mm', "--meme", type=click.Path(exists=True), 
                 help="meme motif file")
 @click.option('-o', '--output', type=click.Path(), required=True,
                  help="output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format") 
+                 default="png", help="out figure format")
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")                 
+@click.option('--height', default=6, help="fig height, default=6 inches")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def motif_plot(*args, **kwargs):
     mo.motif_plot(*args, **kwargs)
 
@@ -71,7 +71,7 @@ def motif_plot(*args, **kwargs):
 @click.option('-n', '--name', cls=MultiOption, type=str,
                 help="fasta file names")
 @click.option('-c', '--center', cls=MultiOption, type=str,
-                help="fasta files names")                
+                help="fasta files names")
 @click.option('-mm', '--meme', required=True, type=click.Path(exists=True), 
                 help="meme motif file")
 @click.option('-od', '--outdir', default=".", type=click.Path(), 
