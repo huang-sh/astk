@@ -26,6 +26,13 @@ $ astk install -r
 ...
 ```
 
+### ASTK docker image
+It is recommended to use ASTK docker image because all dependencies have been installed in ASTK docker images. 
+
+```
+$ docker pull huangshing/astk:latest
+```
+
 ### Command
 
 **ASTK** works with a command/subcommand structure:
@@ -92,6 +99,51 @@ astk subcommand options
 * **install**: install other dependent software
 * **list**: list 20 orgnism annotation OrgDb
 
+### ASKT docker iamge Usage
+
+We could create a shortcut for the docker command with alias command. It is convenient for us to run the docker version of ASTK multiple times.
+
+```bash
+$ alias astkdocker="docker run --rm -v /home/test/project:/project -e MY_USER=$(id -u) huangshing/astk"
+```
+Please replace `/home/test/project`  with your path. This directory should contain some reference files and all files you need to analyze.
+
+```
+$ ll -h | cut -d " " -f 5-
+
+  446M Aug 12 21:08 ATAC.e16.5.fb.bigwig
+    27 Aug  8 16:40 data
+  1.4G Aug  8 22:03 gencode.v38.annotation.gtf
+  847M Aug  8 17:35 gencode.vM25.annotation.gtf
+  2.6G Aug  8 17:35 GRCm38.primary_assembly.genome.fa
+
+```
+
+And then we just run astk like:
+
+```
+$ astkdocker astk meta -h
+Usage: astk meta [OPTIONS]
+
+  generate metadata template file
+
+Options:
+  -p1, --control PATH           file path for condtion 1  [required]
+  -p2, --treatment PATH         file path for condtion 2  [required]
+  -gn, --groupName TEXT         group name
+  -repN, --replicate INTEGER    replicate, number
+  -o, --output PATH             metadata output path  [required]
+  -repN1, --replicate1 INTEGER  replicate1, number
+  -repN2, --replicate2 INTEGER  replicate2, number
+  --condition TEXT              condition name
+  -fn, --filename               file name
+  --split TEXT                  name split symbol and index
+  -h, --help                    Show this message and exit.
+
+
+```
+
+
 ### Usage
 
 #### Prepare
@@ -148,7 +200,7 @@ $ astk meta -o metadata/fb_e11_based -repN 2 \
 
 the output of **meta** is a CSV file and JSON file. CSV file is convenient for viewing in excel, and JSON file will be used in other sub-commands.
 
-![fb_e11_meta.csv](demo/img/fb_e11_meta.png)
+![fb_e11_meta.csv](demo/img/fb_e11_based_metadata.png)
 
 #### dsflow
 
@@ -325,10 +377,6 @@ $ astk hm -i result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
     result/fb_e11_based/sig01/fb_e11_1*_SE_c2.sig.psi \
     -o img/fb_hm.png -fmt png
 
-docker run -v ~/project/astk/demo:/project/demo -e LOCAL_USER_ID=$(id -u) astk:0.0.1b \
-    astk hm -i demo/result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
-        demo/result/fb_e11_based/sig01/fb_e11_1*_SE_c2.sig.psi \
-        -o demo/img/fb_hm1.png -fmt png
 ```
 
 **heatmap** arguments
@@ -381,7 +429,7 @@ $ astk upset -i result/fb_e11_based/sig01/fb_e11_12_SE.sig.dpsi \
 **lenCluster** provide a function for cluster AS events based on alternative exon/intron  length. **lc** is short alias of **lenCluster**.
 
 ```bash
-$ astk lc result/fb_e11_based/sig01/*dpsi -lr 1 51 251 1001 \
+$ astk lc -i result/fb_e11_based/sig01/*dpsi -lr 1 51 251 1001 \
 -od result/fb_e11_based/sig01
 
 ```
@@ -457,7 +505,7 @@ Arguments:
 * -ce: input control event file
 * -od: output directory
 * -org: organism
-* -fi: genome fasta, need indexed
+* -fi: genome fasta, need index
 
 
 #### motifFind
@@ -475,7 +523,7 @@ Arguments:
 * -te: input treatment event file
 * -od: output directory
 * -org: organism
-
+* -fi: genome fasta, need index
 
 #### getmeme
 
@@ -499,8 +547,9 @@ Arguments:
 **motifPlot** is used for drawing motif figure using motif meme data
 
 ```bash
-astk mp -mi M316_0.6 M083_0.6 -mm img/motif/query.meme \
-    -o img/motif/motif_plot.png
+astk mp -mi M083_0.6 -db CISBP-RNA -org mm \
+ -o img/motif/M083_0.6_plot.png -w 10
+
 ```
 
 Arguments:
@@ -510,7 +559,7 @@ Arguments:
 * -org: organism
 * -o: output file path
 
-![motif_plot.png](demo/img/motif/motif_plot.png)
+![motif_plot.png](demo/img/motif/M083_0.6_plot.png) 
 
 
 #### mmap
@@ -531,7 +580,7 @@ Arguments:
 * -c: center positions
 * -mm: motif meme file
 * -od: output directory
-* 
+* -fi: genome fasta, need index
 
 #### signalProfile
 
@@ -543,7 +592,7 @@ astk pf -i result/fb_e11_based/psi/fb_e11_16_AF_c2.psi \
 
 astk signalProfile -o img/fb_16_AF_low_ATAC.png \
     -e result/fb_e11_based/psi/fb_16_AF_08.psi \
-    -bw /home/huangshenghui/project/AD/others/astk/ATAC.e16.5.fb.bigwig \
+    -bw ATAC.e16.5.fb.bigwig \
     -ssl A1 A2 A3 A4 A5 -fmt png
 
 ```
@@ -571,3 +620,37 @@ Arguments:
 * -i: dpsi file path
 * -g: genome assembly
 * -o: output
+
+
+### FAQs
+
+**ERROR: compilation failed for package ‘magick’**
+
+```bash
+$ astk install -r
+ERROR: compilation failed for package ‘magick’
+* removing ‘/home/user/software/anaconda/envs/astk/lib/R/library/magick’
+```
+
+You could install the software manually,  and the re-run `astk install -r`. If you use conda, you can do it like:
+
+```bash
+$ conda install -c conda-forge r-magick -y
+...
+$ astk install -r
+```
+
+**namespace ‘rlang’ 0.4.12 is already loaded, but >= 1.0.0 is required**
+
+```bash
+Error in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]) : 
+  namespace ‘rlang’ 0.4.12 is already loaded, but >= 1.0.0 is required
+Calls: source ... asNamespace -> loadNamespace -> namespaceImport -> loadNamespace
+Execution halted
+```
+
+You could install the rlang to higher version manually. For example:
+```
+# R console
+> install.packages("rlang")
+```
