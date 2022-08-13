@@ -77,12 +77,14 @@ RData.out <- file.path(out.dir, sprintf("%s.%s", name, "RData"))
 csv.out <- file.path(out.dir, sprintf("%s.%s", name, "csv"))
 
 if (dim(gse)[1] == 0){
-    stop("No enrichment found in input...")
+    write_csv(as.data.frame(gse), file = csv.out)
+    save(gse, file = RData.out) 
+
+    # # return()
+    # stop("No enrichment found in input...")
 } else {
     keyType <- ifelse(database == "KEGG", "ENTREZID", gene_type)
     ego <- setReadable(gse, OrgDb = OrgDb, keyType = keyType)
     save(gse, file = RData.out)
     write_csv(as.data.frame(gse), file = csv.out)        
 }
-
-

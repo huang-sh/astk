@@ -5,7 +5,7 @@ ALPHABET= ACGU
 Background letter frequencies (from uniform background):
 A 0.25000 C 0.25000 G 0.25000 U 0.25000 
 
-MOTIF M001_0.6 (A1cf)_(Homo_sapiens)_(RBD_0.92)
+MOTIF M001_0.6 (A1cf)_(RBD_0.92)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.395329	  0.105514	  0.105514	  0.393643	
@@ -18,7 +18,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39379_0.6
 
-MOTIF M002_0.6 (Ankhd1)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M002_0.6 (Ankhd1)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.773203	  0.075599	  0.075599	  0.075599	
@@ -31,7 +31,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19127_0.6
 
-MOTIF M004_0.6 (Celf4)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M004_0.6 (Celf4)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.085063	  0.085063	  0.175952	  0.653921	
@@ -57,7 +57,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39345_0.6
 
-MOTIF M012_0.6 (Cpeb4)_(Homo_sapiens)_(RBD_0.95)
+MOTIF M012_0.6 (Cpeb4)_(RBD_0.95)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.032879	  0.796091	  0.032879	  0.138151	
@@ -70,7 +70,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39252_0.6
 
-MOTIF M013_0.6 (Dazap1)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M013_0.6 (Dazap1)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.012021	  0.012021	  0.012021	  0.963936	
@@ -83,7 +83,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39408_0.6
 
-MOTIF M016_0.6 (Fmr1)_(Homo_sapiens)_(RBD_0.97)
+MOTIF M016_0.6 (Fmr1)_(RBD_0.97)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.110871	  0.110871	  0.576231	  0.202027	
@@ -109,7 +109,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39238_0.6
 
-MOTIF M019_0.6 (Srsf10)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M019_0.6 (Srsf10)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.832591	  0.055803	  0.055803	  0.055803	
@@ -122,7 +122,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39291_0.6
 
-MOTIF M020_0.6 (Fxr2)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M020_0.6 (Fxr2)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.178194	  0.087275	  0.559956	  0.174576	
@@ -135,7 +135,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19121_0.6
 
-MOTIF M021_0.6 (G3bp2)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M021_0.6 (G3bp2)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.742366	  0.058178	  0.058178	  0.141278	
@@ -148,7 +148,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39298_0.6
 
-MOTIF M022_0.6 (Hnrnpa2b1)_(Homo_sapiens)_(RBD_0.81)
+MOTIF M022_0.6 (Hnrnpa2b1)_(RBD_0.81)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.268221	  0.082931	  0.272138	  0.376709	
@@ -161,7 +161,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39230_0.6
 
-MOTIF M025_0.6 (Raly)_(Homo_sapiens)_(RBD_0.80)
+MOTIF M025_0.6 (Raly)_(RBD_0.80)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.565810	  0.184580	  0.080344	  0.169265	
@@ -174,7 +174,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39283_0.6
 
-MOTIF M026_0.6 (Hnrnpk)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M026_0.6 (Hnrnpk)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.109805	  0.856032	  0.017082	  0.017082	
@@ -187,7 +187,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19124_0.6
 
-MOTIF M027_0.6 (Hnrnpl)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M027_0.6 (Hnrnpl)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.737563	  0.146785	  0.057826	  0.057826	
@@ -200,7 +200,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39244_0.6
 
-MOTIF M031_0.6 (Elavl3)_(Homo_sapiens)_(RBD_0.75)
+MOTIF M031_0.6 (Elavl3)_(RBD_0.75)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.006480	  0.006480	  0.006480	  0.980561	
@@ -213,7 +213,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39229_0.6
 
-MOTIF M032_0.6 (Igf2bp1)_(Homo_sapiens)_(RBD_0.75)
+MOTIF M032_0.6 (Igf2bp1)_(RBD_0.75)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.564545	  0.176611	  0.171979	  0.086865	
@@ -226,7 +226,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T22241_0.6
 
-MOTIF M033_0.6 (Khdrbs3)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M033_0.6 (Khdrbs3)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
   0.212203	  0.129283	  0.529231	  0.129283	
@@ -240,7 +240,7 @@ letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19125_0.6
 
-MOTIF M035_0.6 (Lin28a)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M035_0.6 (Lin28a)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.304006	  0.387398	  0.109358	  0.199238	
@@ -253,7 +253,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T06809_0.6
 
-MOTIF M036_0.6 (Matr3)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M036_0.6 (Matr3)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.458381	  0.367197	  0.087211	  0.087211	
@@ -266,7 +266,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39340_0.6
 
-MOTIF M037_0.6 (Mbnl2)_(Homo_sapiens)_(RBD_0.87)
+MOTIF M037_0.6 (Mbnl2)_(RBD_0.87)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.315548	  0.190242	  0.212007	  0.282204	
@@ -279,7 +279,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T02989_0.6
 
-MOTIF M040_0.6 (Msi1)_(Homo_sapiens)_(RBD_0.95)
+MOTIF M040_0.6 (Msi1)_(RBD_0.95)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.057391	  0.057391	  0.057391	  0.827827	
@@ -292,7 +292,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39383_0.6
 
-MOTIF M042_0.6 (Pabpc4)_(Homo_sapiens)_(RBD_0.97)
+MOTIF M042_0.6 (Pabpc4)_(RBD_0.97)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.778437	  0.103080	  0.110525	  0.007958	
@@ -305,7 +305,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39243_0.6
 
-MOTIF M043_0.6 (Pcbp4)_(Homo_sapiens)_(RBD_0.72)
+MOTIF M043_0.6 (Pcbp4)_(RBD_0.72)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.046320	  0.779292	  0.046320	  0.128069	
@@ -318,7 +318,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19126_0.6
 
-MOTIF M044_0.6 (Pprc1)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M044_0.6 (Pprc1)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.086966	  0.360843	  0.465224	  0.086966	
@@ -344,7 +344,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T24234_0.6
 
-MOTIF M046_0.6 (Qk)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M046_0.6 (Qk)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.824350	  0.058550	  0.058550	  0.058550	
@@ -357,7 +357,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19145_0.6
 
-MOTIF M047_0.6 (Rbm28)_(Homo_sapiens)_(RBD_0.89)
+MOTIF M047_0.6 (Rbm28)_(RBD_0.89)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.080212	  0.080212	  0.759363	  0.080212	
@@ -370,7 +370,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39302_0.6
 
-MOTIF M048_0.6 (Rbm3)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M048_0.6 (Rbm3)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.169306	  0.082405	  0.665884	  0.082405	
@@ -396,7 +396,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39282_0.6
 
-MOTIF M050_0.6 (Rbm4b)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M050_0.6 (Rbm4b)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.054772	  0.054772	  0.835684	  0.054772	
@@ -409,7 +409,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T07289_0.6
 
-MOTIF M051_0.6 (Rbm41)_(Homo_sapiens)_(RBD_0.90)
+MOTIF M051_0.6 (Rbm41)_(RBD_0.90)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.446003	  0.056673	  0.056673	  0.440652	
@@ -422,7 +422,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39314_0.6
 
-MOTIF M052_0.6 (Rbm46)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M052_0.6 (Rbm46)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.713699	  0.035556	  0.215189	  0.035556	
@@ -435,7 +435,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39327_0.6
 
-MOTIF M053_0.6 (Rbm5)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M053_0.6 (Rbm5)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.130306	  0.038747	  0.792199	  0.038747	
@@ -448,7 +448,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T25609_0.6
 
-MOTIF M054_0.6 (Rbm8a)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M054_0.6 (Rbm8a)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.194887	  0.112873	  0.579367	  0.112873	
@@ -461,7 +461,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39344_0.6
 
-MOTIF M055_0.6 (Rbms1)_(Homo_sapiens)_(RBD_0.86)
+MOTIF M055_0.6 (Rbms1)_(RBD_0.86)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.582687	  0.202666	  0.107323	  0.107323	
@@ -500,7 +500,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19132_0.6
 
-MOTIF M061_0.6 (Samd4)_(Homo_sapiens)_(RBD_0.90)
+MOTIF M061_0.6 (Samd4)_(RBD_0.90)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.006139	  0.006139	  0.981584	  0.006139	
@@ -513,7 +513,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T61803_0.6
 
-MOTIF M062_0.6 (Sart3)_(Homo_sapiens)_(RBD_0.91)
+MOTIF M062_0.6 (Sart3)_(RBD_0.91)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.757020	  0.080993	  0.080993	  0.080993	
@@ -526,7 +526,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39250_0.6
 
-MOTIF M065_0.6 (Srsf1)_(Homo_sapiens)_(RBD_0.78)
+MOTIF M065_0.6 (Srsf1)_(RBD_0.78)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.083092	  0.083092	  0.661491	  0.172325	
@@ -539,7 +539,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39248_0.6
 
-MOTIF M068_0.6 (Snrnp70)_(Homo_sapiens)_(RBD_0.77)
+MOTIF M068_0.6 (Snrnp70)_(RBD_0.77)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.289450	  0.105283	  0.499985	  0.105283	
@@ -552,7 +552,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39401_0.6
 
-MOTIF M069_0.6 (Snrpb2)_(Homo_sapiens)_(RBD_0.79)
+MOTIF M069_0.6 (Snrpb2)_(RBD_0.79)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.264249	  0.080354	  0.080354	  0.575043	
@@ -565,7 +565,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39236_0.6
 
-MOTIF M070_0.6 (Srsf2)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M070_0.6 (Srsf2)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
   0.607398	  0.130867	  0.130867	  0.130867	
@@ -579,7 +579,7 @@ letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39329_0.6
 
-MOTIF M073_0.6 (Tut1)_(Homo_sapiens)_(RBD_0.85)
+MOTIF M073_0.6 (Tut1)_(RBD_0.85)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.199425	  0.575805	  0.112385	  0.112385	
@@ -592,7 +592,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39418_0.6
 
-MOTIF M074_0.6 (Tardbp)_(Homo_sapiens)_(RBD_0.92)
+MOTIF M074_0.6 (Tardbp)_(RBD_0.92)
 
 letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
   0.323700	  0.129601	  0.222720	  0.323978	
@@ -606,7 +606,7 @@ letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39355_0.6
 
-MOTIF M075_0.6 (Tial1)_(Homo_sapiens)_(RBD_0.89)
+MOTIF M075_0.6 (Tial1)_(RBD_0.89)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.150245	  0.061963	  0.061963	  0.725829	
@@ -619,7 +619,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39306_0.6
 
-MOTIF M077_0.6 (U2af2)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M077_0.6 (U2af2)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.134654	  0.130356	  0.053414	  0.681576	
@@ -632,7 +632,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39305_0.6
 
-MOTIF M081_0.6 (Ybx2)_(Homo_sapiens)_(RBD_0.93)
+MOTIF M081_0.6 (Ybx2)_(RBD_0.93)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.979863	  0.006712	  0.006712	  0.006712	
@@ -645,7 +645,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T16925_0.6
 
-MOTIF M083_0.6 (Zc3h10)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M083_0.6 (Zc3h10)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.099214	  0.273471	  0.528102	  0.099214	
@@ -658,7 +658,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T03004_0.6
 
-MOTIF M085_0.6 (Zcrb1)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M085_0.6 (Zcrb1)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 8 nsites= 1 E= 0
   0.123627	  0.123627	  0.629120	  0.123627	
@@ -712,7 +712,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39337_0.6
 
-MOTIF M140_0.6 (Enox1)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M140_0.6 (Enox1)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.343506	  0.437938	  0.066673	  0.151883	
@@ -725,7 +725,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39259_0.6
 
-MOTIF M141_0.6 (Esrp1)_(Homo_sapiens)_(RBD_0.72)
+MOTIF M141_0.6 (Esrp1)_(RBD_0.72)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.085113	  0.085113	  0.085113	  0.744660	
@@ -738,7 +738,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39352_0.6
 
-MOTIF M148_0.6 (Pabpn1)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M148_0.6 (Pabpn1)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.974659	  0.008447	  0.008447	  0.008447	
@@ -751,7 +751,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39260_0.6
 
-MOTIF M151_0.6 (Hnrnph1)_(Homo_sapiens)_(RBD_0.97)
+MOTIF M151_0.6 (Hnrnph1)_(RBD_0.97)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.055748	  0.120905	  0.767599	  0.055748	
@@ -764,7 +764,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39235_0.6
 
-MOTIF M162_0.6 (Pabpc5)_(Homo_sapiens)_(RBD_0.96)
+MOTIF M162_0.6 (Pabpc5)_(RBD_0.96)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.754944	  0.081685	  0.081685	  0.081685	
@@ -777,7 +777,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39332_0.6
 
-MOTIF M168_0.6 (Pspc1)_(Homo_sapiens)_(RBD_0.74)
+MOTIF M168_0.6 (Pspc1)_(RBD_0.74)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.088446	  0.088446	  0.643731	  0.179376	
@@ -790,7 +790,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39258_0.6
 
-MOTIF M169_0.6 (Hnrpll)_(Homo_sapiens)_(RBD_0.99)
+MOTIF M169_0.6 (Hnrpll)_(RBD_0.99)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.646437	  0.057251	  0.239060	  0.057251	
@@ -870,7 +870,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39253_0.6
 
-MOTIF M227_0.6 (Ptbp1)_(Homo_sapiens)_(RBD_0.91)
+MOTIF M227_0.6 (Ptbp1)_(RBD_0.91)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.242168	  0.538758	  0.062005	  0.157070	
@@ -909,7 +909,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39321_0.6
 
-MOTIF M245_0.6 (Ncl)_(Homo_sapiens)_(RBD_0.89)
+MOTIF M245_0.6 (Ncl)_(RBD_0.89)
 
 letter-probability matrix: alength= 4 w= 18 nsites= 1 E= 0
   0.100000	  0.900000	  0.000000	  0.000000	
@@ -933,7 +933,7 @@ letter-probability matrix: alength= 4 w= 18 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39275_0.6
 
-MOTIF M246_0.6 (Rbmx)_(Homo_sapiens)_(RBD_0.80)
+MOTIF M246_0.6 (Rbmx)_(RBD_0.80)
 
 letter-probability matrix: alength= 4 w= 5 nsites= 1 E= 0
   0.000000	  1.000000	  0.000000	  0.000000	
@@ -954,7 +954,7 @@ letter-probability matrix: alength= 4 w= 4 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T24233_0.6
 
-MOTIF M290_0.6 (Eif4b)_(Homo_sapiens)_(RBD_0.96)
+MOTIF M290_0.6 (Eif4b)_(RBD_0.96)
 
 letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
   0.076923	  0.153846	  0.538462	  0.230769	
@@ -967,7 +967,7 @@ letter-probability matrix: alength= 4 w= 7 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T39390_0.6
 
-MOTIF M316_0.6 (Taf15)_(Homo_sapiens)_(RBD_0.77)
+MOTIF M316_0.6 (Taf15)_(RBD_0.77)
 
 letter-probability matrix: alength= 4 w= 4 nsites= 1 E= 0
   0.000000	  0.000000	  1.000000	  0.000000	
@@ -977,7 +977,7 @@ letter-probability matrix: alength= 4 w= 4 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T25606_0.6
 
-MOTIF M323_0.6 (Nova1)_(Homo_sapiens)_(RBD_0.91)
+MOTIF M323_0.6 (Nova1)_(RBD_0.91)
 
 letter-probability matrix: alength= 4 w= 13 nsites= 1 E= 0
   0.166667	  0.000000	  0.833333	  0.000000	
@@ -996,7 +996,7 @@ letter-probability matrix: alength= 4 w= 13 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T19123_0.6
 
-MOTIF M331_0.6 (Srsf7)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M331_0.6 (Srsf7)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 10 nsites= 1 E= 0
   0.790698	  0.139535	  0.023256	  0.046512	
@@ -1012,7 +1012,7 @@ letter-probability matrix: alength= 4 w= 10 nsites= 1 E= 0
 
 URL http://cisbp-rna.ccbr.utoronto.ca/TFreport.php?searchTF=T07288_0.6
 
-MOTIF M354_0.6 (Ythdc1)_(Homo_sapiens)_(RBD_1.00)
+MOTIF M354_0.6 (Ythdc1)_(RBD_1.00)
 
 letter-probability matrix: alength= 4 w= 6 nsites= 1 E= 0
   0.000000	  0.138889	  0.472222	  0.388889	

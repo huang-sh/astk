@@ -3,7 +3,7 @@ from pathlib import Path
 
 from astk.constant import BASE_DIR
 import astk.utils.func  as ul
-
+from astk.event import SuppaEventID
                 
 def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
     Path(outdir).mkdir(exist_ok=True)
@@ -130,39 +130,36 @@ def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Hum
     affected_elm_csv = outdir / "affected_elm.csv"
     affected_pdb_csv = outdir / "affected_pdb.csv"
     enrich_bar_pdf = outdir / "nease_enrichment_bar.pdf"
-
+    
     events.get_stats(file_path=stats_file)
-
-    nease_enr = events.enrich(database=database)
-    nease_enr.to_csv(enrich_csv)
-
     events.get_domains().to_csv(affected_domain_csv)
     events.get_elm().to_csv(affected_elm_csv)
     events.get_pdb().to_csv(affected_pdb_csv)
+    
+    nease_enr = events.enrich(database=database)
+    if nease_enr is not None:
+        nease_enr.to_csv(enrich_csv)
+        top_terms = min([nease_enr.shape[0], n])
+        nease_enr = nease_enr.sort_values(by='adj p_value')
+        Term = nease_enr['Pathway name'][:top_terms]
+        Pvalues = nease_enr['adj p_value'][:top_terms]
+        Pvalues = [ -np.log10(x) for x in Pvalues]
+        Term = [x.split('Homo')[0] for x in Term]
 
-
-    top_terms = min([nease_enr.shape[0], n])
-    nease_enr = nease_enr.sort_values(by='adj p_value')
-    Term = nease_enr['Pathway name'][:top_terms]
-    Pvalues = nease_enr['adj p_value'][:top_terms]
-    Pvalues = [ -np.log10(x) for x in Pvalues]
-    Term = [x.split('Homo')[0] for x in Term]
-
-    plt.figure()
-    plt.barh(Term[::-1],Pvalues[::-1] )
-    plt.title('NEASE enrichment')
-    plt.ylabel('Terms')
-    plt.xlabel('-log10(Adjusted P-value)')
-    plt.savefig(enrich_bar_pdf, format='pdf',bbox_inches='tight')
+        plt.figure()
+        plt.barh(Term[::-1],Pvalues[::-1] )
+        plt.title('NEASE enrichment')
+        plt.ylabel('Terms')
+        plt.xlabel('-log10(Adjusted P-value)')
+        plt.savefig(enrich_bar_pdf, format='pdf',bbox_inches='tight')
 
 
 def nease_sc(file, outdir, pvalue, database, organism):
     import pandas as pd
-    import utils.event_id as ei
 
-    get_geneid = lambda x: ei.SuppaEventID(x).gene_id.split(".")[0]
-    get_start = lambda x: ei.SuppaEventID(x).alter_element_coor[0]
-    get_end = lambda x: ei.SuppaEventID(x).alter_element_coor[1]
+    get_geneid = lambda x: SuppaEventID(x).gene_id.split(".")[0]
+    get_start = lambda x: SuppaEventID(x).alter_element_coor[0]
+    get_end = lambda x: SuppaEventID(x).alter_element_coor[1]
 
     df = pd.read_csv(file, sep="\t", index_col=0)
     df["event_id"] = df.index
@@ -172,8 +169,7 @@ def nease_sc(file, outdir, pvalue, database, organism):
                     "new_start": df["event_id"].apply(get_start), 
                     "new_end": df["event_id"].apply(get_end),
                     "beta": df[df.columns[0]].values})
-
-    nease_enrich(nease_input, outdir, database=[database], organism=organism, cutoff=pvalue)
+    nease_enrich(nease_input, outdir, database=database, organism=organism, cutoff=pvalue)
 
 
 def neasecmp_sc():

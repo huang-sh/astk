@@ -7,7 +7,7 @@ This module provides data filter function.
 
 from pathlib import Path
 
-import pandas as pd
+from pandas import read_csv
 
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
@@ -40,7 +40,7 @@ class SigFilter:
         self.set_out(out)
  
     def filter_dpsi(self):
-        dpsi_df = pd.read_csv(self.dpsi_file, sep="\t", index_col=0)
+        dpsi_df = read_csv(self.dpsi_file, sep="\t", index_col=0)
         old_col = dpsi_df.columns
         dpsi_df.columns = ["dpsi", "pval"]
         filter_df = sig_filter(dpsi_df, dpsi=self.dpsi, abs_dpsi=self.abs_dpsi, pval=self.pval)
@@ -63,7 +63,7 @@ class SigFilter:
                        
     def filter_psi(self):
         for i, pf in enumerate(self.psi_file):
-            psi = pd.read_csv(pf, sep="\t")
+            psi = read_csv(pf, sep="\t")
             psi.index = psi["event_id"]
             if len(set(self.sig_event) & set(psi.index)) > 0:
                 sig_psi = psi.loc[self.sig_event, ]
@@ -101,11 +101,12 @@ class SigFilter:
 
 class PsiFilter:
 
-    def __init__(self, file, threshold, quantile) -> None:
+    def __init__(self, file, output, threshold, quantile) -> None:
         self.file = file
+        self.output = output
         self.threshold = threshold
         self.quantile = quantile
-        self.psi_df = pd.read_csv(file, sep="\t", index_col=0).dropna()
+        self.psi_df = read_csv(file, sep="\t", index_col=0).dropna()
         self.mean_psi = self.psi_df.apply(lambda row: sum(row)/len(row), axis=1)   
 
     def value_filter(self):
@@ -121,19 +122,18 @@ class PsiFilter:
         qt = self.quantile
         mp = self.mean_psi
         th = mp.quantile(abs(qt))
-        print(th)
         if qt >= 0:
             filter_idx = mp[mp > th].index
         else:
             filter_idx = mp[mp <th].index
         return self.psi_df.loc[filter_idx, ]
     
-    def run(self, out):
+    def run(self):
         if self.threshold:
             psi_df = self.value_filter()
         elif self.quantile:
             psi_df = self.quantile_filter()
         else:
             psi_df = self.psi_df    
-        psi_df.to_csv(out, sep="\t", index_label=False)
+        psi_df.to_csv(self.output, sep="\t", index_label=False)
         

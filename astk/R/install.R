@@ -24,12 +24,10 @@ if (args$mirror){
 }
 
 if (args$requirement){
-    ## Install packages of dependency
-    ##----->> Install packages from Cran
+    ## Install packages from Cran
 
     cran.packages <- c("tidyverse", "ggplot2", "argparse", 
-                       "UpSetR", "eoffice", "ggnewscale", 
-                       "ggsignif")
+                       "UpSetR", "eoffice", "ggnewscale")
 
     for(i in cran.packages){
     if(!(i %in% rownames(installed.packages()))){
@@ -38,11 +36,11 @@ if (args$requirement){
     } else 
         next
     }
-    ##----->> Install packages from Bioconductor
+    ## Install packages from Bioconductor
 
     bioconductor.packages <- c('ComplexHeatmap', 'clusterProfiler', 'org.Mm.eg.db',
              'org.Hs.eg.db', 'simplifyEnrichment', 'universalmotif', 'memes',"tximport",
-             "DESeq2")
+             "DESeq2", "metagene2")
 
     if (!requireNamespace("BiocManager", quietly = TRUE))
         install.packages("BiocManager")

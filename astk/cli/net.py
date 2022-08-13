@@ -15,5 +15,5 @@ from astk.network import co_splice_net
                 help="RBP motif database")
 @click.option('-txdb', '--txdb', type=click.Path(exists=True),
                 help="TxDb file")
-def coSpliceNet(*args, **kwargs):
+def sc_coSpliceNet(*args, **kwargs):
     co_splice_net(*args, **kwargs)

@@ -11,6 +11,7 @@ parser$add_argument("--cfile",  nargs='+', help="control file path")
 parser$add_argument("--outdir", help="output directory")
 parser$add_argument("--database", help="database")
 parser$add_argument("--organism", help="organism")
+parser$add_argument("--meme_path ", help="meme_path ")
 
 args <- parser$parse_args()
 
@@ -41,19 +42,26 @@ res_ls <- lapply(file_ls, function(files){
     }
     
     out.dir <- file.path(args$outdir, tools::file_path_sans_ext(basename(files[1])))
-    runAme(tfa , database = mf, outdir=out.dir, control = cfa)    
+    runAme(tfa , database = mf, outdir=out.dir, control = cfa, meme_path =args$meme_path )    
 })
 
 # file_names <- sapply(files, function(file)tools::file_path_sans_ext(basename(file)))
 # names(res_ls) <- file_names
 
+df = tryCatch({
+        data <- res_ls %>% 
+            dplyr::bind_rows(.id = "condition") %>% 
+            dplyr::group_by(condition) %>% 
+            dplyr:: slice_head(n = 20) %>%   ## 选取了前20个motif
+            dplyr::ungroup()
 
-data <- res_ls %>% 
-    dplyr::bind_rows(.id = "condition") %>% 
-    dplyr::group_by(condition) %>% 
-    dplyr:: slice_head(n = 20) %>%   ## 选取了前20个motif
-    dplyr::ungroup()
+        plot <- plot_ame_heatmap(data, group = condition)
 
-plot <- plot_ame_heatmap(data, group = condition)
+        ggplot2::ggsave(file.path(args$outdir, "heatmap.pdf"), plot = plot, width = 10)
 
-ggplot2::ggsave(file.path(args$outdir, "heatmap.pdf"), plot = plot, width = 10)
+    }, warning = function(w) {
+        print(w)
+    }, error = function(e) {    
+    
+    }
+    )

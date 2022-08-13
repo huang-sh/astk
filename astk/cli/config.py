@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-astk.click
+astk.cli.config
 ~~~~~~~~~~~~~~~~~
 This module provides command line api configure.
 """
+from gettext import gettext as _
 
 import click
+from click.core import _check_iter
+from click.exceptions import BadParameter
 
 
 class CustomMultiCommand(click.Group):
@@ -79,12 +82,13 @@ class MultiOption(click.Option):
         self.save_other_options = kwargs.pop('save_other_options', True)
         nargs = kwargs.pop('nargs', -1)
         assert nargs == -1, 'nargs, if set, must be -1 not {}'.format(nargs)
+        # kwargs["nargs"] = -1
         super(MultiOption, self).__init__(*args, **kwargs)
         self._previous_parser_process = None
         self._eat_all_parser = None
 
     def add_to_parser(self, parser, ctx):
-
+        
         def parser_process(value, state):
             # method to hook to the parser.process
             done = False
@@ -115,3 +119,26 @@ class MultiOption(click.Option):
                 our_parser.process = parser_process
                 break
         return retval
+
+    def type_cast_value(self, ctx,  value):
+        """Convert and validate a value against the option's
+        :attr:`type`, :attr:`multiple`, and :attr:`nargs`.
+        """
+        if value is None:
+            return () if self.multiple or self.nargs == -1 else None
+
+        def check_iter(value):
+            try:
+                return _check_iter(value)
+            except TypeError:
+                # This should only happen when passing in args manually,
+                # the parser should construct an iterable when parsing
+                # the command line.
+                raise BadParameter(
+                    _("Value must be an iterable."), ctx=ctx, param=self
+                ) from None
+
+        def convert(value):
+            value = tuple(check_iter(value))
+            return tuple(self.type(x, self, ctx) for x in value)
+        return convert(value)

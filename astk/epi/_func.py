@@ -1,16 +1,20 @@
+import os
 import sys
 import shutil
 import subprocess
 from pathlib import Path
 from functools import partial
-
-import pandas as pd
-import pysam
+from typing import Sequence
+from tempfile import NamedTemporaryFile
 
 import astk.utils.func  as ul
+from astk.constant import *
+from astk.types import FilePath
 
 
 def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
+    import pandas as pd
+    import pysam
 
     def signal_func(chrN, start, end, sam, control_sam):
         if control_sam:
@@ -36,6 +40,9 @@ def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
 
 #TO-DO make it faster
 def epi_signal(out, achor_dic, bam_meta, width, binsize):
+    import pandas as pd
+    import pysam    
+
     df = pd.read_csv(bam_meta)
     cds = set(df.condition)
     df_ls = []
@@ -75,12 +82,12 @@ def epi_signal(out, achor_dic, bam_meta, width, binsize):
 
 
 
-def epi_sc(output, metadata, anchor, name, width, binsize):
+# def epi_sc(output, metadata, anchor, name, width, binsize):
 
-    names = name if len(name)==len(anchor) else list(range(1, len(anchor)+1))
+#     names = name if len(name)==len(anchor) else list(range(1, len(anchor)+1))
 
-    anchor_dic = dict(zip(names, anchor))
-    epi_signal(output, anchor_dic, metadata, width, binsize)
+#     anchor_dic = dict(zip(names, anchor))
+#     epi_signal(output, anchor_dic, metadata, width, binsize)
 
 
 def epihm(output, files, fmt, width, height, resolution):
@@ -88,21 +95,6 @@ def epihm(output, files, fmt, width, height, resolution):
     rscript = Path(__file__).parent / "R" / "signalHeatmap.R"
     param_dic = {
         "file": files,
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "fmt": fmt,
-        "output": output
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
-
-
-def epiline(output, file, fmt, width, height, resolution):
-
-    rscript = Path(__file__).parent / "R" / "signalProfile.R"
-    param_dic = {
-        "file": file,
         "width": width, 
         "height": height, 
         "resolution": resolution,
@@ -212,3 +204,104 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
     for of in Path(outdir).glob("*_overlap.txt"):
         info = subprocess.Popen(["Rscript", str(rscript), of])
     info.wait()
+
+
+def epi_sc(event_file, event_label, bam_file, bam_label, width, bin_size,
+            output, normalmethod, paired_end, title, bam_merge, as_type):
+
+    rscript = BASE_DIR / "R" / "epiFeature.R"
+    param_dic = {
+        "binsize": bin_size,
+        "width": width, 
+        "bam": bam_file,
+        "bamlabel": bam_label,
+        "region": event_file, 
+        "regionlabel": event_label, 
+        "title": title,
+        "out": output,
+        "markmerge": bam_merge,
+        "normalmethod": normalmethod,
+        "pairedend": paired_end,
+        "ASType": as_type
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+def epi_profile(file, output, title, ylim, fmt, width, height, resolution):
+
+    rscript = BASE_DIR / "R" / "epiProfile.R"
+    param_dic = {
+        "title": title,
+        "file": file,
+        "width": width, 
+        "height": height, 
+        "resolution": resolution,
+        "fmt": fmt,
+        "output": output,
+        "ylim": ylim
+    }
+    param_ls = ul.parse_cmd_r(**param_dic)
+    # print(param_ls)
+    subprocess.run(["Rscript", rscript, *param_ls])
+
+
+def signal_heatmap(
+    output: FilePath,
+    event_file: FilePath,
+    bw_files: Sequence[FilePath],
+    bin_size: int,
+    ups_width: int,
+    dws_width: int,
+    threads: int,
+    plot_type: str,
+    color_map: str,
+    plot_format: str,
+    fig_height: float,
+    fig_width: float,
+    regionsLabel: Sequence[str],
+    samplesLabel: Sequence[str]
+) -> None:
+    from deeptools.computeMatrix import main as cpm
+    from deeptools.plotHeatmap import main as plothm
+    from pandas import concat
+
+    regionFiles = []
+
+    df_dic = ul.get_evnet_ss_bed(event_file, 150, 150)
+    for df in df_dic.values():
+        f = NamedTemporaryFile(delete=False)
+        f.close()
+        df.to_csv(f.name, index=False, header=False, sep="\t")
+        regionFiles.append(f.name)
+        
+    out = Path(output)
+    mtx_out = str(out.with_suffix(".mat.gz"))
+    fig_out = str(out.with_suffix(f".{plot_format}"))
+    mtx_args = [
+        "reference-point",
+        "-R", *regionFiles,
+        "-S", *bw_files,
+        "--referencePoint", "center",
+        "--beforeRegionStartLength", str(ups_width), 
+        "--afterRegionStartLength", str(dws_width), 
+        "--binSize", str(bin_size), 
+        "--numberOfProcessors", str(threads),
+        "--outFileName", mtx_out
+    ]
+    hm_args = [
+        "--matrixFile", mtx_out,
+        "--outFileName", fig_out,
+        "--plotType", plot_type, 
+        "--colorMap", color_map,
+        "--heatmapHeight", str(fig_height),
+        "--heatmapWidth", str(fig_width),
+        "--perGroup",
+        "--plotFileFormat", plot_format,
+        "--regionsLabel", *regionsLabel,
+        #"--samplesLabel", *samplesLabel,
+        "--refPointLabel", "SS"
+    ]
+    cpm(mtx_args)
+    plothm(hm_args)
+    [os.unlink(i) for i in regionFiles]

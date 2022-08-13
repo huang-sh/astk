@@ -6,7 +6,9 @@ from .gsea import *
 from .as_event import *
 from .epi import *
 from .draw import *
+from .suppa import *
 from .config import CustomMultiCommand
+from .seqfeature import *
 
 
 @click.group(cls=CustomMultiCommand, 
@@ -14,17 +16,22 @@ from .config import CustomMultiCommand
 def cli_fun():
      pass
 
+## suppa2 module
+cli_fun.add_command(generateEvents, name=["generateEvent", "ge"])
+cli_fun.add_command(compute_psi, name=["generatePsi", "gp", "psiPerEvent"])
+cli_fun.add_command(diffSplice, name=["diffSplice", "ds"])
+cli_fun.add_command(dsflow, name=["dsflow"])
 
 ## AS event processing module
 cli_fun.add_command(len_dist, name=["lenDist", "ld"])
 cli_fun.add_command(len_cluster, name=["lenCluster", "lc"])
 cli_fun.add_command(len_pick, name=["lenPick", "lp"])
-cli_fun.add_command(diff_splice, name=["diffSplice", "ds"])
-cli_fun.add_command(sigfilter, name=["sigfilter", "sf"])
+cli_fun.add_command(sigfilter, name=["sigFilter", "sf"])
 cli_fun.add_command(psi_filter, name=["psiFilter", "pf"])
+cli_fun.add_command(intersect, name=["intersect"])
 
 # co-splicing network module
-cli_fun.add_command(coSpliceNet, name=["coSpliceNet", "csnet"])
+cli_fun.add_command(sc_coSpliceNet, name=["coSpliceNet", "csnet"])
 
 # motif analysis module
 cli_fun.add_command(motif_enrich, name=["motifEnrich", "me"])
@@ -42,9 +49,10 @@ cli_fun.add_command(nease_sc, name=["nease"])
 # cli_fun.add_command(enrich_lc, help=["enrichLenCluster", "elc"])
 
 ## epigenetic analysis module
-cli_fun.add_command(epi_sc)
-cli_fun.add_command(epihm)
-cli_fun.add_command(epiline)
+#cli_fun.add_command(epi_sc, name=["epi"])
+# cli_fun.add_command(epihm)
+# cli_fun.add_command(epi_profile_sc, name=["epiProfile", "ep"])
+cli_fun.add_command(signal_profile, name=["signalProfile", "sp"])
 
 ## drawing module
 cli_fun.add_command(gseplot)
@@ -62,3 +70,8 @@ cli_fun.add_command(getmeme)
 cli_fun.add_command(getcoor)
 cli_fun.add_command(list_, name=["list", "ls"])
 cli_fun.add_command(mktxdb)
+cli_fun.add_command(getgene)
+
+## seq feature
+cli_fun.add_command(sc_extract, name=["seqfeature", "seqf"])
+cli_fun.add_command(sc_seqlogo, name=["seqlogo"])

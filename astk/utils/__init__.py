@@ -4,7 +4,7 @@ astk.utils
 ~~~~~~~~~~~~~~~~~
 This module provides some utility functions.
 """
-from ._func import *
+from .func import *
 # from event import len_dist
 # from event import len_cluster
 # from event import len_pick

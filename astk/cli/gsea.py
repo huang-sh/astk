@@ -4,7 +4,8 @@ from astk import gsea
 
 
 @click.command(help="Gene Set Enrichment Analysis")
-@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', "file", type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-n', '--name', default="GSEA", help="output name prefix")
 @click.option('-pval', '--pvalue', type=float, default=0.2, help="pvalue cutoff")
@@ -25,7 +26,8 @@ def gsea_fun(*args, **kwargs):
 
 
 @click.command(help="Over representation enrichment analysis")
-@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', "file", type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
@@ -44,13 +46,14 @@ def gsea_fun(*args, **kwargs):
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="pdf", help="out figure format") 
 @click.option('-w', '--width', default=10, help="fig width, default=10 inches")
-@click.option('-h', '--height', default=12, help="fig height, default=12 inches")    
+@click.option('--height', default=12, help="fig height, default=12 inches")    
 def enrich(*args, **kwargs):
     gsea.enrich(*args, **kwargs)
 
 
 @click.command()
-@click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)  
+@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
                 help="cluster information file")            
@@ -60,8 +63,7 @@ def enrich(*args, **kwargs):
                 help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three. default=BP")                  
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-xl', '--xlabel', cls=MultiOption, type=tuple, 
-                help="xlabel")
+@click.option('-xl', '--xlabel', cls=MultiOption, type=str, help="xlabel")
 @click.option('-gene_id', '--gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")                      
 @click.option('-orgdb', '--orgdb', required=True,
@@ -71,15 +73,16 @@ def enrich(*args, **kwargs):
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="pdf", help="out figure format") 
+                default="pdf", help="out figure format")
 @click.option('-w', '--width', default=10, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=12, help="fig height, default=6 inches")                
+@click.option('--height', default=12, help="fig height, default=6 inches")                
 def enrich_cmp(*args, **kwargs):
     gsea.enrich_cmp(*args, **kwargs)
 
 
 @click.command()
-@click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)
+@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
                 required=True, help="cluster information file")
@@ -101,11 +104,13 @@ def enrich_lc(*args, **kwargs):
 
 
 @click.command(help="Functional enrichment with NEASE")
-@click.argument('file', type=click.Path(exists=True))
+@click.option('-i', '--input', "file", type=click.Path(exists=True),
+                help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-db', '--database', type=click.Choice(NEASE_DATABASE), 
-                default="Reactome", help="nease enrich database")
+@click.option('-db', '--database', cls=MultiOption, type=click.Choice(NEASE_DATABASE), 
+                default="Reactome", help="nease enrich database, \
+                [PharmGKB|HumanCyc|Wikipathways|Reactome|KEGG|SMPDB|Signalink|NetPath|EHMN|INOH|BioCarta|PID]")
 @click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
                 help="organism") 
 def nease_sc(*args, **kwargs):

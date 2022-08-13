@@ -14,6 +14,7 @@ parser$add_argument("--step", type="integer", help="slide window step size")
 parser$add_argument("--bin", type="integer", help="bin size")
 parser$add_argument("--seqid", nargs="+", help="fasta files id")
 parser$add_argument("--center", nargs="+", type="integer", help="fasta files")
+parser$add_argument("--meme_path ", help="meme_path ")
 
 args <- parser$parse_args()
 
@@ -50,7 +51,7 @@ df_ls <- lapply(seq_names, function(n){
         else {
            subfa <- subseq(faset, start=s, end=NA, width=win) 
         }
-        res <- memes::runFimo(subfa, meme_ls)  
+        res <- memes::runFimo(subfa, meme_ls, meme_path = args$meme_path)
         return(res)
     })
 

@@ -1,6 +1,6 @@
 ### Introduction
 
-**ASTK** is a command line software for comprehensive alternative splicing analysis(AS) analyses including AS event analysis, AS gene function analysis, potential regulatory mechanism analysis of AS. 
+**ASTK** is a command line software for comprehensive alternative splicing analysis(AS) analyses including AS event analysis, AS gene function analysis, potential regulatory mechanism analysis of AS.
 
 -------------------------
 
@@ -11,15 +11,26 @@
 $ conda create -n astk -c conda-forge r-base=4.1 python=3.8 -y
 ## activate conda environment
 $ conda activate astk
-## install astk
-$ pip install astk
+
+## install the development version from github
+$ pip install git+https://github.com/huang-sh/astk.git@dev
+
+# or install from PyPi
+$ pip install astk 
 ```
 
-After install **astk**, you should install **astk**' dependent R packages with:
+After installed **astk**, you should install **astk**' dependent R packages with:
 
 ```bash
 $ astk install -r 
 ...
+```
+
+### ASTK docker image
+It is recommended to use ASTK docker image because all dependencies have been installed in ASTK docker images. 
+
+```
+$ docker pull huangshing/astk:latest
 ```
 
 ### Command
@@ -34,12 +45,16 @@ astk subcommand options
 
 **AS differential splicing analysis**
 
-* **meta**: generate metadata of AS differential splicing analysis contrast groups;it's helpful when you have multiple contrast groups for anlysis
+* **meta**: generate metadata of AS differential splicing analysis contrast groups; it's helpful when you have multiple condition for anlysis
+* **generateEvent**: generate AS events using genome GTF annotation
+* **generatePsi**: calculates AS events PSI values
 * **diffSplice**: run AS differential splicing analysis
-* **sigfilter**: select significant data  
+* **dsflow**: wrapper of **generateEvent**, **generatePsi** and **diffSplice**
 
 **PSI/dPSI analysis and plot**
 
+* **sigFilter**: select significant AS event
+* **psiFilter**: filter AS event with PSI value
 * **pca**: PSI value PCA ploting
 * **heatmap**: PSI value heatmap ploting
 * **volcano**: dPSI value volcano ploting
@@ -48,6 +63,7 @@ astk subcommand options
 **alternative exon/intron lenght analysis**
 
 * **lenCluster**: AS event clustering based on alternative exon/intron length
+* **lenDist**: alternative exon/intron length distribution plotting
 * **lenPick**: selecting specfic exon/intron length of AS event
 
 **gene function enrichment analysis**
@@ -64,30 +80,69 @@ astk subcommand options
 * **motifPlot**: motif plot
 * **motifMap**：motit RNA map
 * **getmeme**: extract motif from a meme motif file
+* **seqlogo**: draw seqLogo figure
 
-**Co-splicing network**
+**chromatin analysis**
 
-* **csnet**:  inferring co-splicing networks based on RBP motif discovery and co-expression of RBP gene expression and AS events PSI values.
-
-**epigenetics modification analysis**
-
-* **epi**： extract epigenetic signal features within alternative splicing sites flank
-* **epihm**：draw heatmap figure of mean epigenetic signal features within alternative splicing sites flank.
-* **sigcmp**：epigenetic signal features significance test between different alternative splicing sites flank using wilcox test.
+* **signalProfile**：profile chromatin signal of splicing sites
 
 **Eukaryotic Linear Motif**
 
-* **elms**： search Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.
+* **elms**： search Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.  
 
 **AS sites coordinate extract**
 
-* **anchor**, generate coordinate anchor file as **epi** input required
 * **getcoor**, extract AS site coordiante and generate BED file and fasta file, it also can set AS site upstream or downstream width.
 
 **useful utilities**
 
 * **install**: install other dependent software
 * **list**: list 20 orgnism annotation OrgDb
+
+### ASKT docker iamge Usage
+
+We could create a shortcut for the docker command with alias command. It is convenient for us to run the docker version of ASTK multiple times.
+
+```bash
+$ alias astkdocker="docker run --rm -v /home/test/project:/project -e MY_USER=$(id -u) huangshing/astk"
+```
+Please replace `/home/test/project`  with your path. This directory should contain some reference files and all files you need to analyze.
+
+```
+$ ll -h | cut -d " " -f 5-
+
+  446M Aug 12 21:08 ATAC.e16.5.fb.bigwig
+    27 Aug  8 16:40 data
+  1.4G Aug  8 22:03 gencode.v38.annotation.gtf
+  847M Aug  8 17:35 gencode.vM25.annotation.gtf
+  2.6G Aug  8 17:35 GRCm38.primary_assembly.genome.fa
+
+```
+
+And then we just run astk like:
+
+```
+$ astkdocker astk meta -h
+Usage: astk meta [OPTIONS]
+
+  generate metadata template file
+
+Options:
+  -p1, --control PATH           file path for condtion 1  [required]
+  -p2, --treatment PATH         file path for condtion 2  [required]
+  -gn, --groupName TEXT         group name
+  -repN, --replicate INTEGER    replicate, number
+  -o, --output PATH             metadata output path  [required]
+  -repN1, --replicate1 INTEGER  replicate1, number
+  -repN2, --replicate2 INTEGER  replicate2, number
+  --condition TEXT              condition name
+  -fn, --filename               file name
+  --split TEXT                  name split symbol and index
+  -h, --help                    Show this message and exit.
+
+
+```
+
 
 ### Usage
 
@@ -123,11 +178,13 @@ data/quant/fb_e11.5_rep2/quant.sf  data/quant/fb_e13.5_rep2/quant.sf  data/quant
 
 #### meta
 
-It's easy to generate multiple condition contrast groups with **meta**. For example, we can quickly generate multiple adjacent development stages contrast groups using:
+**meta** is used to generate contrast group metadata table for AS differential splicing analysis.
+
+For example, we can generate multiple developmental stage contrast groups with e11.5 stage as control:
 
 ```bash
-$ mkdir metadata
-$ astk meta -o metadata/fb_e11_based.csv -repN 2 \
+$ mkdir metadata -p
+$ astk meta -o metadata/fb_e11_based -repN 2 \
     -p1 data/quant/fb_e11.5_rep*/quant.sf \
     -p2 data/quant/fb_e1[2-6].5_rep*/quant.sf  data/quant/fb_p0_rep*/quant.sf \
     -gn fb_e11_12 fb_e11_13 fb_e11_14 fb_e11_15 fb_e11_16 fb_e11_p0
@@ -141,64 +198,115 @@ $ astk meta -o metadata/fb_e11_based.csv -repN 2 \
 * -p1: condition 1(control) sample transcript quantification files path
 * -p2: condition 2(treatment) sample transcript quantification files path
 
-the output of **meta** is a CSV file and JSON file. CSV file is convenient for viewing in excel, and JSON file will be used in next sub-commands.
+the output of **meta** is a CSV file and JSON file. CSV file is convenient for viewing in excel, and JSON file will be used in other sub-commands.
 
-![fb_e11_meta.csv](demo/img/fb_e11_meta.png)
+![fb_e11_meta.csv](demo/img/fb_e11_based_metadata.png)
 
-#### diffSplice
+#### dsflow
 
-**ds** is short alias of **diffSplice**. They have the same function.  The core algorithm of differential splicing analysis is based on **SUPPA2**. In the **astk**,  the differential splicing analysis steps are simplified. And above 7 contrast groups differential splicing analysis could be performed with one command line:
+**dsflow** is wrapper of **generateEvent**, **generatePsi** and **diffSplice**. It's used to simplify the differential splicing analysis workflow. And above 7 contrast groups differential splicing analysis could be performed with one command line:
 
 ```bash
-$ mkdir diff
-$ gtf=gencode.vM25.annotation.gtf
-$ astk ds -od diff/fb_e11_based -md metadata/fb_e11_based.json -gtf $gtf -t all &
+$ mkdir result
+$ gtf=gencode.vM25.annotation.gtf # download from GENCODE
+$ astk dsflow -od result/fb_e11_based -md metadata/fb_e11_based.json -gtf $gtf -t ALL &
 
-$ ls diff/fb_e11_based
+$ ls result/fb_e11_based
 dpsi  psi  ref  tpm
 ```
 
-**ds** arguments:
+**dsflow** arguments:
 
 * -od: output directory
 * -md: meta data, the meta output json file
 * -gtf: genome annotation GTF file
-* -t: alternative splicing type, all is  including all supported types.
+* -t: alternative splicing type, ALL is for all supported types.
 
-the output of **diffSplice**  contain four directories:
+the output of **dsflow**  contain four directories:
 
-* ref is the directory including reference annotation files;
-* tpm is the directory including sample TPM file;
-* psi is the directory including alternative spliceing event PSI file;
+* ref is the directory including AS event reference annotation files;
+* tpm is the directory including sample TPM files;
+* psi is the directory including AS event PSI file
 * dpsi  is the directory including differential splicing result.
 
-#### lenCluster
+#### generateEvent
 
-**lenCluster** provide a function for cluster AS events based on alternative exon/intron  length. **lc** is short alias of **lenCluster**.
+**generateEvent** is used to infer AS events from genome GTF annotation file.
 
-```bash
-$ astk lc diff/fb_e11_based/sig01/*dpsi -lr 1 51 251 1001 \
--od diff/fb_e11_based/sig01
+``` bash
+$ astk generateEvent -gtf $gtf -et SE --split FTE \
+    -o result/fb_e11_based/ref/gencode.vM25
 
 ```
 
-**lc** arguments:
+**generateEvent** arguments:
 
-* FILES...: input dpsi files
-* -lr: length range
-* -od: output directory
-* -fmt: figure format
+* -gtf: genome annotation GTF file
+* -et: AS event type
+* --split: inner|FTE|LTE, Filter AS events based on whether first or last exon of event is the same as the first exon or the last exon of transcript.
+* -o: output path
 
+#### generatePsi
 
-#### sigfilter
-
-**sigfilter** is using for filter significant differential splicing event according to PSI and p-value. It will generate significant  differential splicing events and associated PSI files. **sf** is short alias of **sigfilter**.
+**generatePsi** is used to calulate PSI of AS event.
 
 ```bash
-$ astk sf diff/fb_e11_based/dpsi/*.dpsi \
-        -pf1 diff/fb_e11_based/psi/*_c1.psi \
-        -pf2 diff/fb_e11_based/psi/*_c2.psi \
-        -od diff/fb_e11_based/sig01 -adpsi 0.1 -p 0.05
+$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_FT_e10.psi \
+    -qf data/quant/fb_e10.5_rep*/quant.sf \
+    -ioe result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe
+
+$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_FT_e16.psi \
+    -qf data/quant/fb_e16.5_rep*/quant.sf \
+    -ioe result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe
+
+$ head result/fb_e11_based/psi/fb_SE_FT_e10.psi
+event_id        fb_e10.5_rep1   fb_e10.5_rep2
+ENSMUSG00000025902.13;SE:chr1:4493863-4495136:4495942-4496291:- 0.20508467461294735     0.16355428896798765
+ENSMUSG00000025902.13;SE:chr1:4493863-4495136:4495198-4496291:- 0.1034743140228213      0.1685190853710221
+ENSMUSG00000033845.13;SE:chr1:4782733-4783951:4784105-4785573:- 0.2311769118443923      0.24830839809502564
+ENSMUSG00000002459.17;SE:chr1:4916980-4923847:4923989-5019311:- 0.6018668424886171      0.5701945236664067
+
+## it also will extract TPM value from transcript quantification files
+$ head result/fb_e11_based/psi/fb_SE_FT_e10.tpm -n 3
+Name    fb_e10.5_rep1   fb_e10.5_rep2
+ENSMUST00000193812.1    0.0     0.0
+ENSMUST00000082908.1    0.0     0.0
+```
+
+**generatePsi** arguments:
+* -o: output path
+* -gtf: genome annotation GTF file
+* -et: AS event type
+* --split: inner|FTE|LTE, Filter AS events based on whether first or last exon of event is the same as the first exon or the last exon of transcript.
+
+#### diffSplice
+
+**diffSplice** is used to perform AS differential splicing analysis. The core algorithm is based on [SUPPA2](https://github.com/comprna/SUPPA).
+
+```bash
+$ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_FT_e10.psi \
+    -exp result/fb_e11_based/psi/fb_SE_FT_e10.tpm \
+    -ref result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe \
+    -o result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.dpsi 
+```
+
+**diffSplice** arguments:
+
+* -psi: AS events PSI files
+* -exp: transcripts TPM expression files
+* -ref: ioe reference file
+* -o: output file
+
+
+#### sigFilter
+
+**sigFilter** is using for filter significant differential splicing event according to PSI and p-value. It will generate significant  differential splicing events and associated PSI files. **sf** is short alias of **sigFilter**.
+
+```bash
+$ astk sf -i result/fb_e11_based/dpsi/*.dpsi \
+        -pf1 result/fb_e11_based/psi/*_c1.psi \
+        -pf2 result/fb_e11_based/psi/*_c2.psi \
+        -od result/fb_e11_based/sig01 -adpsi 0.1 -p 0.05
 
 ```
 
@@ -211,7 +319,7 @@ $ astk sf diff/fb_e11_based/dpsi/*.dpsi \
 * -adpsi: absolute dPSI threshold value
 * -p: p-value threshold value
 
-the output of **sigfilter**  contain five types  of files (with - adpsi):
+the output of **sigFilter**  contain five types  of files (with - adpsi):
 
 * "c1.sig.psi"  suffix is the PSI file of condition 1(control) involved significant differential splicing events
 
@@ -223,15 +331,32 @@ the output of **sigfilter**  contain five types  of files (with - adpsi):
 
 * "sig-.dpsi" is the significant differential splicing events with dpsi value < adpsi
 
+#### psiFilter
+
+**psiFilter** is used to filter AS event with PSI value.
+
+```bash
+$ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
+    -psi 0.8 -o result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi
+$ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
+    -psi -0.2 -o result/fb_e11_based/psi/fb_e11_p0_SE_c2_02.psi
+```
+
+**psiFilter** arguments
+
+* FILE: input psi file
+* -psi: when option value > 0, it denotes that select AS events that PSI > option value; however, when option value < 0, it denotes that select AS events that PSI < abs(option value)
+* -o: output file
+
 #### pca
 
 **pca** sub-commands is using for PCA analysis of PSI.
 
 ```bash
-$ mkdir img/pca -p
-$ astk pca diff/mb_e11_based/sig01/mb_e11_12_SE_c1.sig.psi \
-    diff/mb_e11_based/sig01/mb_e11_1*_SE_c2.sig.psi \
-    -o img/mb_pca.png -fmt pdf -w 6 -hi 4
+$ astk pca -i result/fb_e11_based/psi/fb_e11_12_SE_c1.psi \
+    result/fb_e11_based/psi/fb_e11_1[2-6]_SE_c2.psi \
+    result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
+    -o img/fb_pca.png -fmt png -w 6 -h 4
 
 ```
 
@@ -241,17 +366,16 @@ $ astk pca diff/mb_e11_based/sig01/mb_e11_12_SE_c1.sig.psi \
 
 * -o: output figure
 
-![mb_pca.png](demo/img/mb_pca.png)
+![fb_pca.png](demo/img/fb_pca.png)
 
 #### heatmap
 
 **heatmap** is used for ploting heatmap of PSI. **hm** is short alias of **heatmap**. 
 
 ```bash
-$ mkdir img/hm
-$ astk hm diff/mb_e11_based/sig01/mb_e11_12_SE_c1.sig.psi \
-    diff/mb_e11_based/sig01/mb_e11_1*_SE_c2.sig.psi \
-    -o img/hm/mb_hm.png -fmt png
+$ astk hm -i result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
+    result/fb_e11_based/sig01/fb_e11_1*_SE_c2.sig.psi \
+    -o img/fb_hm.png -fmt png
 
 ```
 
@@ -259,19 +383,17 @@ $ astk hm diff/mb_e11_based/sig01/mb_e11_12_SE_c1.sig.psi \
 
 * -i : PSI files
 * -o: output figure
-* -cls: AS event cluster json file
 * -o : output path
 
-![mb_hm.png](demo/img/hm/mb_hm.png)
+![fb_hm.png](demo/img/fb_hm.png)
 
 #### volcano
 
 **volcano** is used for dPSI volcano ploting.  **vol** is short alias of **volcano**.
 
 ```bash
-$ mkdir img/volcano -p
-$ astk volcano diff/fb_e11_based/dpsi/fb_e11_12_SE.dpsi \
-    -o img/volcano/fb_e11_12_SE.vol.png 
+$ astk volcano -i result/fb_e11_based/dpsi/fb_e11_p0_SE.dpsi \
+    -o img/fb_e11_p0_SE.vol.png 
 
 ```
 
@@ -280,25 +402,63 @@ $ astk volcano diff/fb_e11_based/dpsi/fb_e11_12_SE.dpsi \
 * -i : input dpsi files, support multiple files
 * -o: output directory
 
-![mb_hm.png](demo/img/volcano/fb_e11_12_SE.vol.png)
+![fb_hm.png](demo/img/fb_e11_p0_SE.vol.png)
+
+#### upset
+
+**upset** is used for dPSI upset ploting.  **vol** is short alias of **upset**.
+
+```bash
+$ astk upset -i result/fb_e11_based/sig01/fb_e11_12_SE.sig.dpsi \
+    result/fb_e11_based/sig01/fb_e11_14_SE.sig.dpsi \
+    result/fb_e11_based/sig01/fb_e11_16_SE.sig.dpsi \
+    -o img/fb_upset.png -xl e11_12 e11_14 e11_16 
+
+```
+
+**upset** arguments:
+
+* -i : input dpsi files, support multiple files
+* -o: output directory
+* -o: output directory
+
+![fb_upset.png](demo/img/fb_upset.png)
+
+#### lenCluster
+
+**lenCluster** provide a function for cluster AS events based on alternative exon/intron  length. **lc** is short alias of **lenCluster**.
+
+```bash
+$ astk lc -i result/fb_e11_based/sig01/*dpsi -lr 1 51 251 1001 \
+-od result/fb_e11_based/sig01
+
+```
+
+**lc** arguments:
+
+* -i: input dpsi files
+* -lr: length range
+* -od: output directory
+* -fmt: figure format
 
 #### enrich
 
-**enrich** is used for genes GO term enrichment and KEGG pathway enrichment. GO term enrichment map networks and enrichment clustering are provided.
+**enrich** is used for genes GO term enrichment enrichment. GO term enrichment map networks and enrichment clustering are provided.
 
 ```bash
 $ mkdir img/enrich -p
-$ astk enrich diff/fb_e11_based/sig01/fb_e11_13_SE.sig.dpsi -od img/enrich/fb_e11_13_SE -orgdb mm
+$ astk enrich -i result/fb_e11_based/sig01/fb_e11_13_SE.sig.dpsi \
+    -ont BP -qval 0.1 -orgdb mm  -fmt png \
+    -od img/enrich/fb_e11_13_SE 
 
 ```
 
 **enrich** arguments:
 
-* FILES...: dpsi files
-* -o : output directory
-* -pval : p-value
+* -i: dpsi file
+* -ont:  ontology
+* -od : output directory
 * -qval : q-value
-* -db :  Database of enrichment, GO or KEGG
 * -orgdb : OrgDb code for annotation, run `astk ls -orgdb` to show the code list
 
 GO terms enrichment result and enrichment clustering  have figure and text formats.
@@ -311,117 +471,67 @@ Comparison between The dpsi > 0.1 and dpsi < 0.1 in the 7 group (fb_16.5 vs fb_p
 
 ```bash
 $ mkdir img/ecmp
-$ astk ecmp diff/fb_e11_based/sig01/fb_e11_12_SE.sig[+-].dpsi \
-     -ont BP -orgdb mm -xl neg pos -w 6 -hi 4 -fmt png \
-     -od img/ecmp/fb_e11_12_SE_sig_cmp
+$ astk ecmp -i result/fb_e11_based/sig01_*/fb_e11_12_SE.sig.dpsi \
+     -ont BP -orgdb mm  -fmt png \
+     -od img/enrich/fb_e11_12_SE_lc
 ```
 
 **enrichCompare** arguments:
 
 * -i : dpsi files
-* -o : output directory
-* -pval : p-value
+* -od : output directory
+* -ont : ontology
 * -qval : q-value
-* -db :  Database of enrichment, GO or KEGG
 * -orgdb : OrgDb code for annotation, run `astk ls -orgdb` to show the code list
 
 ![GO.cmp.BP.png](demo/img/ecmp/fb_e11_12_SE_sig_cmp/GO.cmp.BP.qval0.1_pval0.1.png)
 
-#### gsea
-
-**gsea** is used for running gene set enrichment analysis.
-
-```bash
-$ mkdir img/gsea
-$ astk gsea diff/fb_e11_based/sig01/fb_e11_13_SE.sig.dpsi \
-    -od img/gsea/fb_e11_13_SE -orgdb mm -ont BP
-
-```
-
-Arguments:
-
-* FILE: input dpsi file
-* -od: output directory
-* -orgdb: OrgDb for GO annotation, such as: hs for human, mm for mouse
-* -ont: 'BP', 'MF', and 'CC' subontologies
-
-#### gseplot
-
-**gseplot** is used for draw figures for gene set enrichment analysis result.
-
-```bash
-$ astk gseplot -id GO:0070507 GO:0010256 \ 
-    -rd img/gsea/fb_e11_13_SE/GSEA.RData \
-    -o img/gsea/fb_e11_13_SE/gseplot.png
-```
-
-Arguments:
-
-* -id: term IDs
-* -rd: RData file path
-* -o: output figure path
-
-![gseplot.png](demo/img/gsea/fb_e11_13_SE/gseplot.png)
-
-#### getcoor
-
-**getcoor** is used for get AS sites coordinates and generating bed and fasta file. Note: use this function, you should install BEDTools firstly:
-
-```bash
-## install bedtools
-$ conda install -c conda-forge -c bioconda bedtools htslib
-
-$ astk getcoor diff/fb_e11_based/sig01/fb_e11_13_SE.sig+.dpsi \
-    -a 1 -u 150 -d 150 -fi $mm_fa \
-    -o coor/fb_e11_13_SE.sig+.a1.w300.bed 
-```
-
-Arguments:
-
-* FILE: input dpsi file
-* -a: AS sites index
-* -u: AS site upstream extend width
-* -d: AS site downstream extend width
-* -fi: genome fasta path
-* -o output bed file path
 
 #### motifEnrich
 
-**motifEnrich** is used for performing motif enrichment using fasta files and RBP motif database. me is short alias.
+**motifEnrich** is used for performing motif enrichment within splicing sites flanking sequence using RBP motif database. me is short alias.
 
 ```bash
-$ astk me -tf coor/fb_e11_13_SE.sig+.a*.w300.fa \
-    -od img/motif/fb_e11_13_SE_me -org mm 
+$ astk me -te result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
+    -ce result/fb_e11_based/psi/fb_e11_p0_SE_c2_02.psi \
+    -od img/motif/fb_e11_p0_SE_me -org mm \
+    -fi GRCm38.primary_assembly.genome.fa
+
 ```
 
 Arguments:
 
-* -tf: input treatment fasta files
+* -te: input treatment event file
+* -ce: input control event file
 * -od: output directory
 * -org: organism
+* -fi: genome fasta, need index
+
 
 #### motifFind
 
 **motifFind** is used for performing motif discovery and the compared to known RBP motif. mf is short alias.
 
 ```bash
-astk mf -tf coor/fb_e11_13_SE.sig+.a*.w300.fa \
-    -od img/motif/fb_e11_13_SE_mf -org mm
+astk mf -te result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
+    -od img/motif/fb_e11_p0_SE_mf -org mm \
+    -fi GRCm38.primary_assembly.genome.fa
 ```
 
 Arguments:
 
-* -tf: input treatment fasta files
+* -te: input treatment event file
 * -od: output directory
 * -org: organism
+* -fi: genome fasta, need index
 
 #### getmeme
 
 **getmeme** is used for querying ASTK built-in motif data.
 
 ```bash 
-astk getmeme M053_0.6 M207_0.6 -db CISBP-RNA \
-    -org mm -o query.meme
+astk getmeme M316_0.6 M083_0.6 -db CISBP-RNA \
+    -org mm -o img/motif/query.meme
 ```
 
 Arguments:
@@ -430,14 +540,16 @@ Arguments:
 * -db: motif database
 * -org: organism
 * -o: output file path
+* 
 
 #### motifPlot
 
-**motifPlot** is used for drawing motif logo figure using motif meme data
+**motifPlot** is used for drawing motif figure using motif meme data
 
 ```bash
-astk mp -mi M053_0.6 M207_0.6 -mm query.meme \
-    -o img/motif/motif_plot.png
+astk mp -mi M083_0.6 -db CISBP-RNA -org mm \
+ -o img/motif/M083_0.6_plot.png -w 10
+
 ```
 
 Arguments:
@@ -446,15 +558,19 @@ Arguments:
 * -db: motif database
 * -org: organism
 * -o: output file path
+
+![motif_plot.png](demo/img/motif/M083_0.6_plot.png) 
+
 
 #### mmap
 
 **mmap** is used for generating motif map to show motif distribution.
 
 ```bash
-astk mmap -fa coor/fb_e11_13_SE.sig+.a*.w300.fa \
+astk mmap -e result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
     -n a1 a2 a3 a4 -c 150 150 150 150 \
-    -mm query.meme -od img/motif/motif_map
+    -mm img/motif/query.meme -od img/motif/motif_map \
+    -fi GRCm38.primary_assembly.genome.fa
 ```
 
 Arguments:
@@ -464,132 +580,51 @@ Arguments:
 * -c: center positions
 * -mm: motif meme file
 * -od: output directory
+* -fi: genome fasta, need index
 
-#### csnet
+#### signalProfile
 
-**csnet** is using for inferring co-splicing networks based on RBP motif discovery and co-expression of RBP gene expression and AS events PSI values.
-
-```bash
-
-for j in $(seq 2 6);
-do
-    for i in $(seq 1 4);
-    do
-        astk getcoor diff/fb_e11_based/sig01/fb_e11_1${j}_SE.sig+.dpsi \
-            -a ${i} -u 150 -d 150 -fi $mm_fa \
-            -o coor/fb_e11_1${j}_SE.sig+.a${i}.w300.bed 
-    done 
-    cat coor/fb_e11_1${j}_SE.sig+.a*.w300.fa > net/fb_e11_1${j}_SE.sig+.w300.fa
-done
-
-astk mktxdb gencode.vM25.annotation.gtf -org mm -o gencode.vM25.annotation.txdb
- 
-astk meta -o metadata/e11_e16_psi.csv -repN 1 \
-    -p1 diff/fb_e11_based/psi/fb_e11_12_SE_c1.psi diff/fb_e11_based/psi/fb_e11_1*_SE_c2.psi \
-    -gn e11 e12 e13 e14 e15 e16 
-
-astk meta -o metadata/e11_e16_sf.csv -repN 2 \
-    -p1 ~/project/astk/demo1/data/quant/fb_e1[1-6].5_rep*/quant.sf \
-    -gn e11 e12 e13 e14 e15 e16
-
-astk csnet -o net/co_splicing.csv -fa net/fb_SE.sig+.w300.fa \
-    -psi metadata/e11_e16_psi.csv -tq metadata/e11_e16_sf.csv \
-    -org mm --txdb gencode.vM25.annotation.txdb    
-
-```
-
-Arguments:
-
-* -o: output path
-* -fa: fasta file
-* -psi: psi meta file
-* -tq: transcript quantification meta file
-* -od: output directory
-
-![/co-splicing.png](demo/img/co-splicing.png)
-
-#### epi
-
-**epi** is used for extract epigenetic signal features within alternative splicing sites flank. You should generate bam files metadata using command meta firstly.
+**signalProfile** is used to profile chromatin signal of splicing sites flank.
 
 ```bash
-astk meta -o metadata/ni_H3K27me3_0_bam_0hr.csv -repN 2 \
-    -p1 ~/project/ni_as/chipseq/algin/input_DNA_rep[1-2]_0hr_Input.bam \
-    -p2 ~/project/ni_as/chipseq/algin/H3K27me3_ChIPSeq_rep[1-2]_0hr.bam \
-    -gn H3K27me3_0  \
--fn --split '_' 1  
+astk pf -i result/fb_e11_based/psi/fb_e11_16_AF_c2.psi \
+    -psi 0.8 -o result/fb_e11_based/psi/fb_16_AF_08.psi
 
-
-for i in 1 2 3 4;
-do
-    astk anchor diff/ni_adj_ct/sig01/0_3_SE.sig-.dpsi -idx ${i}  \
-        -u 150 -d 150 -o coor/ni_0_3_SE.sig-.anchor.a${i}.bed 
-done   
-
-mkdir img/epi
-astk epi -o img/epi/H3K27me3_0.b150.sig-.csv -bs 150 \
-    -md metadata/ni_H3K27me3_0_bam_0hr.csv \
-    -anchor coor/ni_0_3_SE.sig-.anchor.a*.bed 
+astk signalProfile -o img/fb_16_AF_low_ATAC.png \
+    -e result/fb_e11_based/psi/fb_16_AF_08.psi \
+    -bw ATAC.e16.5.fb.bigwig \
+    -ssl A1 A2 A3 A4 A5 -fmt png
 
 ```
 
 Arguments:
 
-* -bs: bin size
-* -md: bam file metadata
-* -anchor: position anchor files
-* -o: output path
+* -o: output file
+* -e: AS event file that including  AS event ID
+* -bw: bigwig file
+* -ssl: splicing site labels
+* -fmt: figure format
 
-#### epihm
-**epihm** is used for drawing heatmap figure of mean epigenetic signal features within alternative splicing sites flank.
-
-```
-astk epihm img/epi/H3K27me3_0.b150.sig-.csv \
-    -o ni_adj_ct/epi/H3K27me3_0.b150.sig-.png 
-```
-
-Arguments:
-
-* FILE: feature file path
-* -o: output figure path
-
-![H3K27me3_hm.png](demo/img/epi/H3K27me3_0.b150.sig-.png)
-
-#### sigcmp
-
-**sigcmp** is used for epigenetic signal features significance test between different alternative splicing sites flank using wilcox test.
-
-```bash
-astk sigcmp img/epi/H3K27me3_0.b150.sig-.csv \
-    -o ni_adj_ct/epi/H3K27me3_0.b150.sig-.cmp.png 
-```
-
-Arguments:
-
-* FILE: feature file path
-* -o: output figure path
-
-![H3K27me3_cmp.png](demo/img/epi/H3K27me3_0.b150.sig-.cmp.png)
+![fb_16_AF_low_ATAC.png](demo/img/fb_16_AF_low_ATAC.png)
 
 #### elms
 
-**elms** is using for searching Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.
+**elms** is using for searching Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon sequence.
 
 ```bash
-astk elms diff/fb_e11_based/sig01_1-51/fb_e11_p0_SE.sig.dpsi -g mm10 -o elm.csv
+astk elms -i result/fb_e11_based/sig01/fb_e11_p0_SE.sig.dpsi -g mm10 -o img/elm.csv
 ```
 
 Arguments:
 
-* FILE: dpsi file path
+* -i: dpsi file path
 * -g: genome assembly
 * -o: output
 
-![elm.png](demo/img/elm.png)
 
 ### FAQs
 
-**When I install software dependent packages, it raises errors like this:**
+**ERROR: compilation failed for package ‘magick’**
 
 ```bash
 $ astk install -r
@@ -614,7 +649,7 @@ Calls: source ... asNamespace -> loadNamespace -> namespaceImport -> loadNamespa
 Execution halted
 ```
 
-When meet this error? You could install the rlang to higher version manually. For example:
+You could install the rlang to higher version manually. For example:
 ```
 # R console
 > install.packages("rlang")

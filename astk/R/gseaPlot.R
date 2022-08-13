@@ -15,6 +15,16 @@ args <- parser$parse_args()
 load(args$RData)
 
 term_ID <- args$termid
+if (is.null(term_ID)){
+    if (dim(gse)[1] > 0){
+        term_ID  <- gse$ID[1:min(c(5, dim(gse)))]
+    }else {
+        pdf(args$output)
+        dev.off()
+        invokeRestart("abort")
+    }
+
+}
 
 if (length(term_ID) == 1){
     p <- enrichplot::gseaplot(gse, 

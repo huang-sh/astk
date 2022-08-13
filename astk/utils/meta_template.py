@@ -10,12 +10,12 @@ import json
 from itertools import chain, repeat
 from pathlib import Path
 
-import pandas as pd
+from pandas import DataFrame, concat
 
 
 class Template:
-    def __init__(self):
-        pass
+    def __init__(self, condition):
+        self.condition = condition if condition else ["control", "treatment"]
 
     def infer_file(self, path, rep):
         rep_num = len(rep)
@@ -59,7 +59,7 @@ class Template:
             ssym, sidx = split_param[0], split_param[1:]
             names = [sub_name(sidx, n.split(ssym)) for n in names]            
 
-        sdf = pd.DataFrame({
+        sdf = DataFrame({
             "group": group_ls,                                                                                                                                                                                                                                                                               
             "replicate": rep_ls,
             "name": names,
@@ -83,17 +83,17 @@ class Template:
 
             df1 = self.df_generate(group_name, repN1, path1, **kwargs)
             df2 = self.df_generate(group_name, repN2, path2, **kwargs)
-            df1.insert(1, "condition", "control")
-            df2.insert(1, "condition", "treatment")            
-            df = pd.concat([df1, df2]).sort_values(by=["group", "condition"])
+            df1.insert(1, "condition", self.condition[0])
+            df2.insert(1, "condition", self.condition[1])
+            df = concat([df1, df2]).sort_values(by=["group", "condition"])
   
         else:
             if path1:
-                cdname = "control" 
+                cdname = self.condition[0]
                 path = path1
                 repN = repN1
             else:
-                cdname = "treatment"
+                cdname = self.condition[0]
                 path = path2
                 repN = repN2            
             group_num = self.infer_file(path, repN)
