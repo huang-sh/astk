@@ -83,7 +83,9 @@ all_df <- Reduce(rbind, df_ls)
 
 r <- lapply(unique(all_df$motif_id), function(x){
     p <- ggplot(data = all_df[all_df$motif_id ==x, ]) +
-        geom_line(mapping = aes(x = pos, y=count, color = motif_id)) +
+        theme_bw() +
+        geom_line(mapping = aes(x = pos, y=count, group=motif_id), color="#83cdfd") + 
+        scale_fill_manual(values = c('pink', "#83cdfd")) + 
         facet_wrap(~seqId, ncol = length(seq_names), scales = "free_x") +
         labs(x = "Relative Position", y="Motif Coverage") + 
         ggtitle("RNA map")
