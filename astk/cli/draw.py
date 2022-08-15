@@ -22,8 +22,8 @@ def gseplot(*args, **kwargs):
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str, 
                 help="x xlabel")
 @click.option('-dg', '--dg', is_flag=True, default = False,
-              help=("This flag is present then a dpsi file will divide "
-                  "two part according to |dpsi| > 0 and |dpsi| < 0"))                     
+              help=("AS events can be divided into two groups based on dPSI values \
+                   (group +: dPSI > 0, group -: dPSI < 0)"))                 
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                 default="png", help="out figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
@@ -81,12 +81,12 @@ def heatmap(*args, **kwargs):
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str,
              help="input dpsi names")
 @click.option('-dg', '--dg', is_flag=True, default = False,
-              help=("This flag is present then a dpsi file will divide "
-                  "two part according to |dpsi| > 0 and |dpsi| < 0"))             
+              help=("AS events can be divided into two groups based on dPSI values \
+                   (group +: dPSI > 0, group -: dPSI < 0)"))   
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                 default="png", help="out figure format")
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
-@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
+@click.option('--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def barplot(*args, **kwargs):
     draw.barplot(*args, **kwargs)
