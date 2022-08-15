@@ -387,6 +387,24 @@ $ astk hm -i result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
 
 ![fb_hm.png](demo/img/fb_hm.png)
 
+#### barplot
+
+**barplot** is used to draw barplot figure that show AS events counts distribution withing different condition.
+
+```bash
+astk barplot -i result/fb_e11_based/sig01/fb_e11_p0_*.sig.dpsi \
+    -o img/fb_e11_p0_bar.png -dg -xl A3 A5 AF AL MX RI SE
+
+```
+**barplot** arguments:
+
+* -i : input dpsi files, support multiple files
+* -o: output figure
+* -dg: AS events can be divided into two groups based on dPSI values  (group +: dPSI > 0, group -: dPSI < 0)
+* -xl: x labels
+
+![fb_e11_p0_bar.png](demo/img/fb_e11_p0_bar.png)
+
 #### volcano
 
 **volcano** is used for dPSI volcano ploting.  **vol** is short alias of **volcano**.
@@ -559,8 +577,7 @@ Arguments:
 * -org: organism
 * -o: output file path
 
-![motif_plot.png](demo/img/motif/M083_0.6_plot.png) 
-
+![motif_plot.png](demo/img/motif/M083_0.6_plot.png)  
 
 #### mmap
 
