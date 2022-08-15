@@ -55,7 +55,7 @@ def motif_find(*args, **kwargs):
 @click.option('-o', '--output', type=click.Path(), required=True,
                  help="output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format")
+                 default="png", help="output figure format")
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")

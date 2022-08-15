@@ -44,7 +44,7 @@ def gsea_fun(*args, **kwargs):
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="pdf", help="out figure format") 
+                 default="pdf", help="output figure format") 
 @click.option('-w', '--width', default=10, help="fig width, default=10 inches")
 @click.option('--height', default=12, help="fig height, default=12 inches")    
 def enrich(*args, **kwargs):
@@ -73,7 +73,7 @@ def enrich(*args, **kwargs):
                 help="KEGG organism short alias.This is required if -db is KEGG.\
                     Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="pdf", help="out figure format")
+                default="pdf", help="output figure format")
 @click.option('-w', '--width', default=10, help="fig width, default=6 inches")
 @click.option('--height', default=12, help="fig height, default=6 inches")                
 def enrich_cmp(*args, **kwargs):
