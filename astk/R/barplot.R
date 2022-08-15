@@ -54,8 +54,13 @@ data <- data.frame(
 data$name <- factor(data$name)
 
 p <- ggplot(data) +
+    theme_bw() +
+    theme(panel.grid=element_blank()) + 
     geom_col(mapping = aes(x = name, y = count, fill=type), 
-             position = "dodge")
+             position = "dodge") +
+    scale_fill_manual(values = c("#83cdfd", "#ffee6b")) + 
+    scale_y_continuous(expand = expansion(mult = c(0, .1)))
+
 
 save_fig(p, 
         args$output, 
