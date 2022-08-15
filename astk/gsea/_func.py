@@ -147,7 +147,7 @@ def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Hum
         Term = [x.split('Homo')[0] for x in Term]
 
         plt.figure()
-        plt.barh(Term[::-1],Pvalues[::-1] )
+        plt.barh(Term[::-1],Pvalues[::-1], color="#83cdfd")
         plt.title('NEASE enrichment')
         plt.ylabel('Terms')
         plt.xlabel('-log10(Adjusted P-value)')
