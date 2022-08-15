@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from astk.utils import sniff_fig_fmt
 from .config import *
 from astk import epi
 
@@ -26,8 +27,8 @@ distinguish different profiles. "se" and "std" color the region between the prof
 @click.option('--plotType', 'plot_type', type=click.Choice(['lines',"fill","se",'std']), 
                 default="lines", help=plotType_help_text)
 @click.option('--colorMap', 'color_map', default="RdYlBu", help="Color map to use for the heatmap.")
-@click.option('-fmt', '--figureFormat', "plot_format", type=click.Choice(['png',"pdf","svg",'plotly']), 
-                default="pdf", help="Image format type")
+@click.option('-fmt', '--figureFormat', "plot_format", type=click.Choice(['auto', 'png',"pdf","svg",'plotly']), 
+                default="auto", help="Image format type")
 @click.option('--height', 'fig_height', default=28, type=int, 
                 help="plot height in cm, default=28")
 @click.option('--width', 'fig_width', default=4, type=int, 
@@ -37,6 +38,8 @@ distinguish different profiles. "se" and "std" color the region between the prof
 @click.option('--samplesLabel', 'samplesLabel', cls=MultiOption, 
                 help="bw samples labels")
 def signal_profile(*args, **kwargs):
+    if kwargs["plot_format"] == "auto":
+        kwargs["plot_format"] = sniff_fig_fmt(kwargs["output"], fmts=['png',"pdf","svg",'plotly'])       
     epi.signal_heatmap(*args, **kwargs)
 
 

@@ -346,3 +346,14 @@ def get_meme_path():
 
     meme_path = Path(os.popen("which meme").read().strip())
     return str(Path(meme_path).parent)
+
+
+def sniff_fig_fmt(file, fmts=None):
+    if fmts is None:
+        fmts = ['png', 'pdf', 'pptx']
+    fsuffix = Path(file).suffix[1:]
+    if fsuffix in fmts:
+        suffix = fsuffix
+    else:
+        suffix = "png"
+    return suffix

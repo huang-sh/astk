@@ -1,5 +1,6 @@
 from .config import *
 from astk import draw
+from astk.utils import sniff_fig_fmt
 
 
 @click.command(help="Gene Set Enrichment Analysis ploting")
@@ -7,12 +8,14 @@ from astk import draw
                 help="term id")
 @click.option('-o', '--output', help="output figure path")
 @click.option('-rd', '--RData', help="output figure path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format") 
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+                default="auto", help="output figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('-h', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def gseplot(*args, **kwargs):
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
     draw.gseplot(*args, **kwargs)
 
 @click.command(help="draw UpSet plots for AS events")
@@ -24,12 +27,14 @@ def gseplot(*args, **kwargs):
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("AS events can be divided into two groups based on dPSI values \
                    (group +: dPSI > 0, group -: dPSI < 0)"))                 
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format") 
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+                default="auto", help="output figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def upset(*args, **kwargs):
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])    
     draw.upset(*args, **kwargs)
 
 
@@ -37,12 +42,14 @@ def upset(*args, **kwargs):
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 help="input psi files")    
 @click.option('-o', '--output', help="output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format") 
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+                default="auto", help="output figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def volcano(*args, **kwargs):
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
     draw.volcano(*args, **kwargs)
 
 
@@ -50,12 +57,14 @@ def volcano(*args, **kwargs):
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")
 @click.option('-o', '--output', required=True, help="figure output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format") 
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+                default="auto", help="output figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def pca(*args, **kwargs):
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
     draw.pca(*args, **kwargs)
 
 
@@ -65,12 +74,14 @@ def pca(*args, **kwargs):
 @click.option('-o', '--output', required=True, help="figure output path")
 @click.option('-cls', '--cluster', type=click.Path(exists=True),
                 help="cluster information file")     
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="png", help="out figure format") 
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+                 default="auto", help="output figure format") 
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def heatmap(*args, **kwargs):
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
     draw.heatmap(*args, **kwargs)
 
 
@@ -83,10 +94,12 @@ def heatmap(*args, **kwargs):
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("AS events can be divided into two groups based on dPSI values \
                    (group +: dPSI > 0, group -: dPSI < 0)"))   
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+                default="auto", help="output figure format")
 @click.option('-w', '--width', default=8, help="fig width, default=8 inches")
 @click.option('--height', default=4, help="fig height, default=4 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def barplot(*args, **kwargs):
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
     draw.barplot(*args, **kwargs)
