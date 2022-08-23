@@ -15,8 +15,7 @@ $ conda activate astk
 ## install the development version from github
 $ pip install git+https://github.com/huang-sh/astk.git@dev
 
-# or install from PyPi
-$ pip install astk 
+
 ```
 
 After installed **astk**, you should install **astk**' dependent R packages with:
