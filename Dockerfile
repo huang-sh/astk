@@ -51,7 +51,7 @@ RUN conda install -y -c https://mirrors.bfsu.edu.cn/anaconda/cloud/conda-forge/ 
         bedtools=2.30.0 && \
     Rscript -e "options(BioC_mirror='https://mirrors.tuna.tsinghua.edu.cn/bioconductor');\
         BiocManager::install(c('clusterProfiler', 'org.Mm.eg.db', 'tximport', 'ComplexHeatmap', \
-        'org.Hs.eg.db', 'simplifyEnrichment','universalmotif', 'memes', 'DESeq2'))" 
+        'org.Hs.eg.db', 'simplifyEnrichment','universalmotif', 'memes', 'DESeq2', 'ReactomePA'))" 
 
 
 ENV PATH="${PATH}:/home/software/meme/bin:/home/software/meme/libexec/meme-5.4.1"
