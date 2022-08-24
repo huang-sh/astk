@@ -20,7 +20,7 @@ prepare_KEGG <- function(species, KEGG_Type = "KEGG", keyType = "kegg"){
     return(KEGG_DATA)
 }
 
-assignInNamespace("prepare_KEGG", prepare_KEGG, loadNamespace("clusterProfiler"))
+# assignInNamespace("prepare_KEGG", prepare_KEGG, loadNamespace("clusterProfiler"))
 
 
 enrichGOSep <- function(gene, 
@@ -298,6 +298,64 @@ enrichKEGGSep <- function(gene,
         pdf(out.pdf, width = 12, height = 10)
         print(kp)
         kk <- setReadable(kk, OrgDb = OrgDb, keyType="ENTREZID")
+      }, error = function(e) {
+        if (file.exists(out.pdf)){
+          file.remove(out.pdf)
+        }
+        
+      }, finally = {
+        if (!is.null(dev.list()))
+          {
+              dev.off()
+          }
+          
+          write.csv(as.data.frame(kk), file = sprintf(out.csv.fmt, qval, pval))
+      })
+}
+
+
+
+enrichReactomeSep <- function(
+                          gene, 
+                          out.dir, 
+                          OrgDb, 
+                          name    = "KEGG",
+                          org     = "mmu", 
+                          keytype = 'ENTREZID' ,
+                          pval    = 0.1, 
+                          qval    = 0.1,
+                          width   = 12, 
+                          height  = 10,
+                          format  = "pdf") {
+
+    if (keytype == 'ENTREZID'){
+        gene  <-  gene
+    } else {
+       gene <- bitr(gene, fromType = keytype, toType = "ENTREZID", OrgDb = OrgDb)$ENTREZID
+    }
+    
+    kk <- ReactomePA::enrichPathway(
+                     gene         = gene,
+                     organism     = org, 
+                     pvalueCutoff = pval,
+                     qvalueCutoff = qval,
+                     readable     = FALSE
+                     )
+
+    if (!dir.exists(out.dir)){
+        dir.create(out.dir, recursive = T)
+    }
+
+    out.pdf.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.pdf", sep = ""))  
+    out.csv.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.csv", sep = ""))
+
+    out.pdf <- sprintf(out.pdf.fmt, qval, pval)
+
+    tryCatch({
+        kp <- dotplot(kk, showCategory=30, title = name)
+        pdf(out.pdf, width = 12, height = 10)
+        print(kp)
+        # kk <- setReadable(kk, OrgDb = OrgDb, keyType="ENTREZID")
       }, error = function(e) {
         if (file.exists(out.pdf)){
           file.remove(out.pdf)
