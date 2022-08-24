@@ -1,8 +1,9 @@
 import subprocess
 from pathlib import Path
 
-from astk.constant import BASE_DIR
+from astk.constant import BASE_DIR, PATHWAY_DB_ORG
 import astk.utils.func  as ul
+from astk.types import FilePath
 from astk.event import SuppaEventID
                 
 def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
@@ -16,22 +17,25 @@ def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism)
     info.wait()
 
    
-def enrich(file, outdir, pvalue, qvalue, database, ontology,  
-            gene_id, orgdb, kegg_organism, fmt, width, height):
+def enrich(
+    file: FilePath,
+    outdir: FilePath, 
+    pvalue: float, 
+    qvalue: float, 
+    database: str, 
+    ontology: str,  
+    gene_id: str, 
+    organism: str, 
+    fmt: str, 
+    width: float, 
+    height: float
+) -> None:
     rscript = BASE_DIR / "R" / "enrich.R"
-    if not (org_db := ul.select_OrgDb(orgdb)):
-        print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
-    if database == "KEGG":
-        if not kegg_organism:
-            print("Error: --kegg_organism is required!")
-            exit()
-    else:
-        kegg_organism = "0"
-
+    if not (org_db := ul.select_OrgDb(organism)):
+        print(f"{organism} is wrong! Please run 'astk ls -org' to view more")
+    if database in ["KEGG", "Reactome"]:
+        organism = PATHWAY_DB_ORG[database].get(organism, None)
     Path(outdir).mkdir(exist_ok=True)
-    if database == "KEGG":
-        ul.check_kegg_RData(kegg_organism)
-
     param_dic = {
         "file": file,
         "outdir": outdir, 
@@ -39,7 +43,7 @@ def enrich(file, outdir, pvalue, qvalue, database, ontology,
         "database": database,
         "pval": pvalue,
         "qval": qvalue,
-        "keggorganism": kegg_organism,
+        "organism": organism,
         "genetype": gene_id,
         "ontology": ontology,
         "width": width,

@@ -12,7 +12,7 @@ parser$add_argument("--database", help="database")
 parser$add_argument("--ontology", help="ontology")
 parser$add_argument("--orgdb", help="orgdb")
 parser$add_argument("--genetype", help="gene type")
-parser$add_argument("--keggorganism", help="kegg organism")
+parser$add_argument("--organism", help="kegg organism")
 parser$add_argument("--file", help="dpsi files")
 
 args <- parser$parse_args()
@@ -24,7 +24,7 @@ db <- args$database
 ontology <- args$ontology
 gene_type <- args$genetype
 org_db <- args$orgdb
-kegg_org <- args$keggorganism
+organism <- args$organism
 dpsi_file <- args$file
 
 suppressMessages(library(org_db, character.only = T))
@@ -56,7 +56,19 @@ if (db == "GO"){
                   out.dir, 
                   org_db, 
                   name    = "KEGG",
-                  org     = kegg_org, 
+                  org     = organism, 
+                  keytype = gene_type,
+                  pval    = pval, 
+                  qval    = qval,
+                  width   = args$width, 
+                  height  = args$height,
+                  format  = args$fmt)
+} else if (db == "Reactome") {
+    enrichReactomeSep(genes, 
+                  out.dir, 
+                  org_db, 
+                  name    = "Reactome",
+                  org     = organism, 
                   keytype = gene_type,
                   pval    = pval, 
                   qval    = qval,
@@ -64,3 +76,4 @@ if (db == "GO"){
                   height  = args$height,
                   format  = args$fmt)
 }
+

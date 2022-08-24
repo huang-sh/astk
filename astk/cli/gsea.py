@@ -31,18 +31,14 @@ def gsea_fun(*args, **kwargs):
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-db', '--database', type=click.Choice(['GO']), 
-                default="GO", help="enrich database")
+@click.option('-db', '--database', type=click.Choice(['GO', 'KEGG', 'Reactome']), 
+                default="GO", help="enrich database GO|KEGG|Reactome")
 @click.option('-ont', '--ontology', type=click.Choice(['ALL', 'BP', 'CC','MF']), default="BP",
                 help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three. default=BP")                
 @click.option('-gene_id', '-gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
-                default="ENSEMBL", help="gene ID type")                      
-@click.option('-orgdb', '--orgdb', required=True,
-                help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
-                    run 'astk ls -org' to view more ")
-@click.option('-ko', '--keggOrganism', "kegg_organism",
-                help="KEGG organism short alias.This is required if -db is KEGG.\
-                    Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
+                default="ENSEMBL", help="gene ID type")                   
+@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), 
+                required=True, help="organism")                
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="pdf", help="output figure format") 
 @click.option('-w', '--width', default=10, help="fig width, default=10 inches")
