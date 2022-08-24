@@ -68,3 +68,8 @@ SSN = {
     "AF": 5,   # In fact, it only has four
     "AL": 5    # In fact, it only has four
 }
+
+PATHWAY_DB_ORG = {
+    "KEGG": {"hs": "hsa", "mm": "mmu"},
+    "Reactome": {"hs": "human", "mm": "mouse"}
+}
