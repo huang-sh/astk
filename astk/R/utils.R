@@ -130,14 +130,6 @@ enrichGOSep <- function(gene,
         width  = width, 
         height = height, 
         units  = "in")
-    
-    # pdf(out.pdf, width = 12, height = 10)
-    # fit <- try(print(p))
-    # if ("try-error" %in% class(fit)){
-    #   print(sprintf("%s not enrich", ont))
-    # }
-    # dev.off()
-
 }
 
 
@@ -291,38 +283,42 @@ enrichKEGGSep <- function(gene,
         dir.create(out.dir, recursive = T)
     }
 
-    out.pdf.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.pdf", sep = ""))  
+    if (dim(as.data.frame(kk))[1] == 0){
+      print("nothing enrichment")  
+      return()
+    }                 
+
+    out.fig.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.%s", sep = ""))  
     out.csv.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.csv", sep = ""))
 
-    out.pdf <- sprintf(out.pdf.fmt, qval, pval)
+    out.fig <- sprintf(out.fig.fmt, qval, pval, format)
 
     tryCatch({
-        kp <- dotplot(kk, showCategory=30, title = name)
-        pdf(out.pdf, width = 12, height = 10)
-        print(kp)
+        kp <- dotplot(kk, showCategory=30, title = name) + 
+                scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
+                                      guide   = guide_colorbar(reverse=TRUE, order=1)) +
+                guides(size = guide_legend(override.aes=list(shape=1))) +
+                theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
+                      panel.grid.major.x = element_blank())
+        save_fig(kp, 
+            out.fig, 
+            format = format,
+            width  = width, 
+            height = height, 
+            units  = "in")
         kk <- setReadable(kk, OrgDb = OrgDb, keyType="ENTREZID")
+        write.csv(as.data.frame(kk), file = sprintf(out.csv.fmt, qval, pval))
       }, error = function(e) {
-        if (file.exists(out.pdf)){
-          file.remove(out.pdf)
-        }
-        
-      }, finally = {
-        if (!is.null(dev.list()))
-          {
-              dev.off()
-          }
-          
-          write.csv(as.data.frame(kk), file = sprintf(out.csv.fmt, qval, pval))
+        print(e)
       })
 }
-
 
 
 enrichReactomeSep <- function(
                           gene, 
                           out.dir, 
                           OrgDb, 
-                          name    = "KEGG",
+                          name    = "Reactome",
                           org     = "mmu", 
                           keytype = 'ENTREZID' ,
                           pval    = 0.1, 
@@ -344,33 +340,36 @@ enrichReactomeSep <- function(
                      qvalueCutoff = qval,
                      readable     = FALSE
                      )
-
     if (!dir.exists(out.dir)){
         dir.create(out.dir, recursive = T)
     }
+    if (dim(as.data.frame(kk))[1] == 0){
+      print("nothing enrichment")  
+      return()
+    }                 
 
-    out.pdf.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.pdf", sep = ""))  
+
+    out.fig.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.%s", sep = ""))  
     out.csv.fmt <- file.path(out.dir, paste(name, ".qval%s_pval%s.csv", sep = ""))
 
-    out.pdf <- sprintf(out.pdf.fmt, qval, pval)
+    out.fig <- sprintf(out.fig.fmt, qval, pval, format)
 
     tryCatch({
-        kp <- dotplot(kk, showCategory=30, title = name)
-        pdf(out.pdf, width = 12, height = 10)
-        print(kp)
-        # kk <- setReadable(kk, OrgDb = OrgDb, keyType="ENTREZID")
+        kp <- dotplot(kk, showCategory=30, title = name) + 
+                scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
+                                      guide   = guide_colorbar(reverse=TRUE, order=1)) +
+                guides(size = guide_legend(override.aes=list(shape=1))) +
+                theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
+                      panel.grid.major.x = element_blank())
+        save_fig(kp, 
+            out.fig, 
+            format = format,
+            width  = width, 
+            height = height, 
+            units  = "in")
+        write.csv(as.data.frame(kk), file = sprintf(out.csv.fmt, qval, pval))
       }, error = function(e) {
-        if (file.exists(out.pdf)){
-          file.remove(out.pdf)
-        }
-        
-      }, finally = {
-        if (!is.null(dev.list()))
-          {
-              dev.off()
-          }
-          
-          write.csv(as.data.frame(kk), file = sprintf(out.csv.fmt, qval, pval))
+        print(e)
       })
 }
 
