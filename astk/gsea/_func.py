@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+from typing import Sequence
 
 from astk.constant import BASE_DIR, PATHWAY_DB_ORG
 import astk.utils.func  as ul
@@ -54,31 +55,36 @@ def enrich(
     subprocess.run(["Rscript", rscript, *param_ls])
 
              
-def enrich_cmp(files, outdir, cluster, database, ontology, pvalue, qvalue, 
-                xlabel, gene_id, orgdb, kegg_organism, fmt, width, height):
+def enrich_cmp(
+    files: Sequence[FilePath],
+    outdir: FilePath, 
+    database: str, 
+    ontology: str,
+    pvalue: float,
+    qvalue: float, 
+    xlabel: Sequence[str],
+    gene_id: str,
+    organism: str,
+    fmt: str,
+    width: float,
+    height: float
+) -> None:
 
-    if not (org_db := ul.select_OrgDb(orgdb)):
-        print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")
-    if database == "KEGG":
-        ul.check_kegg_RData(kegg_organism)
-        if not kegg_organism:
-            print("Error: --kegg_organism is required!")
-            exit()
-    else:
-        kegg_organism = "0"
+    if not (org_db := ul.select_OrgDb(organism)):
+        print(f"{organism} is wrong! Please run 'astk ls -orgdb' to view more")
+    if database in ["KEGG", "Reactome"]:
+        organism = PATHWAY_DB_ORG[database].get(organism, None)
     rscript = BASE_DIR / "R" / "enrichCompare.R"
     Path(outdir).mkdir(exist_ok=True)
-    cluster = cluster if cluster else "0"
     param_dic = {
         "files": files,
         "outdir": outdir, 
-        "clusterfile": cluster, 
         "orgdb": org_db,
         "database": database,
         "pval": pvalue,
         "qval": qvalue,
         "xlabel": xlabel, 
-        "keggorganism": kegg_organism,
+        "organism": organism,
         "genetype": gene_id,
         "ontology": ontology,
         "width": width,

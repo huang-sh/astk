@@ -211,10 +211,11 @@ compareClusterSep <- function(gene_ls,
 }
 
 
-compareKEGGCluster <- function(gene_ls, 
+comparePathwayCluster <- function(gene_ls, 
                                output, 
                                OrgDb, 
                                organism, 
+                               database,
                                name    = "KEGG",
                                keyType = 'ENSEMBL',
                                pval    = 0.1, 
@@ -231,11 +232,16 @@ compareKEGGCluster <- function(gene_ls,
       })
        
     }
+      if (database == "KEGG"){
+        enrich_func = "enrichKEGG"
+      } else if (database == "Reactome"){
+        enrich_func = ReactomePA::enrichPathway
+      }
       cpk <- compareCluster(gene_ls, 
-                            fun          = "enrichKEGG", 
+                            fun          = enrich_func, 
                             pvalueCutoff = pval,
                             qvalueCutoff = qval,
-                            organism     = organism) 
+                            organism     = organism)
 
       if (dim(as.data.frame(cpk))[1] == 0){
         next()
@@ -243,21 +249,18 @@ compareKEGGCluster <- function(gene_ls,
       outputf <- file.path(output, paste(name, ".cmp.qval%s_pval%s.pdf", sep = "")) 
       out.pdf <- sprintf(outputf, qval, pval)
       
-      p <- dotplot(cpk, title = sprintf("%s",name)) 
-
+      p <- dotplot(cpk, title = sprintf("%s",name))  + 
+            scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
+                                  guide   = guide_colorbar(reverse=TRUE, order=1)) +
+            guides(size = guide_legend(override.aes=list(shape=1))) +
+            theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
+                  panel.grid.major.x = element_blank())
       save_fig(p, 
           out.pdf, 
           format = format,
           width  = width, 
           height = height, 
           units  = "in")
-      # pdf(out.pdf, width = 12, height = 10)
-      # fit <- try(print(p))
-      # if ("try-error" %in% class(fit)){
-      #   print(sprintf("%s not enrich", ont.i))
-      # }
-      # dev.off()
-
 }
 
 

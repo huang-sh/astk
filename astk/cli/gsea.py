@@ -50,10 +50,8 @@ def enrich(*args, **kwargs):
 @click.command()
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input dpsi files")
-@click.option('-od', '--outdir', required=True, help="output directory")
-@click.option('-cls', '--cluster', type=click.Path(exists=True),
-                help="cluster information file")            
-@click.option('-db', '--database', type=click.Choice(['GO']), 
+@click.option('-od', '--outdir', required=True, help="output directory")          
+@click.option('-db', '--database', type=click.Choice(['GO', 'KEGG', 'Reactome']), 
                 default="GO", help="enrich database")
 @click.option('-ont', '--ontology', type=click.Choice(['ALL', 'BP', 'CC','MF']), default="BP",
                 help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three. default=BP")                  
@@ -62,12 +60,8 @@ def enrich(*args, **kwargs):
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str, help="xlabel")
 @click.option('-gene_id', '--gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")                      
-@click.option('-orgdb', '--orgdb', required=True,
-                help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
-                    run 'astk ls -orgdb' to view more ")
-@click.option('-ko', '--keggOrganism', "kegg_organism",
-                help="KEGG organism short alias.This is required if -db is KEGG.\
-                    Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
+@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True,
+                help="organism: hs|mm")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                 default="pdf", help="output figure format")
 @click.option('-w', '--width', default=10, help="fig width, default=6 inches")
