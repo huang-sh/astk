@@ -211,6 +211,7 @@ def get_coor_fa(df, fasta, out):
     lines = [f"{v[1]}\t{v[2]-1}\t{v[3]}\t{v[4]}" for v in df.itertuples()]
     bed = pybedtools.BedTool("\n".join(lines), from_string=True)
     bed.sequence(fi=fasta, fo=out, name=True)
+    return bed.seqfn
 
 
 def get_anchor_coor(event_id, index, sideindex, offset5, offset3, strand_sp):
