@@ -4,4 +4,4 @@ astk.event
 ~~~~~~~~~~~~~~~~~
 The module includes AS event processing method
 """
-from ._func import *
+from .eid import *
