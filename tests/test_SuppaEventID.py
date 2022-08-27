@@ -113,7 +113,7 @@ def test_AF_SuppaEventID():
     assert neg_eidi.alter_element_len == 272
 
 
-def test_Al_SuppaEventID():
+def test_AL_SuppaEventID():
     pos_eid = "ENSMUSG00000030532.6;AL:chr7:80343956-80345177:80345315:80343956-80345648:80345765:+"
     neg_eid = "ENSMUSG00000025920.19;AL:chr1:16440442:16440458-16463035:16459715:16460419-16463035:-"
 
