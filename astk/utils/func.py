@@ -5,7 +5,7 @@ from functools import partial
 
 from astk.types import FilePath
 from astk.event import SuppaEventID
-from astk.constant import OrgDb_dic, BASE_DIR, SSN
+from astk.constant import OrgDb_dic, BASE_DIR, SSN, SS_SCORE_LEN
 
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
@@ -269,7 +269,7 @@ def get_evnet_ss_bed(
         ai_coor_df = concat([
                         ps_coor_df.loc[ps_coor_df[5] == "+", ],
                         ns_coor_df.loc[ns_coor_df[5] == "-", ]])
-        dic[f"SS{i}"] = ai_coor_df
+        dic[f"A{i}"] = ai_coor_df
     return dic
 
 
@@ -358,3 +358,20 @@ def sniff_fig_fmt(file, fmts=None):
     else:
         suffix = "png"
     return suffix
+
+
+def read_fasta(seq):
+    seq_ls = []
+    for line in seq:
+        line = line.strip()
+        if not line:
+            continue
+        if line[0] == '>':
+            if seq_ls:
+                yield descr, ''.join(seq_ls)
+                seq_ls.clear()
+            descr = line
+        else:
+            seq_ls.append(line)
+    else:
+        yield descr, ''.join(seq_ls)
