@@ -75,3 +75,4 @@ cli_fun.add_command(getgene)
 ## seq feature
 cli_fun.add_command(sc_extract, name=["seqfeature", "seqf"])
 cli_fun.add_command(sc_seqlogo, name=["seqlogo"])
+cli_fun.add_command(sc_splice_score, name=["sss", "spliceScore"])

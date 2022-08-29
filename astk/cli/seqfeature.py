@@ -6,6 +6,7 @@ This module provide sequence feature extraction cli api
 
 from .config import *
 import astk.seqfeature.feature as sf
+from astk.seqfeature import splice_score
 
 
 @click.command(help = "extract DNA sequence feature ")
@@ -34,3 +35,12 @@ def sc_extract(*args, **kwargs):
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")                
 def sc_seqlogo(*args, **kwargs):
     sf.seq_pcm(*args, **kwargs)
+
+
+@click.command(["spliceScore", "ss"], help="Compute 5/3 Splice site strength")
+@click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
+                help="event file")
+@click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
+@click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
+def sc_splice_score(*args, **kwargs):
+    splice_score(*args, **kwargs)

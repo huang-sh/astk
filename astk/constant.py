@@ -69,6 +69,16 @@ SSN = {
     "AL": 5    # In fact, it only has four
 }
 
+SS_SCORE_LEN = {
+    "SE": [9, 23, 9, 23],
+    "MX": [9, 23, 9, 23, 9, 23],
+    "A5": [9, 9, 23],
+    "A3": [9, 23, 23],
+    "RI": [23, 9, 23, 9],   
+    "AF": [0, 9, 23, 9, 23],   # the first is not 3 splice site
+    "AL": [9, 23, 9, 23, 0]    # the last is not 5 splice site
+}
+
 PATHWAY_DB_ORG = {
     "KEGG": {"hs": "hsa", "mm": "mmu"},
     "Reactome": {"hs": "human", "mm": "mouse"}
