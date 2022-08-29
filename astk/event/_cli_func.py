@@ -3,7 +3,7 @@ from pathlib import Path
 import astk.utils.func  as ul
 import astk.utils.select as sl
 from astk.types import FilePath
-from ._func import SuppaEventID
+from .eid import SuppaEventID
 
 
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):

@@ -5,9 +5,6 @@ astk.utils
 This module provides some utility functions.
 """
 from .func import *
-# from event import len_dist
-# from event import len_cluster
-# from event import len_pick
-# from event import diff_splice
-# from event import sigfilter
-# from event import psi_filter
+from ._coord import SuppaEventCoord, get_file_ss_bed
+from ._getfasta import get_coor_fa
+
