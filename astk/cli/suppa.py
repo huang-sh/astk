@@ -14,7 +14,9 @@ from astk.constant import AS_TYPE
 @click.option('-et', '--eventType', "event_types", type=click.Choice(['ALL'] + AS_TYPE), 
                 default="ALL", help="AS event Type")
 @click.option('-o', '--output', required=True, 
-                help="name of the output file without any extension")         
+                help="name of the output file without any extension")
+@click.option('--idType', default="SUPPA2", type=click.Choice(["ASID", "SUPPA2"]), 
+                help="output event ID type, default='SUPPA2'")              
 @click.option('--split', cls=MultiOption, type=click.Choice(['inner', 'FTE', 'LTE']), 
                 default=(), help="AS event exon that overlapping the transcript first or last \
                                  terminal exon startCodon and stopCodon will save separately")
@@ -67,6 +69,8 @@ def diffSplice(*args, **kwargs):
              default="ALL", help="gene annotation gtf file")
 @click.option('-m', '--method', type=click.Choice(['empirical', 'classical']),
              default="empirical", help="gene annotation gtf file")
+@click.option('--idType', default="SUPPA2", type=click.Choice(["ASID", "SUPPA2"]), 
+                help="output event ID type, default='SUPPA2'")                
 @click.option('--exon_len', type=int, default=100,
              help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")             
 @click.option('-pg', '--poolGenes', default=False, is_flag=True, 
@@ -81,5 +85,6 @@ def dsflow(*args, **kwargs):
         kwargs.get("gtf"),
         etypes,
         kwargs.get("outdir"),
-        kwargs.get("method")
+        kwargs.get("method"),
+        kwargs.get("idtype")
     )

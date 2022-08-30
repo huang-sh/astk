@@ -57,7 +57,7 @@ class SEEvent(ASEvent):
         splicein_exon: Sequence["Exon"] = [],
         spliceout_exon: Sequence["Exon"] = [],
         splicein_tx: Sequence["Transcript"] = [],
-        spliceout_tx: Sequence["Transcript"] = [],        
+        spliceout_tx: Sequence["Transcript"] = [],
     ):
         super().__init__(
             splicein_exon,
@@ -82,8 +82,10 @@ class SEEvent(ASEvent):
 
     def set_basic_info(self):
         e1, e2, e3 = self.splicein_exon
-        self.strand =  e1.strand
-        self.id = f"{e1.chr}:{e1.end}-{e2.start}:{e2.end}-{e3.start}:{e1.strand}"
+        self.strand =  e1.strand# 
+        self.tid = (
+            "SE", e1.chr, e1.strand,
+            e1.start, e1.end, e2.start, e2.end, e3.start, e3.end)
 
 
 class RIEvent(ASEvent):
@@ -115,7 +117,7 @@ class RIEvent(ASEvent):
     def set_basic_info(self):
         e1, e2 = self.spliceout_exon
         self.strand =  e1.strand
-        self.id = f"{e1.chr}:{e1.start}:{e1.end}-{e2.start}:{e2.end}:{e2.strand}"
+        self.tid = ("RI", e1.chr, e1.strand, e1.start, e1.end, e2.start, e2.end)
 
 
 class MXEvent(ASEvent):
@@ -155,19 +157,11 @@ class MXEvent(ASEvent):
         e1, e2, e4 = self.splicein_exon
         e1, e3, e4 = self.spliceout_exon
         self.strand =  e1.strand
-        self.id = (f"{e1.chr}:{e1.end}-{e2.start}:{e2.end}-"
-                   f"{e4.start}:{e1.end}-{e3.start}:{e3.end}-{e4.start}:{self.strand}")
-
-    def set_tid(self, exons: Sequence["Exon"]):
-        """just for AS event inferring
-        """
-        e1, e2, e3 = exons
-        # coor_str = ":".join([f"{e.start}-{e.end}" for e in exons])
-        coor_str = f"S-{e1.end}:{e2.start}-{e2.end}:{e3.start}-E"
-        self.tid = f"{self.etype}:{coor_str}"
-    
-    def set_boundary():
-        pass
+        self.tid = (
+            "MX", e1.chr, e1.strand, 
+            e1.start, e1.end, e2.start, e2.end,
+            e3.start, e3.end, e4.start, e4.end
+        )
 
 
 class A5Event(ASEvent):
@@ -214,7 +208,11 @@ class A5Event(ASEvent):
         si1, si2 = self.splicein_exon
         so1, so2 = self.spliceout_exon
         self.strand = si1.strand
-        self.id = f"{si1.chr}:{si1.end}-{si2.start}:{so1.end}-{so2.start}:{self.strand}"
+        self.tid = (
+            "A5", si1.chr, si1.strand, 
+            si1.start, si1.end, si2.start, si2.end,
+            so1.start, so1.end, so2.start, so2.end
+        )
 
 
 class A3Event(ASEvent):
@@ -260,7 +258,11 @@ class A3Event(ASEvent):
         si1, si2 = self.splicein_exon
         so1, so2 = self.spliceout_exon
         self.strand = si1.strand
-        self.id = f"{si1.chr}:{si1.end}-{si2.start}:{so1.end}-{so2.start}:{self.strand}"
+        self.tid = (
+            "A3", si1.chr, si1.strand, 
+            si1.start, si1.end, si2.start, si2.end,
+            so1.start, so1.end, so2.start, so2.end
+        )
 
 
 class AFEvent(ASEvent):
@@ -304,12 +306,11 @@ class AFEvent(ASEvent):
         si1, si2 = self.splicein_exon
         so1, so2 = self.spliceout_exon
         self.strand = si1.strand
-        if self.strand == "+":
-            self.id = (f"{si1.chr}:{si1.start}:{si1.end}-{si2.start}:"
-                        f"{so1.start}:{so1.end}-{so2.start}:{self.strand}")
-        elif self.strand == "-":
-            self.id = (f"{si1.chr}:{so1.end}-{so2.start}:{so2.end}:"
-                        f"{si1.end}-{si2.start}:{si2.end}:{self.strand}")
+        self.tid = (
+            "AF", si1.chr, si1.strand, 
+            si1.start, si1.end, si2.start, si2.end,
+            so1.start, so1.end, so2.start, so2.end
+        )
  
  
 class ALEvent(ASEvent):
@@ -353,12 +354,11 @@ class ALEvent(ASEvent):
         si1, si2 = self.splicein_exon
         so1, so2 = self.spliceout_exon
         self.strand = si1.strand
-        if self.strand == "-":
-            self.id = (f"{si1.chr}:{si1.start}:{si1.end}-{si2.start}:"
-                        f"{so1.start}:{so1.end}-{so2.start}:{self.strand}")
-        elif self.strand == "+":
-            self.id = (f"{si1.chr}:{so1.end}-{so2.start}:{so2.end}:"
-                        f"{si1.end}-{si2.start}:{si2.end}:{self.strand}")
+        self.tid = (
+            "AL", si1.chr, si1.strand, 
+            si1.start, si1.end, si2.start, si2.end,
+            so1.start, so1.end, so2.start, so2.end
+        )
 
 
 class AlternativeSplicing:
@@ -420,16 +420,18 @@ class AlternativeSplicing:
                         if etid not in self.LT_events:
                             self.LT_events.setdefault(etid, self.inner_AS_events.pop(etid))
 
-    def to_ioe_list(self, event: "ASEvent"):
-
+    def to_ioe_list(self, event: "ASEvent", id_type: str):
         splicein_tx = [i.id for i in event.splicein_tx]
         spliceout_tx = [i.id for i in event.spliceout_tx]
         all_tx = splicein_tx + spliceout_tx
-        full_event_id = f"{self.gene_id};{self.etype}:{event.id}"
+        if id_type == "SUPPA2":
+            full_event_id = f"{self.gene_id};{self.etype}:{event.id}"
+        else:
+            full_event_id = f"{self.gene_id};{self.etype};{event.id}"
         line = [self.chr, self.gene_id, full_event_id, ",".join(splicein_tx), ",".join(all_tx)]
         return line
  
-    def to_ioe(self, type: Optional[str] = None):
+    def to_ioe(self, type: Optional[str] = None, idtype: str = "ASID"):
         if type is None:
             events = self.AS_events.copy()
             events.update(self.FT_events)
@@ -442,7 +444,7 @@ class AlternativeSplicing:
             events = self.inner_AS_events
         else:
             events = {}
-        lines = [self.to_ioe_list(e) for e in events.values()]
+        lines = [self.to_ioe_list(e, idtype) for e in events.values()]
         return lines
 
 
@@ -453,7 +455,6 @@ class SkippingExon(AlternativeSplicing):
     def __init__(self, gene):
         super().__init__(gene)
         self.etype = 'SE'  
-        self.construct_events()
 
     def _infer_splicein_events(self):
         pe_dic = {}
@@ -479,7 +480,16 @@ class SkippingExon(AlternativeSplicing):
                 pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        e1s, e1e, e2s, e2e, e3s, e3e = position
+        if idtype == "ASID":
+            fid = f"{strand};{Chr}:{e1s}:{e1e}-{e2s}:{e2e}-{e3s}:{e3e}"
+        else:
+            fid = f"{Chr}:{e1e}-{e2s}:{e2e}-{e3s}:{strand}"
+        return fid
+    
+    def construct_events(self, idtype="ASID"):
         psi_dic = self._infer_splicein_events()
         pso_dic = self._infer_spliceout_events()
         shared_keys = set(psi_dic.keys()) & set(pso_dic.keys())
@@ -489,10 +499,12 @@ class SkippingExon(AlternativeSplicing):
                     continue
                 event = SEEvent(splicein_exon=se["exons"],
                                 spliceout_exon=so["exons"])
-                if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(se["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                if event.status == "review":                    
+                    eid = self._tranform_id(event.tid, idtype=idtype)
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(se["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
 
         self.inner_AS_events = self.AS_events.copy()
 
@@ -504,7 +516,7 @@ class RetainedIntron(AlternativeSplicing):
     def __init__(self, gene: "Gene"):
         super().__init__(gene)
         self.etype = 'RI'  
-        self.construct_events()
+        # self.construct_events()
 
     def _infer_splicein_events(self):
         pe_dic = {}
@@ -530,7 +542,16 @@ class RetainedIntron(AlternativeSplicing):
                 pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        e1s, e1e, e2s, e2e = position
+        if idtype == "ASID":
+            fid = f"{strand};{Chr}:{e1s}:{e1e}-{e2s}:{e2e}"
+        else:
+            fid = f"{Chr}:{e1s}:{e1e}-{e2s}:{e2e}:{strand}"
+        return fid
+
+    def construct_events(self, idtype="ASID"):
         psi_dic = self._infer_splicein_events()
         pso_dic = self._infer_spliceout_events()
         shared_keys = set(psi_dic.keys()) & set(pso_dic.keys())
@@ -541,9 +562,11 @@ class RetainedIntron(AlternativeSplicing):
                 event = RIEvent(splicein_exon=se["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(se["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                    eid = self._tranform_id(event.tid, idtype)
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(se["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
 
         self.inner_AS_events = self.AS_events.copy()
 
@@ -555,7 +578,6 @@ class MutuallyExclusiveExon(AlternativeSplicing):
     def __init__(self, gene: "Gene"):
         super().__init__(gene)
         self.etype = 'MX'  
-        self.construct_events()
 
     def _infer_events(self):
         pe_dic = {}
@@ -569,7 +591,16 @@ class MutuallyExclusiveExon(AlternativeSplicing):
                 pe_dic[tid].append({"exons": exons[i:i+3], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        e1s, e1e, e2s, e2e, e3s, e3e, e4s, e4e = position
+        if idtype == "ASID":
+            fid = f"{strand};{Chr}:{e1s}:{e1e}-{e2s}:{e2e}|{e3s}:{e3e}-{e4s}:{e4e}"
+        else:
+            fid = f"{Chr}:{e1e}-{e2s}:{e2e}-{e4s}:{e1e}-{e3s}:{e3e}-{e4s}:{strand}"
+        return fid
+
+    def construct_events(self, idtype="ASID"):
         events = self._infer_events()
         for item in events.values():
             for si, so in product(item, item):
@@ -578,9 +609,11 @@ class MutuallyExclusiveExon(AlternativeSplicing):
                 event = MXEvent(splicein_exon=si["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(si["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                    eid = self._tranform_id(event.tid, idtype)
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(si["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
         self.inner_AS_events = self.AS_events.copy()
 
 
@@ -590,8 +623,7 @@ class Alternative5SS(AlternativeSplicing):
     """
     def __init__(self, gene: "Gene"):
         super().__init__(gene)
-        self.etype = 'A5'  
-        self.construct_events()
+        self.etype = 'A5'
 
     def _infer_events(self):
         pe_dic = {}
@@ -613,7 +645,19 @@ class Alternative5SS(AlternativeSplicing):
                     pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        si1s, si1e, si2s, si2e, so1s, so1e, so2s, so2e = position
+        if idtype == "ASID":            
+            if strand == "+":
+                fid = f"{strand};{Chr}:{si1s}:{so1e}|{si1e}-{si2s}:{si2e}"
+            elif strand == "-":
+                fid = f"{strand};{Chr}:{so1s}:{so1e}-{si2s}|{so2s}:{so2e}"
+        else:
+            fid = f"{Chr}:{si1e}-{si2s}:{so1e}-{so2s}:{strand}"
+        return fid
+
+    def construct_events(self, idtype="ASID"):
         events = self._infer_events()
         for item in events.values():
             for si, so in product(item, item):
@@ -622,9 +666,11 @@ class Alternative5SS(AlternativeSplicing):
                 event = A5Event(splicein_exon=si["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(si["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                    eid = self._tranform_id(event.tid, idtype)
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(si["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
         self.inner_AS_events = self.AS_events.copy()
 
 
@@ -635,7 +681,6 @@ class Alternative3SS(AlternativeSplicing):
     def __init__(self, gene: "Gene"):
         super().__init__(gene)
         self.etype = 'A3'
-        self.construct_events()
 
     def _infer_events(self):
         pe_dic = {}
@@ -657,7 +702,19 @@ class Alternative3SS(AlternativeSplicing):
                     pe_dic[tid].append({"exons": exons[i:i+2], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        si1s, si1e, si2s, si2e, so1s, so1e, so2s, so2e = position
+        if idtype == "ASID":            
+            if strand == "+":
+                fid = f"{strand};{Chr}:{si1s}:{si1e}-{si2s}|{so2s}:{si2e}"
+            elif strand == "-":
+                fid = f"{strand};{Chr}:{so1s}:{so1e}|{si1e}-{so2s}:{so2e}"
+        else:
+            fid = f"{Chr}:{si1e}-{si2s}:{so1e}-{so2s}:{strand}"
+        return fid
+
+    def construct_events(self, idtype="ASID"): 
         events = self._infer_events()
         for item in events.values():
             for si, so in product(item, item):
@@ -666,9 +723,11 @@ class Alternative3SS(AlternativeSplicing):
                 event = A3Event(splicein_exon=si["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(si["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                    eid = self._tranform_id(event.tid, idtype)
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(si["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
         self.inner_AS_events = self.AS_events.copy()
 
 
@@ -679,7 +738,6 @@ class AlternativeFirstExon(AlternativeSplicing):
     def __init__(self, gene: "Gene"):
         super().__init__(gene)
         self.etype = 'AF'  
-        self.construct_events()
 
     def _infer_events(self):
         pe_dic = {}
@@ -699,7 +757,22 @@ class AlternativeFirstExon(AlternativeSplicing):
                 pe_dic[tid].append({"exons": exons[-2:], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        si1s, si1e, si2s, si2e, so1s, so1e, so2s, so2e = position
+        if idtype == "ASID":
+            if strand == "+":
+                fid = f"{strand};{Chr}:{si1s}:{si1e}|{so1s}:{so1e}-{si2s}:{si2e}"
+            elif strand == "-":
+                fid = f"{strand};{Chr}:{so1s}:{so1e}-{so2s}:{so2e}|{si2s}:{si2e}"
+        else:
+            if strand == "+":
+                fid = f"{Chr}:{si1s}:{si1e}-{si2s}:{so1s}:{so1e}-{so2s}:{strand}"
+            elif strand == "-":
+                fid = f"{Chr}:{so1e}-{so2s}:{so2e}:{si1e}-{si2s}:{si2e}:{strand}"
+        return fid
+
+    def construct_events(self, idtype="ASID"):
         events = self._infer_events()
         for item in events.values():
             for si, so in product(item, item):
@@ -708,9 +781,11 @@ class AlternativeFirstExon(AlternativeSplicing):
                 event = AFEvent(splicein_exon=si["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(si["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                    eid = self._tranform_id(event.tid, idtype="ASID")
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(si["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
         self.inner_AS_events = self.AS_events.copy()
 
 
@@ -721,7 +796,6 @@ class AlternativeLastExon(AlternativeSplicing):
     def __init__(self, gene: "Gene"):
         super().__init__(gene)
         self.etype = 'AL'
-        self.construct_events()
 
     def _infer_events(self):
         pe_dic = {}
@@ -741,7 +815,22 @@ class AlternativeLastExon(AlternativeSplicing):
                 pe_dic[tid].append({"exons": exons[-2:], "tx": tx})
         return pe_dic
 
-    def construct_events(self):
+    def _tranform_id(self, tid_tuple, idtype="ASID"):
+        _, Chr, strand, *position = tid_tuple
+        si1s, si1e, si2s, si2e, so1s, so1e, so2s, so2e = position
+        if idtype == "ASID":
+            if strand == "+":
+                fid = f"{strand};{Chr}:{si1s}:{si1e}-{so1s}:{so1e}|{si2s}:{si2e}"
+            elif strand == "-":
+                fid = f"{strand};{Chr}:{si1s}:{si1e}|{so2s}:{so2e}-{si2s}:{si2e}"
+        else:
+            if strand == "-":
+                fid = f"{Chr}:{si1s}:{si1e}-{si2s}:{so1s}:{so1e}-{so2s}:{strand}"
+            elif strand == "+":
+                fid = f"{Chr}:{so1e}-{so2s}:{so2e}:{si1e}-{si2s}:{si2e}:{strand}"
+        return fid
+
+    def construct_events(self, idtype="ASID"):
         events = self._infer_events()
         for item in events.values():
             for si, so in product(item, item):
@@ -750,15 +839,18 @@ class AlternativeLastExon(AlternativeSplicing):
                 event = ALEvent(splicein_exon=si["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    self.AS_events.setdefault(event.id, event)
-                    self.AS_events[event.id].splicein_tx.add(si["tx"])
-                    self.AS_events[event.id].spliceout_tx.add(so["tx"])
+                    eid = self._tranform_id(event.tid, idtype)
+                    event.id = eid
+                    self.AS_events.setdefault(eid, event)
+                    self.AS_events[eid].splicein_tx.add(si["tx"])
+                    self.AS_events[eid].spliceout_tx.add(so["tx"])
         self.inner_AS_events = self.AS_events.copy()
 
 
 def make_events(output: str,
                 genome: "Genome",            
-                events: Sequence[str],                
+                events: Sequence[str],
+                idtype: str,            
                 AS_split: Sequence[str], 
                 b_type: str = "S", 
                 th: int = 10
@@ -794,6 +886,7 @@ def make_events(output: str,
     for t, event_cls in event_cls_dic.items():
         for gene in tqdm(genome.genes.values(), desc=f"Calculating {t} events"):
             gene_event = event_cls(gene)
+            gene_event.construct_events(idtype)
             gene_event.filter_FT()
             gene_event.filter_LT()
 

@@ -33,13 +33,13 @@ def gtf_parse_cache(gtf):
     return pkl
 
 
-def generate_events(gtf, event_types, output, split):
+def generate_events(gtf, event_types, output, idtype, split):
     genome = construct_genome(gtf)
     if event_types == "ALL":
         event_types =  ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
     else:
         event_types = [event_types]
-    make_events(output, genome, event_types, split)
+    make_events(output, genome, event_types, idtype, split)
 
 
 def diff_splice(
@@ -100,7 +100,8 @@ def ds_flow(
     gtf: FilePath,
     etypes: Sequence[str],
     outdir: FilePath, 
-    method: str
+    method: str,
+    idtype: str
     ):
     import pandas as pd
 
@@ -109,7 +110,7 @@ def ds_flow(
     genome = construct_genome(gtf)
     ref_dir = Path(outdir) / "ref"
     ref_dir.mkdir(exist_ok=True)
-    make_events(ref_dir / "annotation", genome, etypes, [])
+    make_events(ref_dir / "annotation", genome, etypes, idtype, [])
     
     tpm_dir =  Path(outdir) / "tpm"
     psi_dir =  Path(outdir) / "psi"
