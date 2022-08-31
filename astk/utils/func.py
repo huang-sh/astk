@@ -375,3 +375,40 @@ def read_fasta(seq):
             seq_ls.append(line)
     else:
         yield descr, ''.join(seq_ls)
+
+
+def detect_file_info(file):
+    info_dic = {}
+    with open(file, "r") as f:
+        line1_ls = f.readline().split()
+        ## just simple judgment
+        if line1_ls[:5] == ["ID","GeneID","geneSymbol","chr","strand"]:
+            info_dic["app"] = "rMATS"
+
+            if "riExonStart_0base" in line1_ls:
+                info_dic["etype"] = "RI"
+            elif "2ndExonStart_0base" in line1_ls:
+                info_dic["etype"] = "MXE"
+            elif "exonStart_0base" in line1_ls:
+                info_dic["etype"] = "SE"
+            else:
+                line2_ls = f.readline().split()
+                if line2_ls[4] == "+":
+                    if line2_ls[5] == line2_ls[7]:
+                        info_dic["etype"] = "A5SS"
+                    else:
+                        info_dic["etype"] = "A3SS"
+                else:
+                    if line2_ls[5] == line2_ls[7]:
+                        info_dic["etype"] = "A3SS"
+                    else:
+                        info_dic["etype"] = "A5SS"
+        else:
+            info_dic["app"] = "SUPPA2"
+            lines = f.readlines()
+            events = [SuppaEventID(line.split()[0]) for line in lines]
+            if len(set([e.AS_type for e in events])) != 1:
+                raise ValueError("input SUPPA2 must contain one AS type!")
+            info_dic["etype"] = events[0].AS_type
+
+    return info_dic                        
