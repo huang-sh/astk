@@ -10,17 +10,33 @@ from pathlib import Path
 from pandas import read_csv
 
 
-def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
+def sig_filter(df, **kwargs):
+    pval = kwargs.get("pval", 0.05)
+    qval = kwargs.get("qval", 1)
+    dpsi = kwargs.get("dpsi", 0)
+    abs_dpsi = kwargs.get("abs_dpsi", 0)
+    app = kwargs.get("app", "auto")
+
+    if app == "SUPPA2":
+        pval_col = "pval"
+        dpsi_col = "dpsi"
+        qval_col = "pval"
+    elif app == "rMATS":
+        pval_col = "FDR"
+        dpsi_col = "IncLevelDifference"
+        qval_col = "FDR"
+
     dpsi_df = df
-    pval_keep = dpsi_df.loc[:, "pval"] < pval
+    pval_keep = dpsi_df.loc[:, pval_col] < pval
+    pval_keep = (dpsi_df.loc[:, qval_col] < qval) & pval_keep
     if dpsi > 0:
-        keep = (dpsi_df.loc[:, "dpsi"] > dpsi) & pval_keep
+        keep = (dpsi_df.loc[:, dpsi_col] > dpsi) & pval_keep
     elif dpsi < 0:
-        keep = (dpsi_df.loc[:, "dpsi"] < dpsi) & pval_keep
+        keep = (dpsi_df.loc[:, dpsi_col] < dpsi) & pval_keep
     else:
         keep = pval_keep
     if abs_dpsi > 0:
-        keep = (abs(dpsi_df.loc[:, "dpsi"]) > abs_dpsi) & keep
+        keep = (abs(dpsi_df.loc[:, dpsi_col]) > abs_dpsi) & keep
     fdf = dpsi_df.loc[keep, ]
     return fdf
 

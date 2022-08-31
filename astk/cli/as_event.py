@@ -34,6 +34,7 @@ def len_pick(*args, **kwargs):
     et.len_pick(*args, **kwargs)
 
 
+# it is deprecated
 @click.command(help="filter significant result")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input dpsi files")
@@ -42,12 +43,14 @@ def len_pick(*args, **kwargs):
 @click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=float, default=0, help="absulte dpsi threshold value")
 @click.option('-pf1', '--psiFile1', cls=MultiOption, type=click.Path(exists=True),
-                help="psi files of condtion 1")
+                default=(), help="psi files of condtion 1")
 @click.option('-pf2', '--psiFile2', cls=MultiOption, type=click.Path(exists=True),
-                help="psi files of condtion 2")
+                default=(), help="psi files of condtion 2")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
                 default="tsv", help="out  file format ")
-def sigfilter(*args, **kwargs):
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                default="auto", help="the program that generates event file")
+def _sigfilter(*args, **kwargs):
     et.sigfilter(*args, **kwargs)
 
 
@@ -73,3 +76,21 @@ def psi_filter(*args, **kwargs):
 def intersect(*args, **kwargs):
     if any([kwargs.get("file_b"), kwargs.get("ioeb")]):
         et.intersect(*args, **kwargs)
+
+
+@click.command(help="filter significant result")
+@click.option('-i', '--input', "file", type=click.Path(exists=True),
+                help="input dpsi file")
+@click.option('-o', '--output', help="output directory")
+@click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value")
+@click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
+@click.option('-q', '--qval', type=float, default=1, help="qval threshold value")
+@click.option('-adpsi', '--abs_dpsi', type=float, default=0, help="absulte dpsi threshold value")
+@click.option('-sep', '--sep', "sep", is_flag=True, default=False, 
+                help="split file into two files according to dpsi > 0 and dpsi < 0")
+# @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
+#                 default="tsv", help="out  file format ")
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                default="auto", help="the program that generates event file")
+def sigfilter(*args, **kwargs):
+    et.sigfilter(*args, **kwargs)

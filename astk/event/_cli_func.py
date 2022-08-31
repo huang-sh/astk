@@ -75,7 +75,8 @@ def len_pick(infile, output, len_range):
     pdf.to_csv(output, index=True, sep="\t", na_rep="nan", index_label=False)
 
 
-def sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
+# it is deprecated
+def _sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
 
     for idx, dpsi_file in enumerate(files):
         if len(files) == len(psifile1) and len(files) == len(psifile2):
@@ -85,6 +86,40 @@ def sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
             
         sf = sl.SigFilter(dpsi_file, outdir, dpsi, pval, abs_dpsi, psifiles, fmt)
         sf.run()
+
+
+def sigfilter(file, output, dpsi, pval, qval, abs_dpsi, sep, app):
+    from pandas import read_csv
+
+    if app == "auto":
+        app = ul.detect_file_info(file)["app"]
+    dpsi_df = read_csv(file, sep="\t", index_col=0).dropna()
+    kwargs = {"dpsi":dpsi, "abs_dpsi": abs_dpsi, "pval": pval, "qval": qval,"app": app}
+    if app == "SUPPA2":
+        old_col = dpsi_df.columns
+        dpsi_col = old_col[0]
+        dpsi_df.columns = ["dpsi", "pval"]
+        kwargs.pop("qval")
+        df_fil = sl.sig_filter(dpsi_df, **kwargs)
+        df_fil.columns = old_col
+    elif app == "rMATS":
+        dpsi_col = "IncLevelDifference"
+        df_fil = sl.sig_filter(dpsi_df, **kwargs)
+    if not output:
+        output = Path(file).with_suffix(f".sig{Path(file).suffix}")
+        if sep:
+            pos_out = output = Path(file).with_suffix(f".sig+{Path(file).suffix}")
+            neg_out = output = Path(file).with_suffix(f".sig-{Path(file).suffix}")
+    elif sep:
+        pos_out = Path(output).with_suffix(f".sig+{Path(output).suffix}")
+        neg_out = Path(output).with_suffix(f".sig-{Path(output).suffix}")
+
+    df_fil.to_csv(output, sep="\t")
+    if sep and abs_dpsi:
+        pos_df = df_fil.loc[df_fil[dpsi_col] > 0, ]
+        neg_df = df_fil.loc[df_fil[dpsi_col] < 0, ]
+        pos_df.to_csv(pos_out, sep="\t")
+        neg_df.to_csv(neg_out, sep="\t")
 
 
 def psi_filter(file, output, psi, quantile):
