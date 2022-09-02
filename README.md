@@ -211,7 +211,7 @@ $ gtf=gencode.vM25.annotation.gtf # download from GENCODE
 $ astk dsflow -od result/fb_e11_based -md metadata/fb_e11_based.json -gtf $gtf -t ALL &
 
 $ ls result/fb_e11_based
-dpsi  psi  ref  tpm
+dpsi  psi  ref  sig01  tpm
 ```
 
 **dsflow** arguments:
@@ -223,10 +223,11 @@ dpsi  psi  ref  tpm
 
 the output of **dsflow**  contain four directories:
 
-* ref is the directory including AS event reference annotation files;
-* tpm is the directory including sample TPM files;
+* ref is the directory including AS event reference annotation files
+* tpm is the directory including sample TPM files
 * psi is the directory including AS event PSI file
-* dpsi  is the directory including differential splicing result.
+* dpsi  is the directory including differential splicing result
+* sig01 is the directory including result that filter using pval < 0.05 and |PSI| > 0.1
 
 #### generateEvent
 
@@ -283,8 +284,8 @@ ENSMUST00000082908.1    0.0     0.0
 **diffSplice** is used to perform AS differential splicing analysis. The core algorithm is based on [SUPPA2](https://github.com/comprna/SUPPA).
 
 ```bash
-$ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_FT_e10.psi \
-    -exp result/fb_e11_based/psi/fb_SE_FT_e10.tpm \
+$ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_FT_e1*.psi \
+    -exp result/fb_e11_based/psi/fb_SE_FT_e1*.tpm \
     -ref result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe \
     -o result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.dpsi 
 ```
@@ -302,33 +303,18 @@ $ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_FT_e10.psi \
 **sigFilter** is using for filter significant differential splicing event according to PSI and p-value. It will generate significant  differential splicing events and associated PSI files. **sf** is short alias of **sigFilter**.
 
 ```bash
-$ astk sf -i result/fb_e11_based/dpsi/*.dpsi \
-        -pf1 result/fb_e11_based/psi/*_c1.psi \
-        -pf2 result/fb_e11_based/psi/*_c2.psi \
-        -od result/fb_e11_based/sig01 -adpsi 0.1 -p 0.05
-
+$ astk sf -i result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.dpsi \
+        -o result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.sig.dpsi \
+        -adpsi 0.1 -p 0.05
 ```
 
 **sf** arguments
 
-* FILES...: input dpsi files
-* -pf1: the control psi files
-* -pf2: the treatment psi files
+* -i: input dpsi file
 * -od: output directory
 * -adpsi: absolute dPSI threshold value
 * -p: p-value threshold value
 
-the output of **sigFilter**  contain five types  of files (with - adpsi):
-
-* "c1.sig.psi"  suffix is the PSI file of condition 1(control) involved significant differential splicing events
-
-* "c2.sig.psi"  suffix is the PSI file of condition 2(treatment) involved significant differential splicing events
-
-* "sig.dpsi" is the all significant differential splicing events inluding dpsi value and pvalue
-
-* "sig+.dpsi" is the significant differential splicing events with dpsi value > adpsi
-
-* "sig-.dpsi" is the significant differential splicing events with dpsi value < adpsi
 
 #### psiFilter
 
