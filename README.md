@@ -207,8 +207,8 @@ the output of **meta** is a CSV file and JSON file. CSV file is convenient for v
 
 ```bash
 $ mkdir result
-$ gtf=gencode.vM25.annotation.gtf # download from GENCODE
-$ astk dsflow -od result/fb_e11_based -md metadata/fb_e11_based.json -gtf $gtf -t ALL &
+$ astk dsflow -od result/fb_e11_based -md metadata/fb_e11_based.json \
+    -gtf gencode.vM25.annotation.gtf -t ALL &
 
 $ ls result/fb_e11_based
 dpsi  psi  ref  sig01  tpm
@@ -234,7 +234,7 @@ the output of **dsflow**  contain four directories:
 **generateEvent** is used to infer AS events from genome GTF annotation file.
 
 ``` bash
-$ astk generateEvent -gtf $gtf -et SE --split FTE \
+$ astk generateEvent -gtf gencode.vM25.annotation.gtf  -et SE --split FTE \
     -o result/fb_e11_based/ref/gencode.vM25
 
 ```
