@@ -42,5 +42,8 @@ def sc_seqlogo(*args, **kwargs):
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", help="the program that generates event file")
+@click.option('-p', '--process', default=4, help="process number, default=4")
 def sc_splice_score(*args, **kwargs):
     splice_score(*args, **kwargs)

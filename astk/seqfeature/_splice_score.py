@@ -5,10 +5,11 @@ The perl scripts is from http://hollywood.mit.edu/burgelab/maxent/download/fordo
 import json
 from math import log2
 from pathlib import Path
+import multiprocessing as mp
 
-from astk.constant import BASE_DIR, SS_SCORE_LEN
+from astk.constant import BASE_DIR
 from astk.utils._getfasta import get_coor_fa
-from astk.utils import get_file_ss_bed, read_fasta, sniff_AS_type
+from astk.utils import get_file_ss_bed, read_fasta, detect_file_info
 
 
 def ss5_consensus_score(seq):
@@ -28,10 +29,12 @@ def ss5_score(seq):
     return score
 
 
-def ss5_seqs_score(fasta):
+def ss5_seqs_score(fasta, process=4):
     with open(fasta, "r") as rh:
         seqs = read_fasta(rh)
-        scores = [ss5_score(seq[1]) for seq in seqs]
+        pool = mp.Pool(process)
+        scores = [pool.apply(ss5_score, args=(seq[1],)) for seq in seqs]
+        pool.close()
     return scores
 
 
@@ -77,35 +80,38 @@ def ss3_score(seq):
     return score
 
 
-def ss3_seqs_score(fasta):
+def ss3_seqs_score(fasta, process=4):
     with open(fasta, "r") as rh:
         seqs = read_fasta(rh)
-        scores = [ss3_score(seq[1]) for seq in seqs]
+        # scores = [ss3_score(seq[1]) for seq in seqs]
+        pool = mp.Pool(process)
+        scores = [pool.apply(ss3_score, args=(seq[1],)) for seq in seqs]
+        pool.close()
     return scores     
 
 
-def splice_score(file, outdir, gfasta):
+def splice_score(file, outdir, gfasta, app, process):
     from pandas import DataFrame
+
+    if app == "auto":
+        app = detect_file_info(file)["app"]
 
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
-    coord_dic = get_file_ss_bed(file, sss=True)
-    etype = sniff_AS_type(file)
-    ss_len = SS_SCORE_LEN[etype]
+    coord_dic = get_file_ss_bed(file, sss=True, app=app)
+
     df_score = DataFrame()
-    for idx, (ss, df) in enumerate(coord_dic.items()):
-        ss_dir = outdir / ss
+    for idx, (ssn, df) in enumerate(coord_dic.items()):
+        ss_dir = outdir / ssn
         ss_dir.mkdir(exist_ok=True)
-        if ss_len[idx] == 0:
-            continue
-        get_coor_fa(df, gfasta, ss_dir / f"{ss}.fa", strandedness=True)
-        df.to_csv(ss_dir / f"{ss}.bed", index=False, header=False, sep="\t")
-        if ss_len[idx] == 9:
-            df_score[f"{ss}_5ss"] = ss5_seqs_score(ss_dir / f"{ss}.fa")
-        elif ss_len[idx] == 23:
-            df_score[f"{ss}_3ss"] = ss3_seqs_score(ss_dir / f"{ss}.fa")
-    df_score.index = df[3]
-    df_score.index.name = "event_id"
+        get_coor_fa(df, gfasta, ss_dir / f"{ssn}.fa", strandedness=True)
+        df.to_csv(ss_dir / f"{ssn}.bed", index=False, header=False, sep="\t")
+        if ssn.endswith("5SS"):
+            df_score[ssn] = ss5_seqs_score(ss_dir / f"{ssn}.fa", process)
+        elif ssn.endswith("3SS"):
+            df_score[ssn] = ss3_seqs_score(ss_dir / f"{ssn}.fa", process)
+
+    df_score.index = df.iloc[:, 3]
     df_score.to_csv(outdir / "splice_scores.csv")
     ax = df_score.plot.box()
     fig = ax.get_figure()
