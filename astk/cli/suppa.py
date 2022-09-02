@@ -45,12 +45,10 @@ def compute_psi(*args, **kwargs):
 
 
 @click.command(help="differential splicing analysis")
-@click.option('-psi', '--psiFile', "psi_files", 
-                type=(click.Path(exists=True), click.Path(exists=True)),
-                help="AS event PSI files")
-@click.option('-exp', '--expressFile', "exp_files", 
-                type=(click.Path(exists=True), click.Path(exists=True)),
-                help="transcript quantification files from salmon")
+@click.option('-psi', '--psiFile', "psi_files", cls=MultiOption, 
+                type=click.Path(exists=True),  help="AS event PSI files")
+@click.option('-exp', '--expressFile', "exp_files", cls=MultiOption, 
+                type=click.Path(exists=True), help="transcript quantification files from salmon")
 @click.option('-ref', '--reference', type=click.Path(exists=True),
                 help="ioe reference file")
 @click.option('-o', '--output', help="output directory")
