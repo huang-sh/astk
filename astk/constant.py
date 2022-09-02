@@ -40,6 +40,11 @@ NEASE_DATABASE = [
      'Signalink', 'NetPath', 'EHMN', 'INOH', 'BioCarta', 'PID'
 ]
 
+PATHWAY_DB_ORG = {
+    "KEGG": {"hs": "hsa", "mm": "mmu"},
+    "Reactome": {"hs": "human", "mm": "mouse"}
+}
+
 
 AS_TYPE = ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
 
@@ -70,16 +75,59 @@ SSN = {
 }
 
 SS_SCORE_LEN = {
-    "SE": [9, 23, 9, 23],
-    "MX": [9, 23, 9, 23, 9, 23],
-    "A5": [9, 9, 23],
-    "A3": [9, 23, 23],
-    "RI": [23, 9, 23, 9],   
-    "AF": [0, 9, 23, 9, 23],   # the first is not 3 splice site
-    "AL": [9, 23, 9, 23, 0]    # the last is not 5 splice site
+    "SUPPA2": {
+        "SE": [9, 23, 9, 23],
+        "MX": [9, 23, 9, 23, 9, 23],
+        "A5": [9, 9, 23],
+        "A3": [9, 23, 23],
+        "RI": [23, 9, 23, 9],   
+        "AF": [0, 9, 23, 9, 23],   # the first is not 3 splice site
+        "AL": [9, 23, 9, 23, 0]    # the last is not 5 splice site        
+    },
+    "rMATS":{
+        "SE": [23, 9, 23, 9, 23, 9],
+        "MXE": [23, 9, 23, 9, 23, 9, 23, 9],
+        "A5SS": [23, 9, 9, 23, 9],
+        "A3SS": [23, 9, 23, 23, 9],
+        "RI": [23, 9, 23, 9],           
+    }
 }
 
-PATHWAY_DB_ORG = {
-    "KEGG": {"hs": "hsa", "mm": "mmu"},
-    "Reactome": {"hs": "human", "mm": "mouse"}
+rMATS_EXON_COLS = {
+    "SE": [
+            "upstreamES", "upstreamEE", "exonStart_0base", "exonEnd",
+            "downstreamES", "downstreamEE"
+        ],
+    "A5SS": [
+        "longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE"
+    ]
+}
+
+rMATS_POS_COLS = {
+    "A5SS": {
+        "+": ["longExonStart_0base", "shortEE", "longExonEnd", "flankingES", "flankingEE"],
+        "-": ["longExonEnd", "shortES", "longExonStart_0base", "flankingEE", "flankingES"]
+    },
+    "A3SS": {
+        "+": ["flankingES", "flankingEE", "longExonStart_0base", "shortES", "longExonEnd"],
+        "-": ["longExonStart_0base", "shortEE", "longExonEnd", "flankingES", "flankingEE"]
+    },
+    "SE" :{
+        "+": ["upstreamES", "upstreamEE", "exonStart_0base", "exonEnd", "downstreamES", "downstreamEE"],
+        "-": ['downstreamEE', 'downstreamES', 'exonEnd', 'exonStart_0base', 'upstreamEE', 'upstreamES']
+    },
+    "MXE": {
+        "+": [
+            "upstreamES", "upstreamEE", "1stExonStart_0base", "1stExonEnd",
+            "2ndExonStart_0base", "2ndExonEnd", "downstreamES", "downstreamEE"
+        ],
+        "-": [
+            "downstreamEE", "downstreamES", "2ndExonEnd", "2ndExonStart_0base",
+            "1stExonEnd", "1stExonStart_0base", "upstreamEE", "upstreamES"
+        ]
+    },
+    "RI": {
+        "+": ["upstreamES", "upstreamEE", "downstreamES", "downstreamEE"],
+        "-": ["downstreamEE", "downstreamES", "upstreamEE", "upstreamES"],
+    }
 }
