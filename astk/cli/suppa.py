@@ -69,8 +69,10 @@ def diffSplice(*args, **kwargs):
              default="ALL", help="gene annotation gtf file")
 @click.option('-m', '--method', type=click.Choice(['empirical', 'classical']),
              default="empirical", help="gene annotation gtf file")
+@click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
+@click.option('-adpsi', '--abs_dpsi', type=float, default=0.1, help="absulte dpsi threshold value")
 @click.option('--idType', default="SUPPA2", type=click.Choice(["ASID", "SUPPA2"]), 
-                help="output event ID type, default='SUPPA2'")                
+                help="output event ID type, default='SUPPA2'")          
 @click.option('--exon_len', type=int, default=100,
              help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")             
 @click.option('-pg', '--poolGenes', default=False, is_flag=True, 
@@ -86,5 +88,7 @@ def dsflow(*args, **kwargs):
         etypes,
         kwargs.get("outdir"),
         kwargs.get("method"),
-        kwargs.get("idtype")
+        kwargs.get("idtype"),
+        kwargs.get("pval"),
+        kwargs.get("abs_dpsi")
     )
