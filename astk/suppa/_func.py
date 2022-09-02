@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from astk.types import *
+import astk.utils.select as sl
 from .AS_event import make_events
 from .event_psi import get_ioe_psi
 from .gtf_parse import construct_genome
@@ -101,7 +102,9 @@ def ds_flow(
     etypes: Sequence[str],
     outdir: FilePath, 
     method: str,
-    idtype: str
+    idtype: str,
+    pval: float,
+    abs_dpsi: float
     ):
     import pandas as pd
 
@@ -115,9 +118,11 @@ def ds_flow(
     tpm_dir =  Path(outdir) / "tpm"
     psi_dir =  Path(outdir) / "psi"
     dpsi_dir =  Path(outdir) / "dpsi"
+    sig_dir =  Path(outdir) / ("sig" + str(abs_dpsi).replace(".", ''))
     tpm_dir.mkdir(exist_ok=True)
     psi_dir.mkdir(exist_ok=True)
     dpsi_dir.mkdir(exist_ok=True)
+    sig_dir.mkdir(exist_ok=True)
 
     for gn, gn_dic in tpm_dic.items():
         for et in etypes:
@@ -159,3 +164,19 @@ def ds_flow(
             dpsi_out = dpsi_dir / f"{gn}_{et}"
             mca(method, psi_files, exp_files, ioe, 1000, 0, 
                 False, True, 0.05, True, False, False, 0, 0, str(dpsi_out))
+            
+            sig_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig.dpsi")
+            sig_pos_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig+.dpsi")
+            sig_neg_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig-.dpsi")
+            kwargs = {"abs_dpsi": abs_dpsi, "pval": pval, "app": "SUPPA2"}
+            dpsi_df = pd.read_csv(dpsi_out.with_suffix(".dpsi"), sep="\t", index_col=0).dropna()
+            old_col = dpsi_df.columns
+            dpsi_df.columns = ["dpsi", "pval"]
+            df_fil = sl.sig_filter(dpsi_df, **kwargs)
+            df_fil.columns = old_col      
+            df_fil.to_csv(sig_dpsi_out, sep="\t")
+
+            pos_df = df_fil.loc[df_fil[old_col[0]] > 0, ]
+            neg_df = df_fil.loc[df_fil[old_col[0]] < 0, ]
+            pos_df.to_csv(sig_pos_dpsi_out, sep="\t")
+            neg_df.to_csv(sig_neg_dpsi_out, sep="\t")
