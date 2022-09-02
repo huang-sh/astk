@@ -891,16 +891,16 @@ def make_events(output: str,
             gene_event.filter_LT()
 
             if "FTE" in AS_split:
-                for line in gene_event.to_ioe(type="FTE"):
+                for line in gene_event.to_ioe(type="FTE", idtype=idtype):
                     sc_ioe_writer.write("\t".join(line), t)
             if "LTE" in AS_split:
-                for line in gene_event.to_ioe(type="LTE"):
+                for line in gene_event.to_ioe(type="LTE", idtype=idtype):
                     se_ioe_writer.write("\t".join(line), t)
             if "inner" in AS_split:
-                for line in gene_event.to_ioe(type="inner"):
+                for line in gene_event.to_ioe(type="inner", idtype=idtype):
                     mid_ioe_writer.write("\t".join(line), t)
             if not AS_split:
-                for line in gene_event.to_ioe():
+                for line in gene_event.to_ioe(idtype=idtype):
                     ioe_writer.write("\t".join(line), t)
     
     for i in handle_ls:
