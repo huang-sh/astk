@@ -15,8 +15,8 @@ from astk.constant import AS_TYPE
                 default="ALL", help="AS event Type")
 @click.option('-o', '--output', required=True, 
                 help="name of the output file without any extension")
-@click.option('--idType', default="SUPPA2", type=click.Choice(["ASID", "SUPPA2"]), 
-                help="output event ID type, default='SUPPA2'")              
+@click.option('--idType', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
+                help="output event ID type, default='SUPPA2'") 
 @click.option('--split', cls=MultiOption, type=click.Choice(['inner', 'FTE', 'LTE']), 
                 default=(), help="AS event exon that overlapping the transcript first or last \
                                  terminal exon startCodon and stopCodon will save separately")
@@ -30,8 +30,8 @@ def generateEvents(*args, **kwargs):
 @click.option('-qf', '--quantifyFile', "tpm_files", cls=MultiOption, type=click.Path(exists=True),
                 help="transcript quantification files from salmon")
 @click.option('--tpmThreshold', "tpm_th", type=float, default=0, 
-                help="minimum transcript TPM value that using for calculates PSI")                
-@click.option('--tpmCol', "tpm_col", type=int, default=4, help="TPM columns index,0-based")
+                help="minimum transcript TPM value that using for calculates PSI, default=0")                
+@click.option('--tpmCol', "tpm_col", type=int, default=4, help="TPM columns index,0-based, default=4")
 @click.option('--txCol', "tx_col", type=int, default=0, 
                 help="transcript ID columns index, 0-based")
 def compute_psi(*args, **kwargs):
@@ -52,8 +52,8 @@ def compute_psi(*args, **kwargs):
 @click.option('-ref', '--reference', type=click.Path(exists=True),
                 help="ioe reference file")
 @click.option('-o', '--output', help="output directory")
-@click.option('-m', '--method', type=click.Choice(['empirical', 'classical']),
-             default="empirical", help="gene annotation gtf file")
+@click.option('-m', '--method', type=click.Choice(['empirical', 'classical']), default="empirical",
+                help="The method to calculate the significance, default=empirical")
 def diffSplice(*args, **kwargs):
     diff_splice(*args, **kwargs)
 
@@ -65,11 +65,11 @@ def diffSplice(*args, **kwargs):
 @click.option('-gtf', '--gtf', type=click.Path(exists=True), help="gene annotation gtf file")
 @click.option('-t', '--event_type', type=click.Choice(['ALL']+AS_TYPE), cls=MultiOption,
              default="ALL", help="gene annotation gtf file")
-@click.option('-m', '--method', type=click.Choice(['empirical', 'classical']),
-             default="empirical", help="gene annotation gtf file")
+@click.option('-m', '--method', type=click.Choice(['empirical', 'classical']),default="empirical",
+                help="The method to calculate the significance, default=empirical")
 @click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=float, default=0.1, help="absulte dpsi threshold value")
-@click.option('--idType', default="SUPPA2", type=click.Choice(["ASID", "SUPPA2"]), 
+@click.option('--idType', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
                 help="output event ID type, default='SUPPA2'")          
 @click.option('--exon_len', type=int, default=100,
              help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")             

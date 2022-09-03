@@ -22,8 +22,7 @@ def gseplot(*args, **kwargs):
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")           
 @click.option('-o', '--output', required=True, help="output figure path")
-@click.option('-xl', '--xlabel', cls=MultiOption, type=str, 
-                help="x xlabel")
+@click.option('-xl', '--xlabel', cls=MultiOption, type=str,  help="x xlabel")
 @click.option('-dg', '--dg', is_flag=True, default = False,
               help=("AS events can be divided into two groups based on dPSI values \
                    (group +: dPSI > 0, group -: dPSI < 0)"))                 

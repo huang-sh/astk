@@ -59,8 +59,8 @@ def _sigfilter(*args, **kwargs):
                 help="input psi file")
 #@click.option('-md', '--metadata', type=click.Path(exists=True), help="metadata file")
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-psi', '--psi', type=float, default=0, help="psi threshold value")
-@click.option('-qt', '--quantile', type=float, default=0, help="quantile threshold value")
+@click.option('-psi', '--psi', type=float, default=0, help="psi threshold value, defualt=0")
+@click.option('-qt', '--quantile', type=float, default=0, help="quantile threshold value, defualt=0")
 # @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
 #                 default="tsv", help="out  file format ")
 def psi_filter(*args, **kwargs):
@@ -82,15 +82,14 @@ def intersect(*args, **kwargs):
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 help="input dpsi file")
 @click.option('-o', '--output', help="output directory")
-@click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value")
-@click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value")
-@click.option('-q', '--qval', type=float, default=1, help="qval threshold value")
-@click.option('-adpsi', '--abs_dpsi', type=float, default=0, help="absulte dpsi threshold value")
+@click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value, defualt=0")
+@click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value, defualt=0.05")
+@click.option('-q', '--qval', type=float, default=1, help="qval threshold value, defualt=1")
+@click.option('-adpsi', '--abs_dpsi', type=float, default=0, 
+                help="absulte dpsi threshold value, defualt=0")
 @click.option('-sep', '--sep', "sep", is_flag=True, default=False, 
                 help="split file into two files according to dpsi > 0 and dpsi < 0")
-# @click.option('-fmt', '--format', "fmt", type=click.Choice(['csv', 'tsv']), 
-#                 default="tsv", help="out  file format ")
 @click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]),
-                default="auto", help="the program that generates event file")
+                default="auto", help="the program that generates event file, defualt='auto'")
 def sigfilter(*args, **kwargs):
     et.sigfilter(*args, **kwargs)
