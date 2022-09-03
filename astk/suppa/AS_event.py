@@ -781,7 +781,7 @@ class AlternativeFirstExon(AlternativeSplicing):
                 event = AFEvent(splicein_exon=si["exons"],
                                 spliceout_exon=so["exons"])
                 if event.status == "review":
-                    eid = self._tranform_id(event.tid, idtype="ASID")
+                    eid = self._tranform_id(event.tid, idtype=idtype)
                     event.id = eid
                     self.AS_events.setdefault(eid, event)
                     self.AS_events[eid].splicein_tx.add(si["tx"])
