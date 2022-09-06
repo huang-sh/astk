@@ -33,7 +33,7 @@ def len_cluster(files, indir, outdir, lenrange):
 
     outdir = Path(outdir)
     outdir = Path(outdir).absolute()
-    od_name = outdir.name
+    outdir.mkdir(exist_ok=True)
 
     lrs = list(map(int, lenrange))
     coor_ls = [(lrs[i], lrs[i+1]) for i in range(len(lrs)-1)]
@@ -51,10 +51,10 @@ def len_cluster(files, indir, outdir, lenrange):
             ul.df_len_select(file, outfile, s, e)
     else:
         for s, e in coor_ls:
-            s_outdir = outdir.with_name(f"{od_name}_{s}-{e}")
-            s_outdir.mkdir(exist_ok=True)
+            len_outdir = outdir / f"{s}-{e}"
+            len_outdir.mkdir(exist_ok=True)
             for file in files:
-                outfile = s_outdir / Path(file).name
+                outfile = len_outdir / Path(file).name
                 ul.df_len_select(file, outfile, s, e+1)
 
 
