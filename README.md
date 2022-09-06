@@ -359,7 +359,7 @@ $ astk pca -i result/fb_e11_based/psi/fb_e11_12_SE_c1.psi \
 ```bash
 $ astk hm -i result/fb_e11_based/sig01/psi/fb_e11_12_SE_c1.sig.psi \
     result/fb_e11_based/sig01/psi/fb_e11_1*_SE_c2.sig.psi \
-    -o img/fb_hm1.png -fmt png
+    -o img/fb_hm.png -fmt png
 
 ```
 
