@@ -123,6 +123,8 @@ def ds_flow(
     psi_dir.mkdir(exist_ok=True)
     dpsi_dir.mkdir(exist_ok=True)
     sig_dir.mkdir(exist_ok=True)
+    sig_psi_dir = sig_dir / "psi"
+    sig_psi_dir.mkdir(exist_ok=True)
 
     for gn, gn_dic in tpm_dic.items():
         for et in etypes:
@@ -180,3 +182,9 @@ def ds_flow(
             neg_df = df_fil.loc[df_fil[old_col[0]] < 0, ]
             pos_df.to_csv(sig_pos_dpsi_out, sep="\t")
             neg_df.to_csv(sig_neg_dpsi_out, sep="\t")
+
+            ctrl_psi_file = sig_psi_dir / f"{gn}_{et}_c1.sig.psi"
+            case_psi_file = sig_psi_dir / f"{gn}_{et}_c2.sig.psi"
+            ctrl_psi.loc[df_fil.index, ].to_csv(ctrl_psi_file, sep="\t")
+            case_psi.loc[df_fil.index, ].to_csv(case_psi_file, sep="\t")
+            
