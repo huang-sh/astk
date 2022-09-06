@@ -50,6 +50,8 @@ def diff_splice(
     output: FilePath,
     method: str
 ):
+    if str(output).endswith(".dpsi"):
+        output = str(output)[:-5]
     mca(method, psi_files, exp_files, reference, 1000, 0, 
         False, True, 0.05, True, False, False, 0, 0, str(output))                 
 
@@ -187,4 +189,3 @@ def ds_flow(
             case_psi_file = sig_psi_dir / f"{gn}_{et}_c2.sig.psi"
             ctrl_psi.loc[df_fil.index, ].to_csv(ctrl_psi_file, sep="\t")
             case_psi.loc[df_fil.index, ].to_csv(case_psi_file, sep="\t")
-            
