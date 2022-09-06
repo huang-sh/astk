@@ -234,7 +234,7 @@ the output of **dsflow**  contain four directories:
 **generateEvent** is used to infer AS events from genome GTF annotation file.
 
 ``` bash
-$ astk generateEvent -gtf gencode.vM25.annotation.gtf  -et SE --split FTE \
+$ astk generateEvent -gtf gencode.vM25.annotation.gtf  -et SE \
     -o result/fb_e11_based/ref/gencode.vM25
 
 ```
@@ -243,7 +243,6 @@ $ astk generateEvent -gtf gencode.vM25.annotation.gtf  -et SE --split FTE \
 
 * -gtf: genome annotation GTF file
 * -et: AS event type
-* --split: inner|FTE|LTE, Filter AS events based on whether first or last exon of event is the same as the first exon or the last exon of transcript.
 * -o: output path
 
 #### generatePsi
@@ -251,23 +250,23 @@ $ astk generateEvent -gtf gencode.vM25.annotation.gtf  -et SE --split FTE \
 **generatePsi** is used to calulate PSI of AS event.
 
 ```bash
-$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_FT_e10.psi \
+$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_e10.psi \
     -qf data/quant/fb_e10.5_rep*/quant.sf \
-    -ioe result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe
+    -ioe result/fb_e11_based/ref/gencode.vM25_SE_strict.ioe
 
-$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_FT_e16.psi \
+$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_e16.psi \
     -qf data/quant/fb_e16.5_rep*/quant.sf \
-    -ioe result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe
+    -ioe result/fb_e11_based/ref/gencode.vM25_SE_strict.ioe
 
-$ head result/fb_e11_based/psi/fb_SE_FT_e10.psi
+$ head result/fb_e11_based/psi/fb_SE_e10.psi
 event_id        fb_e10.5_rep1   fb_e10.5_rep2
+ENSMUSG00000025900.13;SE:chr1:4293012-4311270:4311433-4351910:- 1.0     1.0
+ENSMUSG00000025902.13;SE:chr1:4492668-4493100:4493466-4493772:- 0.50685587094156        0.49103663421745114
+ENSMUSG00000025902.13;SE:chr1:4492668-4493100:4493490-4493772:- 0.7405788514940302      0.697045848727448
 ENSMUSG00000025902.13;SE:chr1:4493863-4495136:4495942-4496291:- 0.20508467461294735     0.16355428896798765
-ENSMUSG00000025902.13;SE:chr1:4493863-4495136:4495198-4496291:- 0.1034743140228213      0.1685190853710221
-ENSMUSG00000033845.13;SE:chr1:4782733-4783951:4784105-4785573:- 0.2311769118443923      0.24830839809502564
-ENSMUSG00000002459.17;SE:chr1:4916980-4923847:4923989-5019311:- 0.6018668424886171      0.5701945236664067
 
 ## it also will extract TPM value from transcript quantification files
-$ head result/fb_e11_based/psi/fb_SE_FT_e10.tpm -n 3
+$ head result/fb_e11_based/psi/fb_SE_e10.tpm -n 3
 Name    fb_e10.5_rep1   fb_e10.5_rep2
 ENSMUST00000193812.1    0.0     0.0
 ENSMUST00000082908.1    0.0     0.0
@@ -275,19 +274,19 @@ ENSMUST00000082908.1    0.0     0.0
 
 **generatePsi** arguments:
 * -o: output path
-* -gtf: genome annotation GTF file
-* -et: AS event type
-* --split: inner|FTE|LTE, Filter AS events based on whether first or last exon of event is the same as the first exon or the last exon of transcript.
+* -qf: transcript quantification files
+* -ioe: AS event ioe file
+
 
 #### diffSplice
 
 **diffSplice** is used to perform AS differential splicing analysis. The core algorithm is based on [SUPPA2](https://github.com/comprna/SUPPA).
 
 ```bash
-$ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_FT_e1*.psi \
-    -exp result/fb_e11_based/psi/fb_SE_FT_e1*.tpm \
-    -ref result/fb_e11_based/ref/gencode.vM25_FT_SE_strict.ioe \
-    -o result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.dpsi 
+$ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_e1*.psi \
+    -exp result/fb_e11_based/psi/fb_SE_e1*.tpm \
+    -ref result/fb_e11_based/ref/gencode.vM25_SE_strict.ioe \
+    -o result/fb_e11_based/dpsi/fb_SE_e10_p0.dpsi 
 ```
 
 **diffSplice** arguments:
@@ -303,8 +302,8 @@ $ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_FT_e1*.psi \
 **sigFilter** is using for filter significant differential splicing event according to PSI and p-value. It will generate significant  differential splicing events and associated PSI files. **sf** is short alias of **sigFilter**.
 
 ```bash
-$ astk sf -i result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.dpsi \
-        -o result/fb_e11_based/dpsi/fb_FT_SE_e10_p0.sig.dpsi \
+$ astk sf -i result/fb_e11_based/dpsi/fb_SE_e10_p0.dpsi \
+        -o result/fb_e11_based/dpsi/fb_SE_e10_p0.sig.dpsi \
         -adpsi 0.1 -p 0.05
 ```
 
@@ -341,7 +340,7 @@ $ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
 $ astk pca -i result/fb_e11_based/psi/fb_e11_12_SE_c1.psi \
     result/fb_e11_based/psi/fb_e11_1[2-6]_SE_c2.psi \
     result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
-    -o img/fb_pca.png -fmt png -w 6 -h 4
+    -o img/fb_pca.png -fmt png --width 6 --height 4
 
 ```
 
@@ -358,9 +357,9 @@ $ astk pca -i result/fb_e11_based/psi/fb_e11_12_SE_c1.psi \
 **heatmap** is used for ploting heatmap of PSI. **hm** is short alias of **heatmap**. 
 
 ```bash
-$ astk hm -i result/fb_e11_based/sig01/fb_e11_12_SE_c1.sig.psi \
-    result/fb_e11_based/sig01/fb_e11_1*_SE_c2.sig.psi \
-    -o img/fb_hm.png -fmt png
+$ astk hm -i result/fb_e11_based/sig01/psi/fb_e11_12_SE_c1.sig.psi \
+    result/fb_e11_based/sig01/psi/fb_e11_1*_SE_c2.sig.psi \
+    -o img/fb_hm1.png -fmt png
 
 ```
 
@@ -422,8 +421,8 @@ $ astk upset -i result/fb_e11_based/sig01/fb_e11_12_SE.sig.dpsi \
 **upset** arguments:
 
 * -i : input dpsi files, support multiple files
-* -o: output directory
-* -o: output directory
+* -o: output file
+* -xl: x labels
 
 ![fb_upset.png](demo/img/fb_upset.png)
 
@@ -433,7 +432,7 @@ $ astk upset -i result/fb_e11_based/sig01/fb_e11_12_SE.sig.dpsi \
 
 ```bash
 $ astk lc -i result/fb_e11_based/sig01/*dpsi -lr 1 51 251 1001 \
--od result/fb_e11_based/sig01
+    -od result/fb_e11_based/lenc
 
 ```
 
@@ -462,7 +461,7 @@ $ astk enrich -i result/fb_e11_based/sig01/fb_e11_13_SE.sig.dpsi \
 * -ont:  ontology
 * -od : output directory
 * -qval : q-value
-* -orgdb : OrgDb code for annotation, run `astk ls -orgdb` to show the code list
+* -org : organism, for example, ‘hs’ for human, ‘mm’ for mouse
 
 GO terms enrichment result and enrichment clustering  have figure and text formats.
 
@@ -474,8 +473,8 @@ Comparison between The dpsi > 0.1 and dpsi < 0.1 in the 7 group (fb_16.5 vs fb_p
 
 ```bash
 $ mkdir img/ecmp
-$ astk ecmp -i result/fb_e11_based/sig01_*/fb_e11_12_SE.sig.dpsi \
-     -ont BP -orgdb mm  -fmt png \
+$ astk ecmp -i result/fb_e11_based/lenc/*/fb_e11_12_SE.sig.dpsi \
+     -ont BP -org mm  -fmt png \
      -od img/enrich/fb_e11_12_SE_lc
 ```
 
@@ -485,9 +484,9 @@ $ astk ecmp -i result/fb_e11_based/sig01_*/fb_e11_12_SE.sig.dpsi \
 * -od : output directory
 * -ont : ontology
 * -qval : q-value
-* -orgdb : OrgDb code for annotation, run `astk ls -orgdb` to show the code list
+* -org : organism, for example, ‘hs’ for human, ‘mm’ for mouse
 
-![GO.cmp.BP.png](demo/img/ecmp/fb_e11_12_SE_sig_cmp/GO.cmp.BP.qval0.1_pval0.1.png)
+![GO.cmp.BP.png](demo/img/enrich/fb_e11_12_SE_lc/GO.cmp.BP.qval0.1_pval0.1.png)
 
 
 #### motifEnrich
