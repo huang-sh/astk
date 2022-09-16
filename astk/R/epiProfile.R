@@ -9,7 +9,7 @@ parser <- fig_cmd_parser()
 
 parser$add_argument("--file", nargs='+')
 parser$add_argument("--title")
-parser$add_argument("--ylim", nargs=2, type="double")
+# parser$add_argument("--ylim", nargs=2, type="double")
 
 args <- parser$parse_args()
 
@@ -56,22 +56,22 @@ split_coverage <- lapply(marks, function(m) {
 })
 print(length(split_coverage[[1]]))
 
-save(split_coverage, file="/home/huangshenghui/project/astk/dev/tmp/t1.RData")
-          ci_df <- metagene2:::calculate_matrices_ci(
+ci_df <- metagene2:::calculate_matrices_ci(
             split_coverage,
             1000, 
             0.05,
             "bin",
-            NULL)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             # metagene2:::Parallel_Job$new(1)
-print(length(split_coverage))
+            metagene2:::Parallel_Job$new(4))   # metagene2:::Parallel_Job$new(1)
+
+
 ci_df <- as.data.frame(ci_df)
 ci_df$group <- factor(sapply(str_split(ci_df$region, "_"), function(x) {x[2]}))
 p <- plot_metagene(ci_df, facet_by=~group, group_by="region") + ggplot2::ggtitle(title)
 
 
-if (! is.null(args$ylim)){
-    p <- p + ggplot2:: coord_cartesian(ylim = args$ylim)
-}
+# if (! is.null(args$ylim)){
+#     p <- p + ggplot2:: coord_cartesian(ylim = args$ylim)
+# }
 
 save_fig(p, 
         args$output, 

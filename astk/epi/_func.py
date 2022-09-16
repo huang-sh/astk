@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -304,4 +305,62 @@ def signal_heatmap(
     ]
     cpm(mtx_args)
     plothm(hm_args)
-    [os.unlink(i) for i in regionFiles]
+    # [os.unlink(i) for i in regionFiles]
+    print(regionFiles)
+
+
+def signal_metaplot(
+    output: FilePath,
+    mat_file: FilePath,
+    name: str,
+    groupname: Sequence[str],
+    fig_height: int,
+    fig_width: int,
+    fig_format: str,
+    resolution: int
+) -> None:
+    from pandas import concat, read_csv
+    import gzip
+
+    header_dic = {}
+    files = []
+    for idx, (fn, file) in enumerate(zip(groupname, mat_file)):
+
+        tempf = NamedTemporaryFile(delete=False)
+        tempf.close()
+
+
+        with gzip.open(file, "rb") as f:
+            line = f.readline()
+            if line[:3] != b'@{"':
+                raise ValueError(f"{file} is wrong!")                
+            dic = json.loads(line[1:])
+            header_dic[idx] = dic
+        
+        bds = header_dic[idx]["group_boundaries"]
+        sub_df_ls = []
+        df = read_csv(file, sep="\t", header=None, comment="@")
+        for ai in range(len(bds)-1):    
+            sub_df = df.iloc[bds[ai]:bds[ai+1], 6:]
+            sub_df.index = range(bds[ai+1]-bds[ai])
+            print(sub_df.shape)
+            sub_df.columns = [f"{name}_{fn}_a{ai+1}_bin{i+1}" for i in range(sub_df.shape[1])]
+            sub_df_ls.append(sub_df)
+        score_df = concat(sub_df_ls, axis=1)
+        score_df.to_csv(tempf.name, index=False)
+        files.append(tempf.name)
+        
+    rscript = BASE_DIR / "R" / "epiProfile.R"
+    param_dic = {
+        "title": name,
+        "file": files,
+        "width": fig_width, 
+        "height": fig_height, 
+        "resolution": resolution,
+        "fmt": fig_format,
+        "output": output
+    }
+    print(files)
+    param_ls = ul.parse_cmd_r(**param_dic)
+    # print(param_ls)
+    subprocess.run(["Rscript", rscript, *param_ls])

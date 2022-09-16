@@ -53,6 +53,7 @@ cli_fun.add_command(nease_sc, name=["nease"])
 # cli_fun.add_command(epihm)
 # cli_fun.add_command(epi_profile_sc, name=["epiProfile", "ep"])
 cli_fun.add_command(signal_profile, name=["signalProfile", "sp"])
+cli_fun.add_command(signal_profile2, name=["sp2"])
 
 ## drawing module
 cli_fun.add_command(gseplot)

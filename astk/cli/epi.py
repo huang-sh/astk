@@ -43,6 +43,26 @@ def signal_profile(*args, **kwargs):
     epi.signal_heatmap(*args, **kwargs)
 
 
+@click.command(help="signal profile withing splicing sites")
+@click.option('-o', '--output', required=True, type=click.Path(),
+                help="output path")
+@click.option('-mat', 'mat_file', type=click.Path(exists=True), cls=MultiOption,
+                help="matrix file from signalProfile")
+@click.option('-n', '--name', default="signal", help="name")
+@click.option('-gn', '--groupName', cls=MultiOption, type=str, help="event group name")
+@click.option('--height', 'fig_height', default=8, type=int, 
+                help="plot height in cm, default=28")
+@click.option('--width', 'fig_width', default=8, type=int, 
+                help="plot width in cm, default=4")
+@click.option('-fmt', '--figureFormat', "fig_format", type=click.Choice(['auto', 'png',"pdf"]), 
+                default="auto", help="Image format type")
+@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")                
+def signal_profile2(*args, **kwargs):
+    if kwargs["fig_format"] == "auto":
+        kwargs["fig_format"] = sniff_fig_fmt(kwargs["output"], fmts=['png',"pdf"])       
+    epi.signal_metaplot(*args, **kwargs)
+
+
 @click.command(help="epi feature extract")
 @click.option('-e', '--eventFile', "event_file", cls=MultiOption, type=click.Path(exists=True),
                 help="AS event files that including AS event id")
