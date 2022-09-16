@@ -7,6 +7,7 @@ parser <- fig_cmd_parser()
 
 
 parser$add_argument("--file", nargs='+', help="psi file path")
+parser$add_argument("--groupname", nargs='+', help="group names")
 
 
 
@@ -17,17 +18,6 @@ psi_df_ls <- lapply(args$file, function(file){
     return(psi_df)
 })
 
-names <- lapply(args$file, function(file){
-    name <- tools::file_path_sans_ext(basename(file))
-    psi_df <- read.delim(file, row.names = 1) # col_types = cols("c", "d", "d")
-    rep(name, dim(psi_df)[2])
-})
-
-# my_inner_join <- function(x, y){
-#     inner_join(x, y, by = "event_id")
-# }
-
-# dat <- Reduce(my_inner_join, psi_df_ls)
 my_inner_join <- function(x, y){
     rows <- intersect(rownames(x), rownames(y))
     cbind(x[rows, ], y[rows, ])
@@ -42,9 +32,19 @@ print(dim(dat))
 df_pca <- prcomp(t(dat))
 df <- as.data.frame(df_pca$x)
 
+if (is.null(args$groupname)){
+    names <- lapply(args$file, function(file){
+        name <- tools::file_path_sans_ext(basename(file))
+        psi_df <- read.delim(file, row.names = 1) # col_types = cols("c", "d", "d")
+        rep(name, dim(psi_df)[2])
+    })    
+} else{
+    names <- lapply(1:length(args$file), function(idx){
+        psi_df <- read.delim(args$file[idx], row.names = 1) # col_types = cols("c", "d", "d")
+        rep(args$groupname[idx], dim(psi_df)[2])
+    })
+}
 df$group <- unlist(names)
-
-
 
 percentage <- round(df_pca$sdev / sum(df_pca$sdev) * 100, 2)
 

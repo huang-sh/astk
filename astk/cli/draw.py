@@ -61,9 +61,14 @@ def volcano(*args, **kwargs):
 @click.option('-w', '--width', default=6, help="fig width, default=6 inches")
 @click.option('--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+@click.option('-gn', '--groupName', cls=MultiOption, type=str, help="group names")
 def pca(*args, **kwargs):
     if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+    if gn := kwargs.get("groupname", False):
+        if len(gn) != len(kwargs["files"]):
+            print("-gn/--groupName values number must be same as -i/--input")
+            exit()
     draw.pca(*args, **kwargs)
 
 
