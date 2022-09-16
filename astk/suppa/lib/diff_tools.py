@@ -277,17 +277,19 @@ def calculate_empirical_pvalue(local_area, dpsi_abs_value):
 
 def calculate_between_conditions_distribution(cond1, cond2, tpm1, tpm2, ioe, save_tpm, median, tpm_th, nan_th, output):
 
+        tpm1_values = create_dict(tpm1)
+        tpm2_values = create_dict(tpm2)
+        
+        transcripts_values = get_events_transcripts(ioe) 
+        tpm_values = get_tpm_values(tpm1_values, tpm2_values, transcripts_values)
+
         cond1_psi_values = create_dict(cond1)
         cond2_psi_values = create_dict(cond2)
         psi_values = get_psi_values(cond1_psi_values, cond2_psi_values)
 
+        psi_values = {k:v for k, v in psi_values.items() if k in transcripts_values}
+
         dpsi_abs_values, dpsi_values, discarded_events = calculate_delta_psi(psi_values, median, nan_th)
-
-        transcripts_values = get_events_transcripts(ioe)
-
-        tpm1_values = create_dict(tpm1)
-        tpm2_values = create_dict(tpm2)
-        tpm_values = get_tpm_values(tpm1_values, tpm2_values, transcripts_values)
 
         between_conditions_avglogtpm = calculate_transcript_abundance(tpm_values, tpm_th)
 
