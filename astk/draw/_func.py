@@ -55,7 +55,7 @@ def volcano(file, output, fmt, width, height, resolution):
     subprocess.run(["Rscript", rscript, *param_ls])
 
 
-def pca(files, output, fmt, width, height, resolution):
+def pca(files, output, fmt, width, height, resolution, groupname):
 
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
@@ -67,7 +67,8 @@ def pca(files, output, fmt, width, height, resolution):
         "width": width, 
         "height": height, 
         "resolution": resolution,
-        "output": Path(output).with_suffix(f".{fmt}")
+        "output": Path(output).with_suffix(f".{fmt}"),
+        "groupname": groupname
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run(["Rscript", rscript, *param_ls])
