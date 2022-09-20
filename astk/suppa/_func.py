@@ -154,8 +154,8 @@ def ds_flow(
             case_tpm = pd.concat(case_tpm_ls, axis=1)
             ctrl_tpm_file = tpm_dir / f"{gn}_c1.tpm"
             case_tpm_file = tpm_dir / f"{gn}_c2.tpm"
-            ctrl_tpm.to_csv(ctrl_tpm_file, sep="\t")
-            case_tpm.to_csv(case_tpm_file, sep="\t")
+            ctrl_tpm.to_csv(ctrl_tpm_file, sep="\t", index_label=False)
+            case_tpm.to_csv(case_tpm_file, sep="\t", index_label=False)
 
             ctrl_psi = pd.concat(ctrl_psi_ls, axis=1)
             case_psi = pd.concat(case_psi_ls, axis=1)
