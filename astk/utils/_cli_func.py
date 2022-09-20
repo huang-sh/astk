@@ -11,7 +11,7 @@ from . import func as ulf
 from astk.utils.meta_template import Template
 
 
-def meta(output, replicate, groupname, control, treatment, replicate1, replicate2, **kwargs):
+def meta(output, replicate, groupname, ctrl, case, replicate1, replicate2, **kwargs):
 
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
@@ -27,7 +27,7 @@ def meta(output, replicate, groupname, control, treatment, replicate1, replicate
         sys.exit()
     try:
         tp = Template(kwargs.pop("condition", None))
-        tp.complete_df(groupname, control, treatment, repN1, repN2, **kwargs)
+        tp.complete_df(groupname, ctrl, case, repN1, repN2, **kwargs)
         tp.to_csv(output)
         tp.to_json(output)
     except BaseException as e:
