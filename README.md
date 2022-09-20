@@ -1,8 +1,8 @@
 ### Introduction
 
-**ASTK** is a command line software for comprehensive alternative splicing analysis(AS) analyses including AS event analysis, AS gene function analysis, potential regulatory mechanism analysis of AS.
+**ASTK** is a command line software for comprehensive alternative splicing analysis(AS) analyses including AS event analysis, AS splicing sites sequence feature extraction, AS gene function analysis, potential regulatory mechanism analysis of AS.
 
--------------------------
+---
 
 ### Installation
 
@@ -26,7 +26,8 @@ $ astk install -r
 ```
 
 ### ASTK docker image
-It is recommended to use ASTK docker image because all dependencies have been installed in ASTK docker images. 
+
+It is recommended to use ASTK docker image because all dependencies have been installed in ASTK docker images.
 
 ```
 $ docker pull huangshing/astk:latest
@@ -87,7 +88,7 @@ astk subcommand options
 
 **Eukaryotic Linear Motif**
 
-* **elms**： search Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.  
+* **elms**： search Eukaryotic Linear Motifs within amino acid sequence coding by alternative exon DNA sequence.
 
 **AS sites coordinate extract**
 
@@ -105,6 +106,7 @@ We could create a shortcut for the docker command with alias command. It is conv
 ```bash
 $ alias astkdocker="docker run --rm -v /home/test/project:/project -e MY_USER=$(id -u) huangshing/astk"
 ```
+
 Please replace `/home/test/project`  with your path. This directory should contain some reference files and all files you need to analyze.
 
 ```
@@ -141,7 +143,6 @@ Options:
 
 
 ```
-
 
 ### Usage
 
@@ -184,8 +185,8 @@ For example, we can generate multiple developmental stage contrast groups with e
 ```bash
 $ mkdir metadata -p
 $ astk meta -o metadata/fb_e11_based -repN 2 \
-    -p1 data/quant/fb_e11.5_rep*/quant.sf \
-    -p2 data/quant/fb_e1[2-6].5_rep*/quant.sf  data/quant/fb_p0_rep*/quant.sf \
+    -c1 data/quant/fb_e11.5_rep*/quant.sf \
+    -c2 data/quant/fb_e1[2-6].5_rep*/quant.sf  data/quant/fb_p0_rep*/quant.sf \
     -gn fb_e11_12 fb_e11_13 fb_e11_14 fb_e11_15 fb_e11_16 fb_e11_p0
 
 ```
@@ -194,8 +195,9 @@ $ astk meta -o metadata/fb_e11_based -repN 2 \
 
 * -o:  output file path
 * -repN:  number of replicate samples
-* -p1: condition 1(control) sample transcript quantification files path
-* -p2: condition 2(treatment) sample transcript quantification files path
+* -c1: condition 1(ctrl) sample transcript quantification files path
+* -c2: condition 2(case) sample transcript quantification files path
+* -gn: group names
 
 the output of **meta** is a CSV file and JSON file. CSV file is convenient for viewing in excel, and JSON file will be used in other sub-commands.
 
@@ -229,92 +231,6 @@ the output of **dsflow**  contain four directories:
 * dpsi  is the directory including differential splicing result
 * sig01 is the directory including result that filter using pval < 0.05 and |PSI| > 0.1
 
-#### generateEvent
-
-**generateEvent** is used to infer AS events from genome GTF annotation file.
-
-``` bash
-$ astk generateEvent -gtf gencode.vM25.annotation.gtf  -et SE \
-    -o result/fb_e11_based/ref/gencode.vM25
-
-```
-
-**generateEvent** arguments:
-
-* -gtf: genome annotation GTF file
-* -et: AS event type
-* -o: output path
-
-#### generatePsi
-
-**generatePsi** is used to calulate PSI of AS event.
-
-```bash
-$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_e10.psi \
-    -qf data/quant/fb_e10.5_rep*/quant.sf \
-    -ioe result/fb_e11_based/ref/gencode.vM25_SE_strict.ioe
-
-$ astk generatePsi -o result/fb_e11_based/psi/fb_SE_e16.psi \
-    -qf data/quant/fb_e16.5_rep*/quant.sf \
-    -ioe result/fb_e11_based/ref/gencode.vM25_SE_strict.ioe
-
-$ head result/fb_e11_based/psi/fb_SE_e10.psi
-event_id        fb_e10.5_rep1   fb_e10.5_rep2
-ENSMUSG00000025900.13;SE:chr1:4293012-4311270:4311433-4351910:- 1.0     1.0
-ENSMUSG00000025902.13;SE:chr1:4492668-4493100:4493466-4493772:- 0.50685587094156        0.49103663421745114
-ENSMUSG00000025902.13;SE:chr1:4492668-4493100:4493490-4493772:- 0.7405788514940302      0.697045848727448
-ENSMUSG00000025902.13;SE:chr1:4493863-4495136:4495942-4496291:- 0.20508467461294735     0.16355428896798765
-
-## it also will extract TPM value from transcript quantification files
-$ head result/fb_e11_based/psi/fb_SE_e10.tpm -n 3
-Name    fb_e10.5_rep1   fb_e10.5_rep2
-ENSMUST00000193812.1    0.0     0.0
-ENSMUST00000082908.1    0.0     0.0
-```
-
-**generatePsi** arguments:
-* -o: output path
-* -qf: transcript quantification files
-* -ioe: AS event ioe file
-
-
-#### diffSplice
-
-**diffSplice** is used to perform AS differential splicing analysis. The core algorithm is based on [SUPPA2](https://github.com/comprna/SUPPA).
-
-```bash
-$ astk diffSplice -psi result/fb_e11_based/psi/fb_SE_e1*.psi \
-    -exp result/fb_e11_based/psi/fb_SE_e1*.tpm \
-    -ref result/fb_e11_based/ref/gencode.vM25_SE_strict.ioe \
-    -o result/fb_e11_based/dpsi/fb_SE_e10_p0.dpsi 
-```
-
-**diffSplice** arguments:
-
-* -psi: AS events PSI files
-* -exp: transcripts TPM expression files
-* -ref: ioe reference file
-* -o: output file
-
-
-#### sigFilter
-
-**sigFilter** is using for filter significant differential splicing event according to PSI and p-value. It will generate significant  differential splicing events and associated PSI files. **sf** is short alias of **sigFilter**.
-
-```bash
-$ astk sf -i result/fb_e11_based/dpsi/fb_SE_e10_p0.dpsi \
-        -o result/fb_e11_based/dpsi/fb_SE_e10_p0.sig.dpsi \
-        -adpsi 0.1 -p 0.05
-```
-
-**sf** arguments
-
-* -i: input dpsi file
-* -od: output directory
-* -adpsi: absolute dPSI threshold value
-* -p: p-value threshold value
-
-
 #### psiFilter
 
 **psiFilter** is used to filter AS event with PSI value.
@@ -340,21 +256,24 @@ $ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
 $ astk pca -i result/fb_e11_based/psi/fb_e11_12_SE_c1.psi \
     result/fb_e11_based/psi/fb_e11_1[2-6]_SE_c2.psi \
     result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
-    -o img/fb_pca.png -fmt png --width 6 --height 4
+    -o img/fb_pca.pdf -w 6 --height 4 \
+    -gn fb_e11.5 fb_e12.5 fb_e13.5 fb_e14.5 fb_e15.5 fb_e16.5 fb_p0
 
 ```
 
 **pca** arguments
 
-* -i : PSI files
-
-* -o: output figure
+* -i : input PSI files
+* -o: output figure path
+* --width: figure width
+* --height: figure height
+* -gn: group names for different file data labe
 
 ![fb_pca.png](demo/img/fb_pca.png)
 
 #### heatmap
 
-**heatmap** is used for ploting heatmap of PSI. **hm** is short alias of **heatmap**. 
+**heatmap** is used for ploting heatmap of PSI. **hm** is short alias of **heatmap**.
 
 ```bash
 $ astk hm -i result/fb_e11_based/sig01/psi/fb_e11_12_SE_c1.sig.psi \
@@ -380,6 +299,7 @@ astk barplot -i result/fb_e11_based/sig01/fb_e11_p0_*.sig.dpsi \
     -o img/fb_e11_p0_bar.png -dg -xl A3 A5 AF AL MX RI SE
 
 ```
+
 **barplot** arguments:
 
 * -i : input dpsi files, support multiple files
@@ -488,7 +408,6 @@ $ astk ecmp -i result/fb_e11_based/lenc/*/fb_e11_12_SE.sig.dpsi \
 
 ![GO.cmp.BP.png](demo/img/enrich/fb_e11_12_SE_lc/GO.cmp.BP.qval0.1_pval0.1.png)
 
-
 #### motifEnrich
 
 **motifEnrich** is used for performing motif enrichment within splicing sites flanking sequence using RBP motif database. me is short alias.
@@ -508,7 +427,6 @@ Arguments:
 * -od: output directory
 * -org: organism
 * -fi: genome fasta, need index
-
 
 #### motifFind
 
@@ -531,7 +449,7 @@ Arguments:
 
 **getmeme** is used for querying ASTK built-in motif data.
 
-```bash 
+```bash
 astk getmeme M316_0.6 M083_0.6 -db CISBP-RNA \
     -org mm -o img/motif/query.meme
 ```
@@ -561,7 +479,7 @@ Arguments:
 * -org: organism
 * -o: output file path
 
-![motif_plot.png](demo/img/motif/M083_0.6_plot.png)  
+![motif_plot.png](demo/img/motif/M083_0.6_plot.png)
 
 #### mmap
 
@@ -622,7 +540,6 @@ Arguments:
 * -g: genome assembly
 * -o: output
 
-
 ### FAQs
 
 **ERROR: compilation failed for package ‘magick’**
@@ -651,6 +568,7 @@ Execution halted
 ```
 
 You could install the rlang to higher version manually. For example:
+
 ```
 # R console
 > install.packages("rlang")
