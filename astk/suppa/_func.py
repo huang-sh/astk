@@ -92,8 +92,8 @@ def parse_meta(meta_file: FilePath) -> Dict:
             print("ERROR: JSON file is excepted!")
             sys.exit()
     for gn, gdic in meta_dic.items():
-        control_tpms = [(sp["path"], sp["name"]) for sp in gdic["control"]["samples"]]
-        treatment_tpms = [(sp["path"], sp["name"]) for sp in gdic["treatment"]["samples"]]
+        control_tpms = [(sp["path"], sp["name"]) for sp in gdic["ctrl"]["samples"]]
+        treatment_tpms = [(sp["path"], sp["name"]) for sp in gdic["case"]["samples"]]
         tpm_dic[gn] = {"ctrl": control_tpms, "case": treatment_tpms}
     return tpm_dic
 
