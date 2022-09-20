@@ -9,9 +9,9 @@ import astk.utils._cli_func as ul
 
 
 @click.command(help="generate metadata template file")
-@click.option('-p1', '--control', cls=MultiOption, type=click.Path(exists=True),
+@click.option('-c1', '--ctrl', cls=MultiOption, type=click.Path(exists=True),
                 required=True, help="file path for condtion 1")
-@click.option('-p2', '--treatment', cls=MultiOption, type=click.Path(exists=True),
+@click.option('-c2', '--case', cls=MultiOption, type=click.Path(exists=True),
                 required=True, help="file path for condtion 2")
 @click.option('-gn', '--groupName', cls=MultiOption, type=str,
                 default=(), help="group name")                

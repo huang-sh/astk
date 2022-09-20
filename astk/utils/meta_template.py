@@ -15,7 +15,7 @@ from pandas import DataFrame, concat
 
 class Template:
     def __init__(self, condition):
-        self.condition = condition if condition else ["control", "treatment"]
+        self.condition = condition if condition else ["ctrl", "case"]
 
     def infer_file(self, path, rep):
         rep_num = len(rep)
@@ -60,10 +60,10 @@ class Template:
             names = [sub_name(sidx, n.split(ssym)) for n in names]            
 
         sdf = DataFrame({
-            "group": group_ls,                                                                                                                                                                                                                                                                               
-            "replicate": rep_ls,
+            "group": group_ls, 
             "name": names,
-            "path": path_ls
+            "path": path_ls,
+            "replicate": rep_ls
         })
         return sdf
 
@@ -85,7 +85,7 @@ class Template:
             df2 = self.df_generate(group_name, repN2, path2, **kwargs)
             df1.insert(1, "condition", self.condition[0])
             df2.insert(1, "condition", self.condition[1])
-            df = concat([df1, df2]).sort_values(by=["group", "condition"])
+            df = concat([df1, df2]).sort_values(by=["group"])
   
         else:
             if path1:
