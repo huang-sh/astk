@@ -14,7 +14,7 @@ def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism)
 
     rscript = BASE_DIR / "R" / "gsea.R"
     params = [outdir, str(pvalue), org_db, ont, geneid, name, database, organism, file]
-    info = subprocess.Popen(["Rscript", str(rscript), *params])
+    info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
     info.wait()
 
    
@@ -52,7 +52,7 @@ def enrich(
         "fmt": fmt
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
              
 def enrich_cmp(
@@ -92,7 +92,7 @@ def enrich_cmp(
         "fmt": fmt
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
@@ -112,14 +112,14 @@ def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
     for file in files:
         params = [outdir, str(pvalue), str(qvalue), database, cluster,
                  org_db, gene_id, kegg_organism, file]
-        info = subprocess.Popen(["Rscript", str(rscript), *params])
+        info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
         if database == "KEGG" and not ul.check_kegg_RData(kegg_organism):
              info.wait() 
     else:
         if merge:
             params = [outdir, str(pvalue), str(qvalue), database, cluster,
                  org_db, gene_id, kegg_organism, *files]
-            merge_info = subprocess.Popen(["Rscript", str(rscript), *params])
+            merge_info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
             merge_info.wait()
         else:
             info.wait()

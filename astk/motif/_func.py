@@ -53,7 +53,7 @@ def motif_enrich(tevent, cevent, outdir, database, organism, fasta):
     }
     rscript = BASE_DIR / "R" / "motifEnrich.R"
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def motif_find(tevent, cevent, outdir, database, organism, pvalue, evalue, minw, maxw, fasta):
@@ -109,7 +109,7 @@ def motif_find(tevent, cevent, outdir, database, organism, pvalue, evalue, minw,
         "meme_path": ul.get_meme_path()
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
                
 def motif_plot(motifid, database, organism, meme, output, fmt, width, height, resolution):
@@ -133,7 +133,7 @@ def motif_plot(motifid, database, organism, meme, output, fmt, width, height, re
         "output": Path(output).with_suffix(f".{fmt}")
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def mmap(event, fasta, name, center, meme, outdir, binsize, step, fmt, width, height, resolution):
@@ -169,5 +169,5 @@ def mmap(event, fasta, name, center, meme, outdir, binsize, step, fmt, width, he
         "meme_path": ul.get_meme_path()
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
         

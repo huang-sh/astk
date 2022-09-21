@@ -20,7 +20,7 @@ def gseplot(termid, output, rdata, fmt, width, height, resolution):
         "output": Path(output).with_suffix(f".{fmt}")
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def upset(files, output, xlabel, dg, fmt, width, height, resolution):
@@ -38,7 +38,7 @@ def upset(files, output, xlabel, dg, fmt, width, height, resolution):
         "name": xlabel if xlabel else [str(i) for i  in range(len(files))]
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def volcano(file, output, fmt, width, height, resolution):
@@ -52,7 +52,7 @@ def volcano(file, output, fmt, width, height, resolution):
         "output": Path(output).with_suffix(f".{fmt}")
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def pca(files, output, fmt, width, height, resolution, groupname):
@@ -71,7 +71,7 @@ def pca(files, output, fmt, width, height, resolution, groupname):
         "groupname": groupname
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def heatmap(files, output, cluster, fmt, width, height, resolution):
@@ -91,7 +91,7 @@ def heatmap(files, output, cluster, fmt, width, height, resolution):
         "output": Path(output).with_suffix(f".{fmt}")
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 
@@ -108,4 +108,4 @@ def barplot(output, files, xlabel, dg, fmt, width, height, resolution):
         "dg": dg
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])

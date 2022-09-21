@@ -51,7 +51,7 @@ def install(requirement, OrgDb, cran, bioconductor, java, mirror):
         "mirror": mirror
     }
     param_ls = ulf.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ulf.Rscript_bin(), rscript, *param_ls])
 
 
 def getmeme(motifid, meme, database, organism, output):
@@ -127,7 +127,7 @@ def mkTxDb(gtf, organism, output):
         "output": output
     }
     param_ls = ulf.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])    
+    subprocess.run([ulf.Rscript_bin(), rscript, *param_ls])
 
 
 def getgene(file, output, unique):

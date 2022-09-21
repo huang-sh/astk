@@ -138,4 +138,4 @@ def seq_pcm(fasta: Union[str, Path],
         "output": Path(output).with_suffix(f".{fmt}")
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])

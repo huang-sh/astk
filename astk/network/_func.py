@@ -76,5 +76,5 @@ def co_splice_net(output, fasta, psimeta, tqmeta, organism, database, txdb):
         "txdb": txdb
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
     coSpliceNet(csv_out, html_out)

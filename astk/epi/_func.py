@@ -103,7 +103,7 @@ def epihm(output, files, fmt, width, height, resolution):
         "output": output
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def sigcmp(output, file, fmt, width, height, resolution):
@@ -118,7 +118,7 @@ def sigcmp(output, file, fmt, width, height, resolution):
         "output": output
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 
@@ -203,7 +203,7 @@ def LearnState(numstates, markfile, directory, binarydir , outdir, binsize, geno
 
     rscript = Path(__file__).parent / "R" / "ChromHMM_hm.R"
     for of in Path(outdir).glob("*_overlap.txt"):
-        info = subprocess.Popen(["Rscript", str(rscript), of])
+        info = subprocess.Popen([ul.Rscript_bin(), str(rscript), of])
     info.wait()
 
 
@@ -226,7 +226,7 @@ def epi_sc(event_file, event_label, bam_file, bam_label, width, bin_size,
         "ASType": as_type
     }
     param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def epi_profile(file, output, title, ylim, fmt, width, height, resolution):
@@ -244,7 +244,7 @@ def epi_profile(file, output, title, ylim, fmt, width, height, resolution):
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     # print(param_ls)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
 def signal_heatmap(
@@ -329,7 +329,6 @@ def signal_metaplot(
         tempf = NamedTemporaryFile(delete=False)
         tempf.close()
 
-
         with gzip.open(file, "rb") as f:
             line = f.readline()
             if line[:3] != b'@{"':
@@ -360,7 +359,5 @@ def signal_metaplot(
         "fmt": fig_format,
         "output": output
     }
-    print(files)
     param_ls = ul.parse_cmd_r(**param_dic)
-    # print(param_ls)
-    subprocess.run(["Rscript", rscript, *param_ls])
+    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
