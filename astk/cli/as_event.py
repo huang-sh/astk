@@ -68,7 +68,7 @@ def psi_filter(*args, **kwargs):
 
  
 @click.command(help="intersect AS event")
-@click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="dpsi or psi file B")
+@click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="dpsi or psi file A")
 @click.option('-b', "file_b", type=click.Path(exists=True), help="dpsi or psi file B")
 @click.option('-o', "--output", required=True, help="output suffix")
 @click.option('-ioeb', "--ioeB", type=click.Path(exists=True), help="ioe file file B")
