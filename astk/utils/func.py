@@ -24,7 +24,6 @@ class RunConfigure:
             with open(astkrc, "r") as f:
                 rc_dic = json.load(f)
         else:
-            astkrc.touch()
             rc_dic = {}
         return rc_dic
     
