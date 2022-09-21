@@ -12,6 +12,8 @@ import click
 from click.core import _check_iter
 from click.exceptions import BadParameter
 
+from astk.utils import RunConfigure
+
 
 class CustomMultiCommand(click.Group):
     """https://stackoverflow.com/questions/46641928/python-click-multiple-command-names/53144555"""
@@ -149,13 +151,7 @@ class MultiOption(click.Option):
 @click.command(help="ASTK configure setting")
 @click.option('-R', '--R', "RPath", type=click.Path(exists=True), help="R path setting")
 def sc_setting(*args, **kwargs):
-    astkrc = Path.home() / ".astkrc"
-    if astkrc.exists():
-        with open(astkrc, "r") as f:
-            rc_dic = json.load(f)
-    else:
-        astkrc.touch()
-        rc_dic = {}
-    rc_dic["Rscript"] = str(Path(kwargs['RPath']).with_name("Rscript"))
-    with open(astkrc, "w") as f:
-        json.dump(rc_dic, f, indent=4)
+
+    rc = RunConfigure()
+    rc.update(Rscript=str(Path(kwargs['RPath']).with_name("Rscript")))
+    rc.save()

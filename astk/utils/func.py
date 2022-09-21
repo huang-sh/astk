@@ -1,11 +1,45 @@
 import sys
 import mmap
+import json
 from pathlib import Path
 from functools import partial
 
 from astk.types import FilePath
 from astk.event import SuppaEventID
 from astk.constant import OrgDb_dic, BASE_DIR, SSN, SS_SCORE_LEN
+
+
+class RunConfigure:
+    def __init__(self) -> None:
+        self.path = Path.home() / ".astkrc"
+        self.rc_dic = self.read()
+    
+    def read(self, path=None):
+        if path is None:
+            astkrc = self.path
+        else:
+            astkrc = path
+            self.path = path
+        if astkrc.exists():
+            with open(astkrc, "r") as f:
+                rc_dic = json.load(f)
+        else:
+            astkrc.touch()
+            rc_dic = {}
+        return rc_dic
+    
+    def update(self, **kwargs):
+        self.rc_dic.update(**kwargs)
+
+    def save(self):
+        with open(self.path, "w") as f:
+            json.dump(self.rc_dic, f, indent=4)
+     
+
+def Rscript_bin():
+    rc = RunConfigure()
+    path = rc.rc_dic.get("Rscript", "Rscript")
+    return path
 
 
 def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
@@ -154,7 +188,7 @@ def select_OrgDb(org):
 def check_kegg_RData(org):
     import subprocess
     rscript = BASE_DIR / "R" / "dl_keggdata.R"
-    info = subprocess.Popen(["Rscript", str(rscript), org])
+    info = subprocess.Popen([Rscript_bin(), str(rscript), org])
     info.wait()
     # import datetime
     # date_str = datetime.datetime.now().strftime("%Y-%m-%d")
