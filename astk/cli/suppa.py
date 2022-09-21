@@ -40,8 +40,7 @@ def compute_psi(*args, **kwargs):
     output = kwargs.pop("output")
     psi_df, tpm_df = calculate_psi(*args, **kwargs)
     psi_df.to_csv(output, sep="\t")
-    tpm_df.to_csv(Path(output).with_suffix(".tpm"), sep="\t")
-
+    tpm_df.to_csv(Path(output).with_suffix(".tpm"), sep="\t", index_label=False)
 
 
 @click.command(help="differential splicing analysis")
