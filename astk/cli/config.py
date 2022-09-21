@@ -4,6 +4,8 @@ astk.cli.config
 ~~~~~~~~~~~~~~~~~
 This module provides command line api configure.
 """
+import json
+from pathlib import Path
 from gettext import gettext as _
 
 import click
@@ -142,3 +144,18 @@ class MultiOption(click.Option):
             value = tuple(check_iter(value))
             return tuple(self.type(x, self, ctx) for x in value)
         return convert(value)
+
+
+@click.command(help="ASTK configure setting")
+@click.option('-R', '--R', "RPath", type=click.Path(exists=True), help="R path setting")
+def sc_setting(*args, **kwargs):
+    astkrc = Path.home() / ".astkrc"
+    if astkrc.exists():
+        with open(astkrc, "r") as f:
+            rc_dic = json.load(f)
+    else:
+        astkrc.touch()
+        rc_dic = {}
+    rc_dic["Rscript"] = str(Path(kwargs['RPath']).with_name("Rscript"))
+    with open(astkrc, "w") as f:
+        json.dump(rc_dic, f, indent=4)

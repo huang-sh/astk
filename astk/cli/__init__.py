@@ -7,14 +7,17 @@ from .as_event import *
 from .epi import *
 from .draw import *
 from .suppa import *
-from .config import CustomMultiCommand
 from .seqfeature import *
+from .config import CustomMultiCommand, sc_setting
 
 
 @click.group(cls=CustomMultiCommand, 
         context_settings=dict(help_option_names=['-h', '--help']))
 def cli_fun():
      pass
+
+## astk configure setting
+cli_fun.add_command(sc_setting, name=["config"])
 
 ## suppa2 module
 cli_fun.add_command(generateEvents, name=["generateEvent", "ge"])
