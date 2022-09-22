@@ -155,6 +155,16 @@ class rMATSEventCoord(EventCoord):
         self.df_ss = concat([ps_df, ns_df]).loc[dpsi_df.index, :]
 
 
+def get_event_coord(event, app):
+    if app == "auto":
+        app = detect_file_info(event)["app"]
+    if app == "SUPPA2":
+        coori = SuppaEventCoord(event)
+    elif app == "rMATS":
+        coori = rMATSEventCoord(event)
+    return coori
+
+
 def get_file_ss_bed(
     event_file: FilePath, 
     ups_width: int = 150, 
@@ -163,13 +173,18 @@ def get_file_ss_bed(
     sss: bool = False,
     app: str = "atuo"
     ):
-    if app == "auto":
-        app = detect_file_info(event_file)["app"]
-
-    if app == "SUPPA2":
-        suppa2coor = SuppaEventCoord(event_file)
-        df_dic = suppa2coor.get_all_flank_bed(ups_w=ups_width,dws_w=dws_width,sss=sss)
-    elif app == "rMATS":
-        rmatscoor = rMATSEventCoord(event_file)
-        df_dic = rmatscoor.get_all_flank_bed(ups_w=ups_width,dws_w=dws_width,sss=sss)
+    coori = get_event_coord(event_file, app)
+    df_dic = coori.get_all_flank_bed(ups_w=ups_width,dws_w=dws_width,sss=sss)
     return df_dic
+
+
+def get_ss_range(event_file, app):
+    from pandas import DataFrame
+    
+    coori = get_event_coord(event_file, app)
+    df_ss = coori.df_ss
+    ncol = df_ss.shape[1] - 1
+    df_len = DataFrame(index=df_ss.index, columns=range(ncol))
+    for idx in range(ncol):
+        df_len.iloc[:, idx] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
+    return df_len

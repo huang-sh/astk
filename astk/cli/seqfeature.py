@@ -6,7 +6,7 @@ This module provide sequence feature extraction cli api
 
 from .config import *
 import astk.seqfeature.feature as sf
-from astk.seqfeature import splice_score
+from astk.seqfeature import splice_score, get_elen
 
 
 @click.command(help = "extract DNA sequence feature ")
@@ -47,3 +47,13 @@ def sc_seqlogo(*args, **kwargs):
 @click.option('-p', '--process', default=4, help="process number, default=4")
 def sc_splice_score(*args, **kwargs):
     splice_score(*args, **kwargs)
+
+
+@click.command(["getlen"], help="get element length")
+@click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
+                help="event file")
+@click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", help="the program that generates event file")
+def sc_get_elen(*args, **kwargs):
+    get_elen(*args, **kwargs)
