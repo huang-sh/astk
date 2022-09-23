@@ -165,7 +165,7 @@ def get_event_coord(event, app):
     return coori
 
 
-def get_file_ss_bed(
+def get_ss_bed(
     event_file: FilePath, 
     ups_width: int = 150, 
     dws_width: int = 150,

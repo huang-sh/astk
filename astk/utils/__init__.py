@@ -5,6 +5,6 @@ astk.utils
 This module provides some utility functions.
 """
 from .func import *
-from ._coord import SuppaEventCoord, rMATSEventCoord, get_file_ss_bed
+from ._coord import SuppaEventCoord, rMATSEventCoord, get_ss_bed
 from ._getfasta import get_coor_fa
 

@@ -9,7 +9,7 @@ import multiprocessing as mp
 
 from astk.constant import BASE_DIR
 from astk.utils._getfasta import get_coor_fa
-from astk.utils import get_file_ss_bed, read_fasta, detect_file_info
+from astk.utils import get_ss_bed, read_fasta, detect_file_info
 
 
 def ss5_consensus_score(seq):
@@ -98,7 +98,7 @@ def splice_score(file, outdir, gfasta, app, process):
 
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
-    coord_dic = get_file_ss_bed(file, sss=True, app=app)
+    coord_dic = get_ss_bed(file, sss=True, app=app)
 
     df_score = DataFrame()
     for idx, (ssn, df) in enumerate(coord_dic.items()):
