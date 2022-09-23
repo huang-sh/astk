@@ -16,7 +16,7 @@ def search_elm(file, output, genome):
     import pandas as pd
     from Bio.Seq import Seq
 
-    se_dpsi = pd.read_csv(file, sep="\t")
+    se_dpsi = pd.read_csv(file, sep="\t", index_col=0)
     elm_cls_file = BASE_DIR / "data/motif/ELM/elm_classes.tsv"
     elm_cls_df = pd.read_csv(elm_cls_file, sep="\t", comment="#")
 
