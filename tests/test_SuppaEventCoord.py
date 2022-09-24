@@ -48,6 +48,7 @@ def test_sss_SuppaEventCoord():
         ns_df = df_ss.loc[df_ss.iloc[:,0] == "-", ]
         del ps_df[2]
         del ns_df[2]
+        del df_ss[2]
 
         eventcoor = SuppaEventCoord(file)
         df_dic = eventcoor.get_all_flank_bed(sss=True)
@@ -78,3 +79,51 @@ def test_sss_SuppaEventCoord():
                     assert all(ns_df.iloc[:, idx] - 6 -1 == df.loc[ns_df.index, "start"]) 
                     assert all(ps_df.iloc[:, idx] + 6 == df.loc[ps_df.index, "end"])
                     assert all(ns_df.iloc[:, idx] + 2 == df.loc[ns_df.index, "end"])
+        if etype == "AF":
+            continue
+        for idx, key in enumerate(etype_ss_names[etype]):
+            df_up_bed, df_dw_bed = eventcoor.get_ss_flank_bed(idx, ups_w=100, dws_w=100, split=True, excludeSS=False)
+            assert set(df_up_bed["end"] - df_up_bed["start"]) == {100} 
+            assert {100} == set(df_dw_bed["end"] - df_dw_bed["start"])
+            if key.endswith("3SS"):                    
+                assert all(ps_df.iloc[:, idx] - 100 -1 == df_up_bed.loc[ps_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] -1 == df_up_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx]  == df_up_bed.loc[ns_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] + 100 == df_up_bed.loc[ns_df.index, "end"])
+
+                assert all(ps_df.iloc[:, idx] - 1 == df_dw_bed.loc[ps_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] + 100 -1 == df_dw_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] - 100  == df_dw_bed.loc[ns_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] == df_dw_bed.loc[ns_df.index, "end"])
+            if key.endswith("5SS"):          
+                assert all(ps_df.iloc[:, idx] - 100 == df_up_bed.loc[ps_df.index, "start"])                
+                assert all(ps_df.iloc[:, idx] == df_up_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] - 1  == df_up_bed.loc[ns_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] + 100 - 1  == df_up_bed.loc[ns_df.index, "end"])
+
+                assert all(ps_df.iloc[:, idx]  == df_dw_bed.loc[ps_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] +100 == df_dw_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] - 100 - 1  == df_dw_bed.loc[ns_df.index, "start"])        
+                assert all(ns_df.iloc[:, idx] - 1  == df_dw_bed.loc[ns_df.index, "end"])
+
+            df_up_bed, df_dw_bed = eventcoor.get_ss_flank_bed(idx, exon_width=100, intron_width=200, split=True, excludeSS=False)
+            if key.endswith("3SS"):
+                assert all(ps_df.iloc[:, idx] - 200 -1 == df_up_bed.loc[ps_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] -1 == df_up_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx]  == df_up_bed.loc[ns_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] + 200 == df_up_bed.loc[ns_df.index, "end"])
+
+                assert all(ps_df.iloc[:, idx] - 1 == df_dw_bed.loc[ps_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] + 100 -1 == df_dw_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] - 100  == df_dw_bed.loc[ns_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] == df_dw_bed.loc[ns_df.index, "end"])
+            if key.endswith("5SS"):
+                assert all(ps_df.iloc[:, idx] - 100 == df_up_bed.loc[ps_df.index, "start"])                
+                assert all(ps_df.iloc[:, idx] == df_up_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] - 1  == df_up_bed.loc[ns_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] + 100 - 1  == df_up_bed.loc[ns_df.index, "end"])
+
+                assert all(ps_df.iloc[:, idx]  == df_dw_bed.loc[ps_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] + 200 == df_dw_bed.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] - 200 - 1  == df_dw_bed.loc[ns_df.index, "start"])        
+                assert all(ns_df.iloc[:, idx] - 1  == df_dw_bed.loc[ns_df.index, "end"])
