@@ -19,30 +19,46 @@ class EventCoord:
         **kwargs
     ):
         """get a splice site flank coordination bed
-        """    
-        df_bed = self.df_temp.copy()
-        df_ss = self.df_ss
+        """            
+        df_ss = self.df_ss.copy()
         slen = SS_SCORE_LEN[self.app][self.etype][idx]
-        ps_idx = self.ps_idx
+        ps_idx = self.ps_idx 
         ns_idx = self.ns_idx
-        if sss:
-            if slen == 23:
-                ups_w, dws_w = 20, 2
-            elif slen == 9:
-                ups_w, dws_w = 2, 6
-        offset = 1 if based0 else 0
-        if slen == 23:
-            df_bed.loc[ps_idx, "start"] = df_ss.loc[ps_idx, idx] - ups_w - offset
-            df_bed.loc[ps_idx, "end"] = df_ss.loc[ps_idx, idx] + dws_w
-            df_bed.loc[ns_idx, "start"] = df_ss.loc[ns_idx, idx] - dws_w - offset
-            df_bed.loc[ns_idx, "end"] = df_ss.loc[ns_idx, idx] + ups_w
+        exon_w = kwargs.get("exon_width", 0) 
+        intron_w = kwargs.get("intron_width", 0)
+        ps_idx_pos = df_ss.loc[ps_idx, idx]
+        ns_idx_pos = df_ss.loc[ns_idx, idx]
+        ups_w, dws_w = self._width_adaptor(slen, ups_w, dws_w, exon_w, intron_w, sss)
+        # shift coordiante for keeping consistent
+        if slen == 23:            
+            ps_idx_pos -= 1
         elif slen == 9:
-            df_bed.loc[ps_idx, "start"] = df_ss.loc[ps_idx, idx] - ups_w - offset
-            df_bed.loc[ps_idx, "end"] = df_ss.loc[ps_idx, idx] + dws_w
-
-            df_bed.loc[ns_idx, "start"] = df_ss.loc[ns_idx, idx] - dws_w - offset
-            df_bed.loc[ns_idx, "end"] = df_ss.loc[ns_idx, idx] + ups_w
-        return df_bed
+            ns_idx_pos -= 1
+        if kwargs.get("split", False):
+            df_up_bed = self.df_temp.copy()
+            df_dw_bed = self.df_temp.copy()
+            ex_ups_w, ex_dws_w = self._exclude_region(slen, **kwargs)
+            df_up_bed.loc[ps_idx, "start"] = ps_idx_pos - ups_w
+            df_up_bed.loc[ps_idx, "end"] = ps_idx_pos - ex_ups_w
+            df_up_bed.loc[ns_idx, "start"] = ns_idx_pos  + ex_ups_w
+            df_up_bed.loc[ns_idx, "end"] = ns_idx_pos + ups_w
+            df_dw_bed.loc[ps_idx, "start"] = ps_idx_pos + ex_dws_w
+            df_dw_bed.loc[ps_idx, "end"] = ps_idx_pos + dws_w
+            df_dw_bed.loc[ns_idx, "start"] = ns_idx_pos - dws_w 
+            df_dw_bed.loc[ns_idx, "end"] = ns_idx_pos  - ex_dws_w
+            if not based0:
+                df_up_bed.loc[:, "start"] += 1           
+                df_dw_bed.loc[:, "start"] += 1
+            return df_up_bed, df_dw_bed
+        else:
+            df_bed = self.df_temp.copy()
+            df_bed.loc[ps_idx, "start"] = ps_idx_pos - ups_w 
+            df_bed.loc[ps_idx, "end"] = ps_idx_pos + dws_w
+            df_bed.loc[ns_idx, "start"] = ns_idx_pos - dws_w 
+            df_bed.loc[ns_idx, "end"] = ns_idx_pos + ups_w
+            if not based0:
+                df_bed.loc[:, "start"] += 1
+            return df_bed
 
     def get_all_flank_bed(
         self,
@@ -63,8 +79,42 @@ class EventCoord:
                 key = f"A{idx}_5SS"
             else:
                 continue
-            dic[key] = self.get_ss_flank_bed(idx, ups_w, dws_w, sss, based0)
+            dic[key] = self.get_ss_flank_bed(idx, ups_w, dws_w, sss, based0, **kwargs)
         return dic
+
+    def _5ss_width(self, ups_w, dws_w, exon_w, intron_w, sss):
+        if exon_w and intron_w:
+            ups_w, dws_w = exon_w, intron_w
+        elif sss:
+            ups_w, dws_w = 3, 6
+        return ups_w, dws_w
+
+    def _3ss_width(self, ups_w, dws_w, exon_w, intron_w, sss):
+        if exon_w and intron_w:
+            ups_w, dws_w = intron_w, exon_w
+        elif sss:
+            ups_w, dws_w = 20, 3
+        return ups_w, dws_w
+
+    def _width_adaptor(self, site, ups_w, dws_w, exon_w, intron_w, sss):
+        if site == 23:
+            ups_w, dws_w = self._3ss_width(ups_w, dws_w, exon_w, intron_w, sss)
+        elif site == 9:
+            ups_w, dws_w = self._5ss_width(ups_w, dws_w, exon_w, intron_w, sss)
+        return ups_w, dws_w
+    
+    def _exclude_region(self, site, **kwargs):
+        if kwargs.get("excludeSS", False):
+            if site == 23:
+                ex_ups_w, ex_dws_w = 20, 3
+            elif site == 9:
+                ex_ups_w, ex_dws_w = 3, 6
+        else:
+            ex_ups_w, ex_dws_w = 0, 0
+        return ex_ups_w, ex_dws_w
+    
+    def _ns_adaptor(self):
+        pass
 
     def set_metadata(self, file):
         pass
@@ -171,10 +221,11 @@ def get_ss_bed(
     dws_width: int = 150,
     strand_sp: bool = False,
     sss: bool = False,
-    app: str = "atuo"
+    app: str = "atuo",
+    **kwargs
     ):
     coori = get_event_coord(event_file, app)
-    df_dic = coori.get_all_flank_bed(ups_w=ups_width,dws_w=dws_width,sss=sss)
+    df_dic = coori.get_all_flank_bed(ups_w=ups_width,dws_w=dws_width,sss=sss, **kwargs)
     return df_dic
 
 
