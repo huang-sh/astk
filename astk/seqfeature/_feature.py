@@ -59,3 +59,19 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
         dws_gcc = get_seq_gcc(ss_dir / f"{ssn}_dws.fa", binsize)
         ups_gcc.to_csv(ss_dir / f"{ssn}_ups_gcc.csv")
         dws_gcc.to_csv(ss_dir / f"{ssn}_dws_gcc.csv")
+
+
+def get_elen(file, outdir, app):
+    import matplotlib.pyplot as plt
+
+    outdir = Path(outdir)
+    Path(outdir).mkdir(exist_ok=True)
+
+    df_len = ul.get_ss_range(file, app)
+    df_len.to_csv(outdir / "element_len.csv")
+
+    fig, axes = plt.subplots(1, df_len.shape[1]) 
+    for idx in range(df_len.shape[1]):
+       axes[idx].boxplot(df_len.iloc[:, idx], showfliers=False, sym="")
+    plt.tight_layout() 
+    plt.savefig(outdir / "element_len.png")
