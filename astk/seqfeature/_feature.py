@@ -32,6 +32,8 @@ def get_seq_gcc(fasta, binsize, process=4):
 
 
 def get_gcc(file, outdir, gfasta, binsize, **kwargs):
+    import matplotlib.pyplot as plt
+    from pandas import concat
     
     if app := kwargs.get("app", "auto") == "auto":
         app = ul.detect_file_info(file)["app"]
@@ -46,6 +48,7 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
     Path(outdir).mkdir(exist_ok=True)
     coord_dic = ul.get_ss_bed(file, app=app, **kwargs)
 
+    fig, axes = plt.subplots(1, len(coord_dic), figsize= (10, 5))
     for idx, (ssn, (df_up, df_dw)) in enumerate(coord_dic.items()):
         ss_dir = outdir / ssn
         ss_dir.mkdir(exist_ok=True)
@@ -59,7 +62,14 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
         dws_gcc = get_seq_gcc(ss_dir / f"{ssn}_dws.fa", binsize)
         ups_gcc.to_csv(ss_dir / f"{ssn}_ups_gcc.csv")
         dws_gcc.to_csv(ss_dir / f"{ssn}_dws_gcc.csv")
+        df = concat([ups_gcc, dws_gcc], axis=1)
+        gcc_mean = df.mean()
+        gcc_mean.index = range(-ups_gcc.shape[1], dws_gcc.shape[1])
+        axes[idx].plot(gcc_mean)
+        axes[idx].set_ylim([min(0.35, min(gcc_mean)), max(0.65, max(gcc_mean))])
 
+    plt.tight_layout() 
+    plt.savefig(outdir / "gcc.png")
 
 def get_elen(file, outdir, app):
     import matplotlib.pyplot as plt
@@ -70,7 +80,7 @@ def get_elen(file, outdir, app):
     df_len = ul.get_ss_range(file, app)
     df_len.to_csv(outdir / "element_len.csv")
 
-    fig, axes = plt.subplots(1, df_len.shape[1]) 
+    fig, axes = plt.subplots(1, df_len.shape[1])
     for idx in range(df_len.shape[1]):
        axes[idx].boxplot(df_len.iloc[:, idx], showfliers=False, sym="")
     plt.tight_layout() 
