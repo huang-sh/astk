@@ -71,17 +71,23 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
     plt.tight_layout() 
     plt.savefig(outdir / "gcc.png")
 
-def get_elen(file, outdir, app):
+def get_elen(file, outdir, app, log):
     import matplotlib.pyplot as plt
+    import numpy as np
 
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
 
     df_len = ul.get_ss_range(file, app)
     df_len.to_csv(outdir / "element_len.csv")
-
-    fig, axes = plt.subplots(1, df_len.shape[1])
+    ylabel = "log2(length)" if log else "length"
+    fig, axes = plt.subplots(1, df_len.shape[1], sharey=True)
     for idx in range(df_len.shape[1]):
-       axes[idx].boxplot(df_len.iloc[:, idx], showfliers=False, sym="")
+        if log:
+            data = np.log2(df_len.iloc[:, idx])
+        else:
+            data = df_len.iloc[:, idx]
+        axes[idx].boxplot(data)
+        axes[idx].set_ylabel(ylabel)
     plt.tight_layout() 
     plt.savefig(outdir / "element_len.png")
