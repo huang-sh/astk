@@ -49,7 +49,7 @@ def sc_splice_score(*args, **kwargs):
     splice_score(*args, **kwargs)
 
 
-@click.command(["getlen"], help="get element length")
+@click.command(["getlen"], help="Compute element length")
 @click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
@@ -59,7 +59,7 @@ def sc_get_elen(*args, **kwargs):
     get_elen(*args, **kwargs)
 
 
-@click.command(["gcc"], help="get GC content")
+@click.command(["gcc"], help="Compute GC content")
 @click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
