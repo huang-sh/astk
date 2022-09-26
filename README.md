@@ -231,7 +231,7 @@ the output of **dsflow**  contain four directories:
 * dpsi  is the directory including differential splicing result
 * sig01 is the directory including result that filter using pval < 0.05 and |PSI| > 0.1
 
-#### psiFilter
+#### psi filter
 
 **psiFilter** is used to filter AS event with PSI value.
 
@@ -247,6 +247,62 @@ $ astk pf -i result/fb_e11_based/psi/fb_e11_p0_SE_c2.psi \
 * FILE: input psi file
 * -psi: when option value > 0, it denotes that select AS events that PSI > option value; however, when option value < 0, it denotes that select AS events that PSI < abs(option value)
 * -o: output file
+
+#### spliceScore
+
+Compute 5/3 Splice site strength.
+
+```bash
+mkdir img/sss
+astk sss -e result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi -od img/sss/fb_p0_SE_high -fi GRCm38.primary_assembly.genome.fa
+```
+
+**sss** arguments
+
+* -e: AS event file
+* -od: output directory
+* -fi: genome fasta
+
+![splice_scores_box.png](demo/img/splice_scores_box.png)
+
+#### GC content
+
+Compute GC content
+
+```bash
+mkdir img/gcc
+astk gcc -e result/fb_e11_based/psi/fb_e11_p0_SE_c2_08.psi \
+    -od img/gcc/fb_p0_AF_high -ef 150 -if 150 -bs 75 \
+    -fi GRCm38.primary_assembly.genome.fa
+```
+
+**gcc** arguments
+
+* -e: AS event file
+* -od: output directory
+* -ef: exon flank width
+* -if: intron flank width
+* -bs: bin size, the slide window size
+
+![gcc.png](demo/img/gcc.png)
+
+#### element length
+
+Compute exon/intron length
+
+```bash
+mkdir img/len
+astk elen -e result/fb_e11_based/psi/fb_e11_p0_AF_c2_08.psi -od img/len/fb_p0_AF -log
+
+```
+
+**elen** arguments
+
+* -e: AS event file
+* -od: output directory
+* -log: length log2 transformation
+
+![elen.png](demo/img/element_len.png)
 
 #### pca
 
