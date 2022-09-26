@@ -143,7 +143,7 @@ class SuppaEventCoord(EventCoord):
                 coords = reversed(ei.coordinates)
             else:
                 coords = ei.coordinates
-            row = ei.Chr, ei.gene_id, ei.strand, *coords
+            row = ei.Chr, ei.event_id, ei.strand, *coords
             return row
         event_df = DataFrame(dpsi_df["event_id"].apply(_get_coor).tolist(),
                              index=dpsi_df.index)
