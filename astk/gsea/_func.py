@@ -136,11 +136,7 @@ def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Hum
 
     outdir = Path(outdir)
     outdir.mkdir(exist_ok=True)
-    stats_file = outdir / "affected_stats_fig.pdf"
     enrich_csv = outdir / "nease_enrichment.csv"
-    affected_domain_csv = outdir / "affected_domain.csv"
-    affected_elm_csv = outdir / "affected_elm.csv"
-    affected_pdb_csv = outdir / "affected_pdb.csv"
     enrich_bar_pdf = outdir / "nease_enrichment_bar.pdf"
     nease_enr = events.enrich(database=database)
     if nease_enr is not None:
