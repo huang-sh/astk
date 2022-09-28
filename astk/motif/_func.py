@@ -20,7 +20,7 @@ def motif_enrich(tevent, cevent, outdir, database, organism, fasta):
         ## the complete event_id may cause some bug in motif analysis, eg fimo 
         df["name"] = [f"event{i}" for i in range(df.shape[0])]
         df.to_csv(ssi_bed, index=False, header=False, sep="\t")
-        ul.get_coor_fa(df, fasta, ssi_fa)
+        ul.get_coor_fa(df, fasta, ssi_fa, strandedness=True)
         case_fa_ls.append(ssi_fa)
     
     if cevent:
@@ -33,7 +33,7 @@ def motif_enrich(tevent, cevent, outdir, database, organism, fasta):
             cssi_fa = cssi_dir / f"{cssi}_ctrl.fa"
             cdf["name"] = [f"event{i}" for i in range(cdf.shape[0])]
             cdf.to_csv(cssi_bed, index=False, header=False, sep="\t")
-            ul.get_coor_fa(cdf, fasta, cssi_fa)
+            ul.get_coor_fa(cdf, fasta, cssi_fa, strandedness=True)
             ctrl_fa_ls.append(cssi_fa)
     else:
         ctrl_fa_ls = ["0" for _ in case_fa_ls]
@@ -70,7 +70,7 @@ def motif_find(tevent, cevent, outdir, database, organism, pvalue, evalue, minw,
         ## ## the complete event_id may cause some bug in motif analysis, eg fimo 
         df["name"] = [f"event{i}" for i in range(df.shape[0])]
         df.to_csv(ssi_bed, index=False, header=False, sep="\t")
-        ul.get_coor_fa(df, fasta, ssi_fa)
+        ul.get_coor_fa(df, fasta, ssi_fa, strandedness=True)
         case_fa_ls.append(ssi_fa)
     
     if cevent:
@@ -83,7 +83,7 @@ def motif_find(tevent, cevent, outdir, database, organism, pvalue, evalue, minw,
             cssi_fa = cssi_dir / f"{cssi}_ctrl.fa"
             cdf["name"] = [f"event{i}" for i in range(cdf.shape[0])]
             cdf.to_csv(cssi_bed, index=False, header=False, sep="\t")
-            ul.get_coor_fa(cdf, fasta, cssi_fa)
+            ul.get_coor_fa(cdf, fasta, cssi_fa, strandedness=True)
             ctrl_fa_ls.append(cssi_fa)
     else:
         ctrl_fa_ls = ["0" for _ in case_fa_ls]
@@ -151,7 +151,7 @@ def mmap(event, fasta, name, center, meme, outdir, binsize, step, fmt, width, he
         ## ## the complete event_id may cause some bug in motif analysis, eg fimo 
         df["name"] = [f"event{i}" for i in range(df.shape[0])]
         df.to_csv(ssi_bed, index=False, header=False, sep="\t")
-        ul.get_coor_fa(df, fasta, ssi_fa)
+        ul.get_coor_fa(df, fasta, ssi_fa, strandedness=True)
         case_fa_ls.append(ssi_fa)
 
     param_dic = {
