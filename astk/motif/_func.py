@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-import astk.utils.func  as ul
+import astk.utils as ul
 from astk.constant import *
 
 
@@ -11,27 +11,27 @@ def motif_enrich(tevent, cevent, outdir, database, organism, fasta):
     outdir = Path(outdir)
     outdir.mkdir(exist_ok=True)
     case_fa_ls = []
-    df_dic = ul.get_evnet_ss_bed(tevent, 150, 150)
+    df_dic = ul.get_ss_bed(tevent, exon_width=150, intron_width=150)
     for ssi, df in df_dic.items():
         ssi_dir = outdir / ssi
         ssi_dir.mkdir(exist_ok=True)
         ssi_bed = ssi_dir / f"{ssi}.bed"
         ssi_fa = ssi_dir / f"{ssi}.fa"
-        ## ## the complete event_id may cause some bug in motif analysis, eg fimo 
-        df[3] = [f"event{i}" for i in range(df.shape[0])]
+        ## the complete event_id may cause some bug in motif analysis, eg fimo 
+        df["name"] = [f"event{i}" for i in range(df.shape[0])]
         df.to_csv(ssi_bed, index=False, header=False, sep="\t")
         ul.get_coor_fa(df, fasta, ssi_fa)
         case_fa_ls.append(ssi_fa)
     
     if cevent:
         ctrl_fa_ls = []
-        cdf_dic = ul.get_evnet_ss_bed(cevent, 150, 150)
+        cdf_dic = ul.get_ss_bed(cevent, exon_width=150, intron_width=150)
         for cssi, cdf in cdf_dic.items():
             cssi_dir = outdir / cssi
             cssi_dir.mkdir(exist_ok=True)
             cssi_bed = cssi_dir / f"{cssi}_ctrl.bed"
             cssi_fa = cssi_dir / f"{cssi}_ctrl.fa"
-            cdf[3] = [f"event{i}" for i in range(cdf.shape[0])]
+            cdf["name"] = [f"event{i}" for i in range(cdf.shape[0])]
             cdf.to_csv(cssi_bed, index=False, header=False, sep="\t")
             ul.get_coor_fa(cdf, fasta, cssi_fa)
             ctrl_fa_ls.append(cssi_fa)
@@ -61,27 +61,27 @@ def motif_find(tevent, cevent, outdir, database, organism, pvalue, evalue, minw,
     Path(outdir).mkdir(exist_ok=True)
 
     case_fa_ls = []
-    df_dic = ul.get_evnet_ss_bed(tevent, 150, 150)
+    df_dic = ul.get_ss_bed(tevent, exon_width=150, intron_width=150)
     for ssi, df in df_dic.items():
         ssi_dir = outdir / ssi
         ssi_dir.mkdir(exist_ok=True)
         ssi_bed = ssi_dir / f"{ssi}.bed"
         ssi_fa = ssi_dir / f"{ssi}.fa"
         ## ## the complete event_id may cause some bug in motif analysis, eg fimo 
-        df[3] = [f"event{i}" for i in range(df.shape[0])]
+        df["name"] = [f"event{i}" for i in range(df.shape[0])]
         df.to_csv(ssi_bed, index=False, header=False, sep="\t")
         ul.get_coor_fa(df, fasta, ssi_fa)
         case_fa_ls.append(ssi_fa)
     
     if cevent:
         ctrl_fa_ls = []
-        cdf_dic = ul.get_evnet_ss_bed(cevent, 150, 150)
+        cdf_dic = ul.get_ss_bed(cevent, exon_width=150, intron_width=150)
         for cssi, cdf in cdf_dic.items():
             cssi_dir = outdir / cssi
             cssi_dir.mkdir(exist_ok=True)
             cssi_bed = cssi_dir / f"{cssi}_ctrl.bed"
             cssi_fa = cssi_dir / f"{cssi}_ctrl.fa"
-            cdf[3] = [f"event{i}" for i in range(cdf.shape[0])]
+            cdf["name"] = [f"event{i}" for i in range(cdf.shape[0])]
             cdf.to_csv(cssi_bed, index=False, header=False, sep="\t")
             ul.get_coor_fa(cdf, fasta, cssi_fa)
             ctrl_fa_ls.append(cssi_fa)
@@ -142,14 +142,14 @@ def mmap(event, fasta, name, center, meme, outdir, binsize, step, fmt, width, he
     outdir = Path(outdir)
     outdir.mkdir(exist_ok=True)
     case_fa_ls = []
-    df_dic = ul.get_evnet_ss_bed(event, 150, 150)
+    df_dic = ul.get_ss_bed(event, exon_width=150, intron_width=150)
     for ssi, df in df_dic.items():
         ssi_dir = outdir / ssi
         ssi_dir.mkdir(exist_ok=True)
         ssi_bed = ssi_dir / f"{ssi}.bed"
         ssi_fa = ssi_dir / f"{ssi}.fa"
         ## ## the complete event_id may cause some bug in motif analysis, eg fimo 
-        df[3] = [f"event{i}" for i in range(df.shape[0])]
+        df["name"] = [f"event{i}" for i in range(df.shape[0])]
         df.to_csv(ssi_bed, index=False, header=False, sep="\t")
         ul.get_coor_fa(df, fasta, ssi_fa)
         case_fa_ls.append(ssi_fa)
