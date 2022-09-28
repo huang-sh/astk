@@ -14,6 +14,7 @@ parser$add_argument("--orgdb", help="orgdb")
 parser$add_argument("--genetype", help="gene type")
 parser$add_argument("--organism", help="kegg organism")
 parser$add_argument("--file", help="dpsi files")
+parser$add_argument("--simple", action='store_true', help="simple")
 
 args <- parser$parse_args()
 
@@ -48,6 +49,7 @@ if (db == "GO"){
                 keyType = gene_type,
                 pval    = pval, 
                 qval    = qval,
+                simple  = args$simple,
                 width   = args$width, 
                 height  = args$height,
                 format  = args$fmt)

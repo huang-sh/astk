@@ -38,7 +38,8 @@ def gsea_fun(*args, **kwargs):
 @click.option('-gene_id', '-gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
                 default="ENSEMBL", help="gene ID type")
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), 
-                required=True, help="organism")        
+                required=True, help="organism")
+@click.option('--simple', is_flag=True, help="simplify GO enrichment")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="pdf", help="output figure format") 
 @click.option('-w', '--width', default=10, help="fig width, default=10 inches")

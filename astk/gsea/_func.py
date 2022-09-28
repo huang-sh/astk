@@ -27,6 +27,7 @@ def enrich(
     ontology: str,  
     gene_id: str, 
     organism: str, 
+    simple: bool,
     fmt: str, 
     width: float, 
     height: float
@@ -47,6 +48,7 @@ def enrich(
         "organism": organism,
         "genetype": gene_id,
         "ontology": ontology,
+        "simple": simple,
         "width": width,
         "height": height,
         "fmt": fmt
