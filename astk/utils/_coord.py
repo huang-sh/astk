@@ -221,7 +221,7 @@ def get_ss_bed(
     dws_width: int = 150,
     strand_sp: bool = False,
     sss: bool = False,
-    app: str = "atuo",
+    app: str = "auto",
     **kwargs
     ):
     coori = get_event_coord(event_file, app)
