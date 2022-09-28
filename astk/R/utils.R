@@ -74,48 +74,39 @@ enrichGOSep <- function(
                                       guide   = guide_colorbar(reverse=TRUE, order=1)) +
                 guides(size = guide_legend(override.aes=list(shape=1))) +
                 theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
-                      panel.grid.major.x = element_blank())
-                          
-       simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)
-       simple.ego <- enrichplot::pairwise_termsim(simple.ego)   
-      #  tryCatch({
-      #     emap <- enrichplot::emapplot(simple.ego, cex_label_category=.8, cex_line=.5) + 
-      #             scale_fill_continuous(low = "#e06663", high = "#327eba", name = "p.adjust",
-      #                                   guide = guide_colorbar(reverse = TRUE, order=1), trans='log10')         
-      #   go.out <- file.path(emap.dir, paste(name, ".%s_emap.pdf", sep = ""))
-      #   pdf(sprintf(go.out, ont), width = 15, height = 15)
-      #   print(emap)
-      #   dev.off()        
-      # }, error = function(e) {
-      #    print(e)
-      # }
-      # )
-      print(simple)
+                      panel.grid.major.x = element_blank())                          
+
       if (simple){
+          simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)
+          simple.ego <- enrichplot::pairwise_termsim(simple.ego)           
           simgo.dir <- file.path(output, "simgo")
           if (!dir.exists(simgo.dir)) {
             dir.create(simgo.dir, recursive = T)
           }            
-          outputsc.pdf <- file.path(simgo.dir, paste(name, "_%s_simple.pdf", sep = ""))
+          outputsc.fig <- file.path(simgo.dir, paste(name, "_%s_simple.", format, sep = ""))
           outputsc.csv <- file.path(simgo.dir, paste(name, "_%s_simple.csv", sep = ""))
           emat  <-  simplifyEnrichment::GO_similarity(ego$ID, ont)
-
-          pdf(sprintf(outputsc.pdf, ont) ,width = 12, height = 10)
-
           df = tryCatch({
-            df <- simplifyEnrichment::simplifyGO(emat)
+            df <- simplifyEnrichment::simplifyGO(emat)            
+            title = sprintf("%s GO terms clustered by binary_cut", nrow(emat))
+            ps <- simplifyEnrichment::ht_clusters(emat, df$cluster, column_title = title)
+            
+            save_fig(ps, 
+                sprintf(outputsc.fig, ont), 
+                format = format,
+                width  = 12, 
+                height = 10, 
+                units  = "in")
+            write.csv(df, file = sprintf(outputsc.csv, ont)) 
+
           }, warning = function(w) {
               print(w)
           }, error = function(e) {
-            # file.remove(sprintf(outputsc.pdf, ont))
+            print(e)
             return(F)
           }
-          )
-
-          dev.off()
-          write.csv(df, file = sprintf(outputsc.csv, ont))        
+          )                 
       }
-
     }
 
     save_fig(p, 
