@@ -102,8 +102,11 @@ def parse_gtf_line(line, feature=["gene", "exon", "transcript"]):
         return   
     info_dic = {k:v for k, v in zip(GTF_COLUMNS[:8], line[:8])}
     attributes_str = line[-1][:-1].replace('"', "")
-    attributes_ls = [att.split() for att in attributes_str.split('; ')]
-    info_dic.update(dict(attributes_ls))
+    att_dic = {}
+    for att in attributes_str.split('; '):
+        k, *v = att.split()
+        att_dic[k] = " ".join(v)
+    info_dic.update(att_dic)
     return info_dic
 
 
