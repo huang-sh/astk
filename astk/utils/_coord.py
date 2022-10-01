@@ -30,9 +30,9 @@ class EventCoord:
         ns_idx_pos = df_ss.loc[ns_idx, idx]
         ups_w, dws_w = self._width_adaptor(slen, ups_w, dws_w, exon_w, intron_w, sss)
         # shift coordiante for keeping consistent
-        if slen == 23:            
+        if abs(slen) == 23:            
             ps_idx_pos -= 1
-        elif slen == 9:
+        elif abs(slen) == 9:
             ns_idx_pos -= 1
         if kwargs.get("split", False):
             df_up_bed = self.df_temp.copy()
@@ -72,13 +72,10 @@ class EventCoord:
         """
         dic = {}
         slens = SS_SCORE_LEN[self.app][self.etype]
+        site_dic = {23: "3SS", 9: "5SS", -23: "pse_3SS", -9: "pse_5SS"}
         for idx, slen in enumerate(slens):
-            if slen == 23:
-                key = f"A{idx}_3SS"
-            elif slen == 9:
-                key = f"A{idx}_5SS"
-            else:
-                continue
+            sn = site_dic[slen]
+            key = f"A{idx}_{sn}"
             dic[key] = self.get_ss_flank_bed(idx, ups_w, dws_w, sss, based0, **kwargs)
         return dic
 
@@ -97,9 +94,9 @@ class EventCoord:
         return ups_w, dws_w
 
     def _width_adaptor(self, site, ups_w, dws_w, exon_w, intron_w, sss):
-        if site == 23:
+        if abs(site) == 23:
             ups_w, dws_w = self._3ss_width(ups_w, dws_w, exon_w, intron_w, sss)
-        elif site == 9:
+        elif abs(site) == 9:
             ups_w, dws_w = self._5ss_width(ups_w, dws_w, exon_w, intron_w, sss)
         return ups_w, dws_w
     
@@ -109,6 +106,8 @@ class EventCoord:
                 ex_ups_w, ex_dws_w = 20, 3
             elif site == 9:
                 ex_ups_w, ex_dws_w = 3, 6
+            else:
+                ex_ups_w, ex_dws_w = 0, 0
         else:
             ex_ups_w, ex_dws_w = 0, 0
         return ex_ups_w, ex_dws_w
