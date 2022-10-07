@@ -7,6 +7,7 @@ This module provide sequence feature extraction cli api
 from .config import *
 import astk.seqfeature.feature as sf
 from astk.seqfeature import splice_score, get_elen, get_gcc
+from astk.seqfeature import cmp_sss
 
 
 @click.command(help = "extract DNA sequence feature ")
@@ -75,3 +76,30 @@ def sc_get_elen(*args, **kwargs):
 @click.option('-p', '--process', default=4, help="process number, default=4")
 def sc_get_gcc(*args, **kwargs):
     get_gcc(*args, **kwargs)
+
+
+@click.command(["ssscmp"], help="Compare Splice site strength between two conditions")
+@click.option('-e', "--events", 'files', type=click.Path(exists=True), cls=MultiOption, 
+                required=True, help="event files")
+@click.option('-o', '--output', type=click.Path(), help="output path")
+@click.option('-test', '--test', default="Mann-Whitney", 
+                type=click.Choice(['Mann-Whitney', 't-test_ind', 't-test_welch', "Wilcoxon"]), 
+                help=" statistical test method, default='Mann-Whitney'")
+@click.option('-gn', '--groupNames', cls=MultiOption, type=str, 
+                help="group names, default= g1 g2 ")
+@click.option('-ft', '--figType',  default="box", help="figure display type",
+                type=click.Choice(["point", 'strip', 'box', 'boxen', 'violin', 'bar']))
+@click.option('-ff', '--figFormat', type=click.Choice(['auto', 'png', 'pdf', 'tiff', 'jpeg']), 
+                default="auto", help="output figure format")
+def sc_ssscmp(*args, **kwargs):
+    fn = len(kwargs["files"])
+    if fn != 2:
+        raise UsageError("only support two files for -e/--events")
+    if gn := kwargs.get("groupnames"):
+        if len(gn) != fn:
+            raise UsageError("-gn/--groupNames parameter number must be same as -e/--events")
+    else:
+        kwargs["groupnames"] = [f"g{i}" for i in range(1, fn+1)]
+    cmp_sss(*args, **kwargs)
+
+
