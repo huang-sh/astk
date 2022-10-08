@@ -63,11 +63,19 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
         ups_gcc.to_csv(ss_dir / f"{ssn}_ups_gcc.csv")
         dws_gcc.to_csv(ss_dir / f"{ssn}_dws_gcc.csv")
         if "5SS" in ssn:
-            ups_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(1-ups_gcc.shape[1], 1)]
-            dws_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(1, dws_gcc.shape[1]+ 1)]
+            if binsize == 0:
+                ups_gcc.columns =  [f"{ssn}_exon"]
+                dws_gcc.columns = [f"{ssn}_intron"]
+            else:
+                ups_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(1-ups_gcc.shape[1], 1)]
+                dws_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(1, dws_gcc.shape[1]+ 1)]
         elif "3SS" in ssn:
-            ups_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(-ups_gcc.shape[1], 0)]
-            dws_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(dws_gcc.shape[1])]
+            if binsize == 0:
+                ups_gcc.columns = [f"{ssn}_intron"]
+                dws_gcc.columns = [f"{ssn}_exon"]
+            else:
+                ups_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(-ups_gcc.shape[1], 0)]
+                dws_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(dws_gcc.shape[1])]
         df = concat([ups_gcc, dws_gcc], axis=1)
         gcc_mean = df.mean()
         gcc_mean.index = range(-ups_gcc.shape[1], dws_gcc.shape[1])
