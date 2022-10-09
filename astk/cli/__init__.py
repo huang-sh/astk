@@ -83,3 +83,5 @@ cli_fun.add_command(sc_splice_score, name=["sss", "spliceScore"])
 cli_fun.add_command(sc_get_elen, name=["elen"])
 cli_fun.add_command(sc_get_gcc, name=["gcc"])
 cli_fun.add_command(sc_ssscmp, name=["ssscmp"])
+cli_fun.add_command(sc_cmp_value, name=["vcmp"])
+
