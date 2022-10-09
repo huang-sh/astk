@@ -347,12 +347,13 @@ def df_len_select(infile, outfile, s, e):
     import pandas as pd
 
     AS_len = lambda x: SuppaEventID(x).alter_element_len
-    df = pd.read_csv(infile, sep="\t", index_col=0)
+    sep = sniff_file_sep(infile)
+    df = pd.read_csv(infile, sep=sep, index_col=0)
     cols = df.columns
     df["event_id"] = df.index
     df["len"] = df["event_id"].apply(AS_len)
     pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
-    pdf.to_csv(outfile, index=True, sep="\t", na_rep="nan", index_label=False)
+    pdf.to_csv(outfile, index=True, sep=sep, na_rep="nan", index_label=False)
 
 
 def get_num_lines(file_path):
