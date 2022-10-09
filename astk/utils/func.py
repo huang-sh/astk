@@ -445,3 +445,15 @@ def detect_file_info(file):
             info_dic["etype"] = events[0].AS_type
 
     return info_dic                        
+
+
+def sniff_file_sep(file):
+    """simply check the sep of file
+    """
+    sep_dic = {}
+    with open(file, "r") as f:
+        line = f.readline()        
+        sep_dic[","] = line.split(",")
+        sep_dic["\t"] = line.split("\t")
+    sep = sorted(sep_dic, key=lambda x: len(sep_dic[x]), reverse=True)[0]
+    return sep
