@@ -1,4 +1,5 @@
 from pathlib import Path
+from itertools import combinations
 
 from astk.utils import sniff_fig_fmt
 
@@ -50,29 +51,34 @@ def cmp_value(files, output, test, **kwargs):
     df_ls = [pd.read_csv(file, index_col=0) for file in files]
     gns = kwargs.get("groupnames")
     origin_col = df_ls[0].columns
-
     for i, df in enumerate(df_ls):
         if kwargs.get("log", False):
             df.iloc[:, :df.shape[1]] = np.log2(df)
         xlabel = kwargs["xlabel"]
         if (xlabel is not None) and (len(xlabel) == df.shape[1]):
             if len(xlabel) == len(set(xlabel)):
-                xlabel, origin_col = origin_col, xlabel
-            columns = [(i, j) for i,j in zip(origin_col, xlabel)]
-        else:
+                columns = [(i, j) for i,j in zip(xlabel, xlabel)]
+            else:
+                columns = [(i, j) for i,j in zip(origin_col, xlabel)]
+        else:            
             columns = [(col, "_".join(col.split("_")[:2])) for col in origin_col]
         columns = pd.MultiIndex.from_tuples(columns)
         df.columns = columns
         df["condition"] = gns[i]
-
     df = pd.concat(df_ls)
-    xn, yn = kwargs["xtitle"], kwargs["ytitle"]
-    
+    xn, yn = kwargs["xtitle"], kwargs["ytitle"]    
     dft = df.melt(id_vars=["condition"]) # var_name=xn, value_name=yn
     dft.rename(columns={"variable_0": xn, "variable_1": "item", "value": yn}, inplace=True)
     sns.set_theme()
-    pairs = [[(col, gn) for gn in gns] for col in origin_col]
+    pairs = []
+    for col in df.columns[:-1]:
+        for gn_c in combinations(gns, 2):
+            pairs.append(((col[0], gn_c[0]), (col[0], gn_c[1])))
     fig_kwargs = {}
+    test_kwargs = {
+        "comparisons_correction": kwargs["multicorrect"], 
+        "show_test_name": False
+    }
     if (fig_type := kwargs["figtype"]) == "strip":
         fig_kwargs["split"] = True
     if kwargs.get("facet", False):
@@ -89,7 +95,6 @@ def cmp_value(files, output, test, **kwargs):
             l_col_dic[l_col].append(s_col)
         s_col_dic = dict(df.columns[:-1])
         l_col_ls = [lcol for lcol in l_col_dic.keys()]
-
         for i, pair in enumerate(pairs):            
             col_g1 = pair[0][0]
             ax = g.axes[0][l_col_ls.index(s_col_dic[col_g1])]
@@ -97,14 +102,14 @@ def cmp_value(files, output, test, **kwargs):
                     data=dft.loc[dft["item"]==s_col_dic[col_g1],],  x=xn, y=yn, 
                     hue="condition",order=l_col_dic[s_col_dic[col_g1]]
                    )
-            annotator.configure(test=test, text_format="star", show_test_name=False)
+            annotator.configure(test=test, **test_kwargs)
             annotator.apply_test()
             annotator.annotate()
     else:
         annotator = Annotator(
                 g.ax, pairs,  data=dft, 
                 x=xn, y=yn, hue="condition")
-        annotator.configure(test=test, text_format="star", show_test_name=False)
+        annotator.configure(test=test, **test_kwargs)
         annotator.apply_test()
         annotator.annotate() 
     plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))

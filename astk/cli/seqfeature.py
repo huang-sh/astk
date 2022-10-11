@@ -115,6 +115,8 @@ def sc_ssscmp(*args, **kwargs):
 @click.option('-log', "--log", is_flag=True, default=False, help="log2 transformation")
 @click.option('-gn', '--groupNames', cls=MultiOption, type=str, 
                 help="group names, default= g1 g2 ")
+@click.option('-mc', '--multiCorrect', type=click.Choice(['bonf', 'HB', 'holm', 'BH' ,'BY']), 
+                help="multiple test correction method")
 @click.option('--xtitle', default="item", help="x title, default='item'")
 @click.option('--ytitle', default="value", help="y title, default='value'")
 @click.option('--xlabel', cls=MultiOption, type= str, help="x labels, default is input file colnames")
@@ -126,8 +128,8 @@ def sc_ssscmp(*args, **kwargs):
                 default="auto", help="output figure format")
 def sc_cmp_value(*args, **kwargs):
     fn = len(kwargs["files"])
-    if fn != 2:
-        raise UsageError("only support two files for -e/--events")
+    if fn < 2:
+        raise UsageError("-e/--events input must be greater than one file")
     if gn := kwargs.get("groupnames"):
         if len(gn) != fn:
             raise UsageError("-gn/--groupNames parameter number must be same as -e/--events")
