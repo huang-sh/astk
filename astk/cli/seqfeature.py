@@ -117,6 +117,8 @@ def sc_ssscmp(*args, **kwargs):
                 help="group names, default= g1 g2 ")
 @click.option('-mc', '--multiCorrect', type=click.Choice(['bonf', 'HB', 'holm', 'BH' ,'BY']), 
                 help="multiple test correction method")
+@click.option('--pvalText', type=click.Choice(['star', 'simple']), default="star",
+                help="p-value display format, default='star'")
 @click.option('--xtitle', default="item", help="x title, default='item'")
 @click.option('--ytitle', default="value", help="y title, default='value'")
 @click.option('--xlabel', cls=MultiOption, type= str, help="x labels, default is input file colnames")

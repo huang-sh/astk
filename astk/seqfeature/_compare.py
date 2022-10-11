@@ -75,10 +75,6 @@ def cmp_value(files, output, test, **kwargs):
         for gn_c in combinations(gns, 2):
             pairs.append(((col[0], gn_c[0]), (col[0], gn_c[1])))
     fig_kwargs = {}
-    test_kwargs = {
-        "comparisons_correction": kwargs["multicorrect"], 
-        "show_test_name": False
-    }
     if (fig_type := kwargs["figtype"]) == "strip":
         fig_kwargs["split"] = True
     if kwargs.get("facet", False):
@@ -88,6 +84,11 @@ def cmp_value(files, output, test, **kwargs):
     g = sns.catplot(
         data=dft, kind=fig_type, x=xn, y=yn, 
         hue="condition", legend=False, **fig_kwargs)
+    test_kwargs = {
+        "comparisons_correction": kwargs["multicorrect"], 
+        "show_test_name": False,
+        "text_format": kwargs["pvaltext"]
+    }        
     if kwargs.get("facet", False):
         l_col_dic = {}
         for s_col, l_col in df.columns[:-1]:
@@ -100,8 +101,7 @@ def cmp_value(files, output, test, **kwargs):
             ax = g.axes[0][l_col_ls.index(s_col_dic[col_g1])]
             annotator = Annotator(ax, [pair],
                     data=dft.loc[dft["item"]==s_col_dic[col_g1],],  x=xn, y=yn, 
-                    hue="condition",order=l_col_dic[s_col_dic[col_g1]]
-                   )
+                    hue="condition",order=l_col_dic[s_col_dic[col_g1]])
             annotator.configure(test=test, **test_kwargs)
             annotator.apply_test()
             annotator.annotate()
