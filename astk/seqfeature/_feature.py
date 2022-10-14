@@ -47,7 +47,7 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
     coord_dic = ul.get_ss_bed(file, app=app, **kwargs)
-
+    df_ls = []
     fig, axes = plt.subplots(1, len(coord_dic), figsize= (10, 5))
     for idx, (ssn, (df_up, df_dw)) in enumerate(coord_dic.items()):
         ss_dir = outdir / ssn
@@ -62,14 +62,31 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
         dws_gcc = get_seq_gcc(ss_dir / f"{ssn}_dws.fa", binsize)
         ups_gcc.to_csv(ss_dir / f"{ssn}_ups_gcc.csv")
         dws_gcc.to_csv(ss_dir / f"{ssn}_dws_gcc.csv")
+        if "5SS" in ssn:
+            if binsize == 0:
+                ups_gcc.columns =  [f"{ssn}_exon"]
+                dws_gcc.columns = [f"{ssn}_intron"]
+            else:
+                ups_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(1-ups_gcc.shape[1], 1)]
+                dws_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(1, dws_gcc.shape[1]+ 1)]
+        elif "3SS" in ssn:
+            if binsize == 0:
+                ups_gcc.columns = [f"{ssn}_intron"]
+                dws_gcc.columns = [f"{ssn}_exon"]
+            else:
+                ups_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(-ups_gcc.shape[1], 0)]
+                dws_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(dws_gcc.shape[1])]
         df = concat([ups_gcc, dws_gcc], axis=1)
         gcc_mean = df.mean()
         gcc_mean.index = range(-ups_gcc.shape[1], dws_gcc.shape[1])
         axes[idx].plot(gcc_mean)
         axes[idx].set_ylim([min(0.35, min(gcc_mean)), max(0.65, max(gcc_mean))])
-
-    plt.tight_layout() 
+        df_ls.append(df)
+    dfs = df = concat(df_ls, axis=1)
+    dfs.to_csv(outdir / "gcc.csv")
+    plt.tight_layout()
     plt.savefig(outdir / "gcc.png")
+
 
 def get_elen(file, outdir, app, log):
     import matplotlib.pyplot as plt

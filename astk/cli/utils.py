@@ -4,6 +4,7 @@ astk.cli.utils
 This module provide some utility function
 """
 
+from email.policy import default
 from .config import *
 import astk.utils._cli_func as ul
 
@@ -109,3 +110,16 @@ def mktxdb(*args, **kwargs):
 @click.option('-u', '--unique', is_flag=True, help="only save unique gene ID")
 def getgene(*args, **kwargs):
     ul.getgene(*args, **kwargs)
+
+
+@click.command(["merge"], help="merge file")
+@click.option('-i','--input', 'files' ,cls=MultiOption, type=click.Path(exists=True),
+                required=True , help="input files")
+@click.option('-o', '--output', type=click.Path(), help="output path")
+@click.option('-axis', '--axis', type=click.Choice(["0", "1"]), default="0",
+                help="merge direction, 0 for row merge and 1 for column merge")
+@click.option('-rmdup', '--rmdup', type=click.Choice(['all', 'content']), 
+                help="remove duplicate rows")
+def sub_merge_files(*args, **kwargs):
+    from astk.utils.func import merge_files
+    merge_files(*args, **kwargs)

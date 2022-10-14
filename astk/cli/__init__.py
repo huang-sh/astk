@@ -75,6 +75,8 @@ cli_fun.add_command(getcoor)
 cli_fun.add_command(list_, name=["list", "ls"])
 cli_fun.add_command(mktxdb)
 cli_fun.add_command(getgene)
+cli_fun.add_command(sub_merge_files, name=["merge"])
+
 
 ## seq feature
 cli_fun.add_command(sc_extract, name=["seqfeature", "seqf"])
@@ -82,3 +84,6 @@ cli_fun.add_command(sc_seqlogo, name=["seqlogo"])
 cli_fun.add_command(sc_splice_score, name=["sss", "spliceScore"])
 cli_fun.add_command(sc_get_elen, name=["elen"])
 cli_fun.add_command(sc_get_gcc, name=["gcc"])
+cli_fun.add_command(sc_ssscmp, name=["ssscmp"])
+cli_fun.add_command(sc_cmp_value, name=["vcmp"])
+

@@ -81,8 +81,8 @@ SS_SCORE_LEN = {
         "A5": [9, 9, 23],
         "A3": [9, 23, 23],
         "RI": [23, 9, 23, 9],   
-        "AF": [0, 9, 23, 9, 23],   # the first is not 3 splice site
-        "AL": [9, 23, 9, 23, 0]    # the last is not 5 splice site        
+        "AF": [-23, 9, -23, 9, 23],   # the first is not 3 splice site
+        "AL": [9, 23, -9, 23, -9]    # the last is not 5 splice site        
     },
     "rMATS":{
         "SE": [23, 9, 23, 9, 23, 9],

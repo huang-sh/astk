@@ -9,6 +9,7 @@ from pathlib import Path
 from gettext import gettext as _
 
 import click
+from click import UsageError
 from click.core import _check_iter
 from click.exceptions import BadParameter
 
