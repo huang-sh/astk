@@ -6,7 +6,7 @@ from astk.types import FilePath
 from .eid import SuppaEventID
 
 
-def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
+def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len, fmt):
     import pandas as pd
 
     if not (pdir:= Path(output).parent).exists():
@@ -25,7 +25,7 @@ def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len):
     else:
         subset = [l for l in  ae_lens if l > clens[-1]]
         cluster_ls.append(subset)
-    output = Path(output).with_suffix(".png")
+    output = Path(output).with_suffix(f".{fmt}")
     ul.plot_hist_cluster(output, cluster_ls, bin_edges)
 
 

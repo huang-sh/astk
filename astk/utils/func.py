@@ -99,7 +99,7 @@ def plot_hist_cluster(out, cluster_ls, bins):
     for i, subset in enumerate(cluster_ls, 1):
         ax.hist(subset, bins=bins, alpha=0.5, label=f"Cluster {i}")
     ax.legend()
-    plt.savefig(Path(out).with_suffix(".png"))  
+    plt.savefig(out)
 
                                                          
 def custome_cluster_len(df, out, lens, width=10, max_len=500):
