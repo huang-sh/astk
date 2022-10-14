@@ -75,6 +75,8 @@ cli_fun.add_command(getcoor)
 cli_fun.add_command(list_, name=["list", "ls"])
 cli_fun.add_command(mktxdb)
 cli_fun.add_command(getgene)
+cli_fun.add_command(sub_merge_files, name=["merge"])
+
 
 ## seq feature
 cli_fun.add_command(sc_extract, name=["seqfeature", "seqf"])

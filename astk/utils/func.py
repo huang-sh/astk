@@ -458,3 +458,18 @@ def sniff_file_sep(file):
         sep_dic["\t"] = line.split("\t")
     sep = sorted(sep_dic, key=lambda x: len(sep_dic[x]), reverse=True)[0]
     return sep
+
+
+def merge_files(files, output, axis, rmdup):
+    from pandas import read_csv, concat
+
+    sep = sniff_file_sep(files[0])
+    df_ls = [read_csv(file, sep=sep, index_col=0) for file in files]
+    df = concat(df_ls, axis=int(axis))
+    if rmdup == "all":
+        df["event_id"] = df.index
+        df = df.drop_duplicates()
+        del df["event_id"]
+    elif  rmdup == "content":
+        df = df.drop_duplicates()
+    df.to_csv(output, index=True, sep=sep, na_rep="nan")
