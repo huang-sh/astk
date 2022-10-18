@@ -11,6 +11,8 @@ from astk.event import _cli_func as et
 @click.option('-bw', '--width', type=int, default=3, help="bin width")
 @click.option('-lw', '--len_weight', type=float, default=2, help="length weight")
 @click.option('--max_len', type=int, default=500, help="the max length of exon in clustering")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'jpeg', 'pdf', 'tiff']), 
+                default="png", help="output figure format")
 def len_dist(*args, **kwargs):
     et.len_dist(*args, **kwargs)
 
