@@ -72,7 +72,7 @@ if (! is.null(args$CRAN)){
     for (i in args$CRAN){
         if(!(i %in% rownames(installed.packages()))){
             message('Installing package: ', i)
-            BiocManager::install(i)
+            install.packages(i)
         } else 
             next
     }
@@ -82,14 +82,12 @@ if (! is.null(args$CRAN)){
 if (! is.null(args$bioconductor)){
     if (!requireNamespace("BiocManager", quietly = TRUE)){
         install.packages("BiocManager")
-    }else {
-        for (i in args$bioconductor){
-            if(!(i %in% rownames(installed.packages()))){
-                message('Installing package: ', i)
-               BiocManager::install(i)
-            } else 
-                next
-        }
     }
-    
+    for (i in args$bioconductor){
+        if(!(i %in% rownames(installed.packages()))){
+            message('Installing package: ', i)
+            BiocManager::install(i)
+        } else 
+            next
+    }    
 }

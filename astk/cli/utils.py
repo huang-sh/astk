@@ -43,6 +43,8 @@ def meta(*args, **kwargs):
 @click.option('-j', '--java',  is_flag=True, help="install java software")
 @click.option('-m', '--mirror',  is_flag=True, default=False,
                 help="use tsinghua mirrors.")
+@click.option('--conda',  is_flag=True, default=False,
+                help="install packages via conda")
 def install(*args, **kwargs):
     ul.install(*args, **kwargs)
 
@@ -116,10 +118,11 @@ def getgene(*args, **kwargs):
 @click.option('-i','--input', 'files' ,cls=MultiOption, type=click.Path(exists=True),
                 required=True , help="input files")
 @click.option('-o', '--output', type=click.Path(), help="output path")
-@click.option('-axis', '--axis', type=click.Choice(["0", "1"]), default="0",
+@click.option('-axis', '--axis', type=click.IntRange(min=0, max=1), default=0,
                 help="merge direction, 0 for row merge and 1 for column merge")
-@click.option('-rmdup', '--rmdup', type=click.Choice(['all', 'content']), 
+@click.option('-rmdup', '--rmdup', type=click.Choice(["index", 'all', 'content']), 
                 help="remove duplicate rows")
+@click.option('-rmna', '--rmna', is_flag=True, help="remove NA data")                
 def sub_merge_files(*args, **kwargs):
     from astk.utils.func import merge_files
     merge_files(*args, **kwargs)

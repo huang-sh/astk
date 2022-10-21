@@ -1,3 +1,4 @@
+import os
 import sys
 import shutil
 import subprocess
@@ -34,11 +35,17 @@ def meta(output, replicate, groupname, ctrl, case, replicate1, replicate2, **kwa
         print(e)
 
 
-def install(requirement, OrgDb, cran, bioconductor, java, mirror):
+def install(requirement, OrgDb, cran, bioconductor, java, mirror, conda):
 
     pdir = BASE_DIR
     rscript = pdir / "R" / "install.R"
-    
+    if conda:
+        if cran:            
+            cran_pkg = " ".join([f"r-{i.lower()}" for i in cran])
+            os.system(f"conda install -y -c conda-forge -c r  {cran_pkg}")
+        if bioconductor:
+            bioc_pkg = " ".join([f"bioconductor-{i.lower()}" for i in bioconductor])
+            os.system(f"conda install -y -c bioconda {bioc_pkg}")
     if java:
         print("install ChromHMM")
         ch.install(pdir)
