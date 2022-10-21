@@ -43,7 +43,7 @@ def signal_profile(*args, **kwargs):
     epi.signal_heatmap(*args, **kwargs)
 
 
-@click.command(help="signal profile withing splicing sites")
+@click.command(help="signal profile comparision")
 @click.option('-o', '--output', required=True, type=click.Path(),
                 help="output path")
 @click.option('-mat', 'mat_file', type=click.Path(exists=True), cls=MultiOption,
