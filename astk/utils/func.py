@@ -460,16 +460,27 @@ def sniff_file_sep(file):
     return sep
 
 
-def merge_files(files, output, axis, rmdup):
+def merge_files(files, output, axis, rmdup, rmna):
     from pandas import read_csv, concat
 
     sep = sniff_file_sep(files[0])
-    df_ls = [read_csv(file, sep=sep, index_col=0) for file in files]
-    df = concat(df_ls, axis=int(axis))
-    if rmdup == "all":
+    df_ls = []
+    for file in files:
+        df = read_csv(file, sep=sep, index_col=0)
+        if axis == 0:
+            df.columns = [f"c{i}" for i in range(df.shape[1])]
+        df_ls.append(df)
+    df = concat(df_ls, axis=axis)
+    if rmdup == "all":        
         df["event_id"] = df.index
         df = df.drop_duplicates()
         del df["event_id"]
+    elif  rmdup == "index":
+        df["event_id"] = df.index
+        df = df.drop_duplicates(subset=["event_id"])
+        del df["event_id"]
     elif  rmdup == "content":
         df = df.drop_duplicates()
+    if rmna:
+        df.dropna(inplace=True)
     df.to_csv(output, index=True, sep=sep, na_rep="nan")
