@@ -484,3 +484,21 @@ def merge_files(files, output, axis, rmdup, rmna):
     if rmna:
         df.dropna(inplace=True)
     df.to_csv(output, index=True, sep=sep, na_rep="nan")
+
+
+def shift2nease(file):
+    import pandas as pd
+
+    get_geneid = lambda x: SuppaEventID(x).gene_id.split(".")[0]
+    get_start = lambda x: SuppaEventID(x).alter_element_coor[0]
+    get_end = lambda x: SuppaEventID(x).alter_element_coor[1]
+
+    df = pd.read_csv(file, sep="\t", index_col=0)
+    df["event_id"] = df.index
+    
+    nease_input = pd.DataFrame({
+                    "Gene stable ID": df["event_id"].apply(get_geneid),
+                    "new_start": df["event_id"].apply(get_start), 
+                    "new_end": df["event_id"].apply(get_end),
+                    "beta": df.iloc[:, 0].values})
+    return nease_input
