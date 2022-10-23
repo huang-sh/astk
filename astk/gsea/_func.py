@@ -157,22 +157,48 @@ def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Hum
 
 
 def nease_sc(file, outdir, pvalue, database, organism):
-    import pandas as pd
-
-    get_geneid = lambda x: SuppaEventID(x).gene_id.split(".")[0]
-    get_start = lambda x: SuppaEventID(x).alter_element_coor[0]
-    get_end = lambda x: SuppaEventID(x).alter_element_coor[1]
-
-    df = pd.read_csv(file, sep="\t", index_col=0)
-    df["event_id"] = df.index
-    
-    nease_input = pd.DataFrame({
-                    "Gene stable ID": df["event_id"].apply(get_geneid),
-                    "new_start": df["event_id"].apply(get_start), 
-                    "new_end": df["event_id"].apply(get_end),
-                    "beta": df[df.columns[0]].values})
+    nease_input = ul.shift2nease(file)
     nease_enrich(nease_input, outdir, database=database, organism=organism, cutoff=pvalue)
 
 
-def neasecmp_sc():
-    pass
+def neasecmp(files, outdir, num, qvalue, database, organism, xlabel, figformat, width, height):
+    import nease
+    import pandas as pd
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+
+    def _nease_func(file):
+        df = ul.shift2nease(file)
+        nr = nease.run(df, organism=organism, p_value_cutoff=0.2)
+        res = nr.enrich(database=database)
+        return res
+    res_ls = list(map(_nease_func, files))
+    pathways = []
+    top_res_ls = []
+    outdir = Path(outdir)
+    outdir.mkdir(exist_ok=True)
+    for label, res in zip(xlabel, res_ls):
+        if res is None:
+            continue
+        output = outdir / f"{label}_enrichment.csv"
+        res.to_csv(output)
+        res["cluster"] = label
+        res.index = res["Pathway ID"]
+        res.drop(index=res[res["adj p_value"]>qvalue].index, inplace=True)
+        pathways.append(set(res["Pathway ID"]))
+        top_res_ls.append(res.head(num))
+    # share_pathways = set.intersection(*pathways)
+    # df_share = pd.concat([df.loc[share_pathways, :] for df in res_ls if df is not None])
+    df_top = pd.concat(top_res_ls)
+    # dfl = pd.concat([df_top, df_share])
+    dfl = df_top
+    if all([width, height]):
+        fig, ax = plt.subplots(figsize=(width, height))
+    else:
+        ax = None
+    palette = sns.color_palette("ch:s=.25,rot=-.25", as_cmap=True)
+    ax = sns.scatterplot(data=dfl, x="cluster", y="Pathway name",palette=palette,
+                         ax=ax, size="Nease score", hue="adj p_value")
+    ax.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
+    ax.set_xlim(-0.5, len(top_res_ls)-0.5)
+    plt.savefig(outdir / f"cmp_enrichment.{figformat}", bbox_inches='tight')

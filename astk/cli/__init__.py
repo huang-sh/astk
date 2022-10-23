@@ -49,7 +49,7 @@ cli_fun.add_command(gsea_fun, name=["gsea"])
 cli_fun.add_command(enrich)
 cli_fun.add_command(enrich_cmp, name=["enrichCompare", "ecmp"])
 cli_fun.add_command(nease_sc, name=["nease"])
-# cli_fun.add_command(enrich_lc, help=["enrichLenCluster", "elc"])
+cli_fun.add_command(sc_neasecmp, name=["neaseCompare", "necmp"])
 
 ## epigenetic analysis module
 #cli_fun.add_command(epi_sc, name=["epi"])

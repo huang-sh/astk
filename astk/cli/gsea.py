@@ -65,8 +65,8 @@ def enrich(*args, **kwargs):
                 help="organism: hs|mm")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                 default="pdf", help="output figure format")
-@click.option('-w', '--width', default=10, help="fig width, default=6 inches")
-@click.option('--height', default=12, help="fig height, default=6 inches")                
+@click.option('-fw', '--width', type=float, help="figure width")
+@click.option('-fh', '--height', type=float, help="figure height")
 def enrich_cmp(*args, **kwargs):
     gsea.enrich_cmp(*args, **kwargs)
 
@@ -100,14 +100,34 @@ def enrich_lc(*args, **kwargs):
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-db', '--database', cls=MultiOption, type=click.Choice(NEASE_DATABASE), 
-                default="Reactome", help="nease enrich database, \
+                default=["Reactome"], help="nease enrich database, \
                 [PharmGKB|HumanCyc|Wikipathways|Reactome|KEGG|SMPDB|Signalink|NetPath|EHMN|INOH|BioCarta|PID]")
 @click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
-                help="organism") 
+                help="organism")
 def nease_sc(*args, **kwargs):
     gsea.nease_sc(*args, **kwargs)
 
 
-@click.command(["necmp"], help="Functional enrichment comparision with NEASE")
-def neasecmp_sc():
-    pass
+@click.command(help="Functional enrichment comparision with NEASE")
+@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
+                help="input dpsi files")
+@click.option('-od', '--outdir', required=True, help="output directory")
+@click.option('-n', '--showNumber', 'num', type=int, default=15, help="qvalue cutoff")
+@click.option('-qval', '--qvalue', type=float, default=0.1, help="qvalue cutoff")
+@click.option('-db', '--database', cls=MultiOption, type=click.Choice(NEASE_DATABASE), 
+                default=["Reactome"], help="nease enrich database, \
+                [PharmGKB|HumanCyc|Wikipathways|Reactome|KEGG|SMPDB|Signalink|NetPath|EHMN|INOH|BioCarta|PID]")
+@click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
+                help="organism")
+@click.option('-xl', '--xlabel', cls=MultiOption, type=str, help="xlabel")
+@click.option('-ff', '--figFormat', type=click.Choice(['png', 'pdf', 'tiff', 'jpeg']), 
+                default="png", help="output figure format")
+@click.option('-fw', '--width', type=float, help="figure width")
+@click.option('-fh', '--height', type=float, help="figure height")           
+def sc_neasecmp(*args, **kwargs):
+    fn = len(kwargs["files"])
+    if kwargs["xlabel"] is None:
+        kwargs["xlabel"] = [f"c{i+1}" for i in range(fn)]
+    if fn < 2:
+        raise UsageError("for -i/--input should be more than two files")
+    gsea.neasecmp(*args, **kwargs)
