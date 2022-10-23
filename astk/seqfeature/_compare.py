@@ -21,12 +21,15 @@ def cmp_sss(files, output, test, **kwargs):
     pairs = [[(i, gn) for gn in gns] for i in df.columns[:-1]]
     fig_type = kwargs.get("figtype", "point")
     if fig_type == "strip":
-        kwargs = {"split": True}
+        fig_kwargs = {"split": True}
     else:
-        kwargs = {}
+        fig_kwargs = {}
+    if all([kwargs["width"], kwargs["height"]]):
+        fig_kwargs["height"] = kwargs["height"]
+        fig_kwargs["aspect"] = kwargs["width"] / kwargs["height"]
     g = sns.catplot(
         data=dft, x="splice_site", y="score", 
-        hue="condition", kind=fig_type, legend=False, **kwargs
+        hue="condition", kind=fig_type, legend=False, **fig_kwargs
     )
     annotator = Annotator(g.ax, pairs, data=dft, x="splice_site", y="score", hue="condition")
     annotator.configure(test=test, text_format="star", show_test_name=False)
@@ -81,6 +84,9 @@ def cmp_value(files, output, test, **kwargs):
         fig_kwargs["sharex"] = False
         fig_kwargs["sharey"] = False
         fig_kwargs["col"] = "item"
+    if all([kwargs["width"], kwargs["height"]]):
+        fig_kwargs["height"] = kwargs["height"]
+        fig_kwargs["aspect"] = kwargs["width"] / kwargs["height"]        
     g = sns.catplot(
         data=dft, kind=fig_type, x=xn, y=yn, 
         hue="condition", legend=False, **fig_kwargs)
