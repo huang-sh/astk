@@ -192,11 +192,12 @@ def neasecmp(files, outdir, num, qvalue, database, organism, xlabel, figformat, 
     df_top = pd.concat(top_res_ls)
     # dfl = pd.concat([df_top, df_share])
     dfl = df_top
+    dfl["Pathway name"] = dfl["Pathway name"].apply(lambda x: x.split("- Homo")[0])
     if all([width, height]):
         fig, ax = plt.subplots(figsize=(width, height))
     else:
         ax = None
-    palette = sns.color_palette("ch:s=.25,rot=-.25", as_cmap=True)
+    palette = sns.color_palette("crest", as_cmap=True)
     ax = sns.scatterplot(data=dfl, x="cluster", y="Pathway name",palette=palette,
                          ax=ax, size="Nease score", hue="adj p_value")
     ax.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
