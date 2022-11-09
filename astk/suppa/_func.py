@@ -106,7 +106,8 @@ def ds_flow(
     method: str,
     idtype: str,
     pval: float,
-    abs_dpsi: float
+    abs_dpsi: float,
+    tpm_threshold: float
     ):
     import pandas as pd
 
@@ -167,7 +168,7 @@ def ds_flow(
             exp_files = [ctrl_tpm_file, case_tpm_file]
             dpsi_out = dpsi_dir / f"{gn}_{et}"
             mca(method, psi_files, exp_files, ioe, 1000, 0, 
-                False, True, 0.05, True, False, False, 0, 0, str(dpsi_out))
+                False, True, 0.05, True, False, False, tpm_threshold, 0, str(dpsi_out))
             
             sig_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig.dpsi")
             sig_pos_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig+.dpsi")

@@ -74,7 +74,8 @@ def diffSplice(*args, **kwargs):
              help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")             
 @click.option('-pg', '--poolGenes', default=False, is_flag=True, 
              help="pool together overlapping genes")
-@click.option('--tpm_col', type=int, default=4, help="TPM columns index")
+@click.option('--tpm-col', type=int, default=4, help="TPM columns index")
+@click.option('--tpm-threshold', type=float, default=0, help="Minimum TPM value to be included in the analysis. default=0")
 def dsflow(*args, **kwargs):
     if "ALL" in kwargs.get("event_type"):
         etypes = AS_TYPE
@@ -87,5 +88,6 @@ def dsflow(*args, **kwargs):
         kwargs.get("method"),
         kwargs.get("idtype"),
         kwargs.get("pval"),
-        kwargs.get("abs_dpsi")
+        kwargs.get("abs_dpsi"),
+        kwargs.get("tpm_threshold")
     )
