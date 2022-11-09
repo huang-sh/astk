@@ -889,7 +889,9 @@ def make_events(output: str,
             gene_event.construct_events(idtype)
             gene_event.filter_FT()
             gene_event.filter_LT()
-
+            if (not AS_split) or (t in ["AF", "AL"]):
+                for line in gene_event.to_ioe(idtype=idtype):
+                    ioe_writer.write("\t".join(line), t)
             if "FTE" in AS_split:
                 for line in gene_event.to_ioe(type="FTE", idtype=idtype):
                     sc_ioe_writer.write("\t".join(line), t)
@@ -898,10 +900,6 @@ def make_events(output: str,
                     se_ioe_writer.write("\t".join(line), t)
             if "inner" in AS_split:
                 for line in gene_event.to_ioe(type="inner", idtype=idtype):
-                    mid_ioe_writer.write("\t".join(line), t)
-            if not AS_split:
-                for line in gene_event.to_ioe(idtype=idtype):
-                    ioe_writer.write("\t".join(line), t)
-    
+                    mid_ioe_writer.write("\t".join(line), t)    
     for i in handle_ls:
         i.close()
