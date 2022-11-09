@@ -144,9 +144,9 @@ def ds_flow(
                 ctrl_tpm_ls.append(cdf)
                 case_tpm_ls.append(tdf)
 
-                cpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, cdf), 
+                cpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, cdf, tpm_th=tpm_threshold), 
                         columns=cdf.columns, index=ioe_df["event_id"])
-                tpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, tdf), 
+                tpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, tdf, tpm_th=tpm_threshold), 
                         columns=tdf.columns, index=ioe_df["event_id"])
                 ctrl_psi_ls.append(cpsi_df)
                 case_psi_ls.append(tpsi_df)
