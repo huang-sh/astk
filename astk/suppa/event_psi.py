@@ -9,7 +9,7 @@ def cal_psi(alter_tx, total_tx, tpm_df, tpm_th=1):
     else:
         alter_tx_tpm = sum([tpm_df.at[i, tpm_df.columns[0]] for i in alter_tx])
         total_tx_tpms = [tpm_df.at[i, tpm_df.columns[0]] for i in total_tx]
-        if max(total_tx_tpms) < tpm_th:
+        if sum(total_tx_tpms) / len(total_tx_tpms) < tpm_th:
             psi = "nan"
         elif alter_tx_tpm <= 0.0001:
             psi = 0
