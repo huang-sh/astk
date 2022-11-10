@@ -199,7 +199,7 @@ def neasecmp(files, outdir, num, qvalue, database, organism, xlabel, figformat, 
         ax = None
     palette = sns.color_palette("crest", as_cmap=True)
     ax = sns.scatterplot(data=dfl, x="cluster", y="Pathway name",palette=palette,
-                         ax=ax, size="Nease score", hue="adj p_value")
+                         ax=ax, size="Nease score", hue="adj p_value", sizes=(10, 100))
     ax.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left')
     ax.set_xlim(-0.5, len(top_res_ls)-0.5)
     plt.savefig(outdir / f"cmp_enrichment.{figformat}", bbox_inches='tight')
