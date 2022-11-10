@@ -75,7 +75,7 @@ class EventCoord:
         site_dic = {23: "3SS", 9: "5SS", -23: "pse_3SS", -9: "pse_5SS"}
         for idx, slen in enumerate(slens):
             sn = site_dic[slen]
-            key = f"A{idx}_{sn}"
+            key = f"A{idx+1}_{sn}"
             dic[key] = self.get_ss_flank_bed(idx, ups_w, dws_w, sss, based0, **kwargs)
         return dic
 
