@@ -432,15 +432,15 @@ class AlternativeSplicing:
         return line
  
     def to_ioe(self, type: Optional[str] = None, idtype: str = "ASID"):
-        if type is None:
+        if (type is None) or( self.etype in ["AF", 'AL']):
             events = self.AS_events.copy()
             events.update(self.FT_events)
             events.update(self.LT_events)
-        elif type == "FTE":
+        elif type == "FT":
             events = self.FT_events
-        elif type == "LTE":
+        elif type == "LT":
             events = self.LT_events
-        elif type == "inner":
+        elif type == "body":
             events = self.inner_AS_events
         else:
             events = {}
@@ -851,15 +851,16 @@ def make_events(output: str,
                 genome: "Genome",            
                 events: Sequence[str],
                 idtype: str,            
-                AS_split: Sequence[str], 
+                event_pos: str, 
                 b_type: str = "S", 
                 th: int = 10
     ):
     """
     Controls event creation and writing for each gene
     """
-    boundary = 'variable_{}'.format(th) if b_type == 'V' else 'strict'
+    from tqdm import tqdm
 
+    boundary = 'variable_{}'.format(th) if b_type == 'V' else 'strict'
     event_cls_dic = {
                     "MX": MutuallyExclusiveExon,
                     "SE": SkippingExon, "RI": RetainedIntron, 
@@ -867,39 +868,17 @@ def make_events(output: str,
                     "AF": AlternativeFirstExon, "AL": AlternativeLastExon
                 }
     event_cls_dic = {k: v for k, v in event_cls_dic.items() if k in events}
-
-    handle_ls = []
-    if "FTE" in AS_split:
-        sc_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_FT", "ioe", boundary)
-        handle_ls.append(sc_ioe_writer)
-    if "LTE" in AS_split:
-        se_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_LT", "ioe", boundary)
-        handle_ls.append(se_ioe_writer)
-    if "inner" in AS_split:
-        mid_ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_inner", "ioe", boundary)
-        handle_ls.append(mid_ioe_writer)
-    if not AS_split:
+    if event_pos is not None:
+        ioe_writer = EWriter(event_cls_dic.keys(), f"{output}_{event_pos}", "ioe", boundary)
+    else:
         ioe_writer = EWriter(event_cls_dic.keys(), output, "ioe", boundary)
-        handle_ls.append(ioe_writer)
 
-    from tqdm import tqdm
     for t, event_cls in event_cls_dic.items():
         for gene in tqdm(genome.genes.values(), desc=f"Calculating {t} events"):
             gene_event = event_cls(gene)
             gene_event.construct_events(idtype)
             gene_event.filter_FT()
             gene_event.filter_LT()
-            if (not AS_split) or (t in ["AF", "AL"]):
-                for line in gene_event.to_ioe(idtype=idtype):
-                    ioe_writer.write("\t".join(line), t)
-            if "FTE" in AS_split:
-                for line in gene_event.to_ioe(type="FTE", idtype=idtype):
-                    sc_ioe_writer.write("\t".join(line), t)
-            if "LTE" in AS_split:
-                for line in gene_event.to_ioe(type="LTE", idtype=idtype):
-                    se_ioe_writer.write("\t".join(line), t)
-            if "inner" in AS_split:
-                for line in gene_event.to_ioe(type="inner", idtype=idtype):
-                    mid_ioe_writer.write("\t".join(line), t)    
-    for i in handle_ls:
-        i.close()
+            for line in gene_event.to_ioe(type=event_pos, idtype=idtype):
+                ioe_writer.write("\t".join(line), t)  
+    ioe_writer.close()

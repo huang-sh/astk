@@ -34,13 +34,13 @@ def gtf_parse_cache(gtf):
     return pkl
 
 
-def generate_events(gtf, event_types, output, idtype, split):
+def generate_events(gtf, event_types, output, idtype, event_pos):
     genome = construct_genome(gtf)
     if event_types == "ALL":
         event_types =  ['SE', "A5", "A3", "MX", "RI", 'AF', 'AL']
     else:
         event_types = [event_types]
-    make_events(output, genome, event_types, idtype, split)
+    make_events(output, genome, event_types, idtype, event_pos)
 
 
 def diff_splice(
@@ -107,7 +107,8 @@ def ds_flow(
     idtype: str,
     pval: float,
     abs_dpsi: float,
-    tpm_threshold: float
+    tpm_threshold: float,
+    event_pos: str
     ):
     import pandas as pd
 
@@ -116,7 +117,7 @@ def ds_flow(
     genome = construct_genome(gtf)
     ref_dir = Path(outdir) / "ref"
     ref_dir.mkdir(exist_ok=True)
-    make_events(ref_dir / "annotation", genome, etypes, idtype, [])
+    make_events(ref_dir / "annotation", genome, etypes, idtype, event_pos)
     
     tpm_dir =  Path(outdir) / "tpm"
     psi_dir =  Path(outdir) / "psi"
@@ -131,9 +132,12 @@ def ds_flow(
 
     for gn, gn_dic in tpm_dic.items():
         for et in etypes:
-            ioe = ref_dir / f"annotation_{et}_strict.ioe"
+            if event_pos is None:
+                es = ""
+            else:
+                es = f"_{event_pos}"
+            ioe = ref_dir / f"annotation{es}_{et}_strict.ioe"
             ioe_df = pd.read_csv(ioe, sep="\t")
-
             ctrl_tpm_ls = []
             case_tpm_ls = []
             ctrl_psi_ls = []

@@ -17,9 +17,9 @@ from astk.constant import AS_TYPE
                 help="name of the output file without any extension")
 @click.option('--idType', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
                 help="output event ID type, default='SUPPA2'") 
-@click.option('--split', cls=MultiOption, type=click.Choice(['inner', 'FTE', 'LTE']), 
-                default=(), help="AS event exon that overlapping the transcript first or last \
-                                 terminal exon startCodon and stopCodon will save separately")
+@click.option('-ep','--event-pos', type=click.Choice(['body', 'FT', 'LT']), 
+                help="AS event exon that overlapping the transcript first or last \
+                        terminal exon startCodon and stopCodon will save separately")
 def generateEvents(*args, **kwargs):
     generate_events(*args, **kwargs)
 
@@ -75,7 +75,11 @@ def diffSplice(*args, **kwargs):
 @click.option('-pg', '--poolGenes', default=False, is_flag=True, 
              help="pool together overlapping genes")
 @click.option('--tpm-col', type=int, default=4, help="TPM columns index")
-@click.option('--tpm-threshold', type=float, default=0, help="Minimum TPM value to be included in the analysis. default=0")
+@click.option('--tpm-threshold', type=float, default=0, 
+                help="Minimum TPM value to be included in the analysis. default=0")
+@click.option('-ep','--event-pos', type=click.Choice(['body', 'FT', 'LT']), 
+                help="AS event exon that overlapping the transcript first or last \
+                        terminal exon startCodon and stopCodon will save separately")                
 def dsflow(*args, **kwargs):
     if "ALL" in kwargs.get("event_type"):
         etypes = AS_TYPE
@@ -89,5 +93,6 @@ def dsflow(*args, **kwargs):
         kwargs.get("idtype"),
         kwargs.get("pval"),
         kwargs.get("abs_dpsi"),
-        kwargs.get("tpm_threshold")
+        kwargs.get("tpm_threshold"),
+        kwargs.get("event_pos")
     )
