@@ -104,7 +104,7 @@ def ds_flow(
     etypes: Sequence[str],
     outdir: FilePath, 
     method: str,
-    idtype: str,
+    id_type: str,
     pval: float,
     abs_dpsi: float,
     tpm_threshold: float,
@@ -117,7 +117,7 @@ def ds_flow(
     genome = construct_genome(gtf)
     ref_dir = Path(outdir) / "ref"
     ref_dir.mkdir(exist_ok=True)
-    make_events(ref_dir / "annotation", genome, etypes, idtype, event_pos)
+    make_events(ref_dir / "annotation", genome, etypes, id_type, event_pos)
     
     tpm_dir =  Path(outdir) / "tpm"
     psi_dir =  Path(outdir) / "psi"
