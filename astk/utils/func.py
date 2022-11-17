@@ -6,7 +6,7 @@ from functools import partial
 
 from astk.types import FilePath
 from astk.event import SuppaEventID
-from astk.constant import OrgDb_dic, BASE_DIR, SSN, SS_SCORE_LEN
+from astk.constant import OrgDb_dic, BASE_DIR, SSN, RBP_sp_dic
 
 
 class RunConfigure:
@@ -502,3 +502,9 @@ def shift2nease(file):
                     "new_end": df["event_id"].apply(get_end),
                     "beta": df.iloc[:, 0].values})
     return nease_input
+
+
+def get_motif_path(database, organism):
+    org = RBP_sp_dic.get(organism)
+    motif = BASE_DIR / "data/motif" / database / f"{org}.meme"
+    return motif
