@@ -116,5 +116,3 @@ def splice_score(file, outdir, gfasta, app, process):
     ax = df_score.plot.box()
     fig = ax.get_figure()
     fig.savefig(outdir / "splice_scores_box.png")
-    
-
