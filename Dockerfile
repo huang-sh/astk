@@ -47,11 +47,9 @@ RUN cd /home/software/meme-5.4.1 && \
 RUN conda install -y -c https://mirrors.bfsu.edu.cn/anaconda/cloud/conda-forge/ --override-channels \
         r-base=4.1.3 r-upsetr=1.4.0  r-argparse=2.1.6 r-ggnewscale=0.4.7 r-tidyverse=1.3.2 \
         r-ggplot2=3.3.6 r-biocmanager=1.30.18 r-usethis=2.1.6 r-ggraph=2.0.6 && \
-    conda install -y -c https://mirrors.bfsu.edu.cn/anaconda/cloud/bioconda/ --override-channels \
-        bedtools=2.30.0 && \
     Rscript -e "options(BioC_mirror='https://mirrors.tuna.tsinghua.edu.cn/bioconductor');\
         BiocManager::install(c('clusterProfiler', 'org.Mm.eg.db', 'tximport', 'ComplexHeatmap', \
-        'org.Hs.eg.db', 'simplifyEnrichment','universalmotif', 'memes', 'DESeq2', 'ReactomePA'))" 
+        'org.Hs.eg.db', 'simplifyEnrichment','universalmotif', 'DESeq2', 'ReactomePA'))" 
 
 
 ENV PATH="${PATH}:/home/software/meme/bin:/home/software/meme/libexec/meme-5.4.1"

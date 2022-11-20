@@ -40,7 +40,7 @@ cli_fun.add_command(sc_coSpliceNet, name=["coSpliceNet", "csnet"])
 cli_fun.add_command(motif_enrich, name=["motifEnrich", "me"])
 cli_fun.add_command(motif_find, name=["motifFind", "mf"])
 cli_fun.add_command(motif_plot, name=["motifPlot", "mp"])
-cli_fun.add_command(mmap)
+# cli_fun.add_command(mmap)
 cli_fun.add_command(elms)
 
 

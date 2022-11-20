@@ -13,23 +13,24 @@ import astk.motif as mo
 @click.option('-org', '--organism', help="RBP organism")
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
                 help="Input FASTA file. if set, the fasta sequence will be extracted")
+@click.option('-m', '--method', type=click.Choice(['centrimo', 'ame']),
+                 default="centrimo", help="Motif enrichment method, default=centrimo")
 # @click.option('-mm', '--meme', type=click.Path(exists=True), 
 #                 required=True, help="path to .meme format file")
 def motif_enrich(*args, **kwargs):
     mo.motif_enrich(*args, **kwargs)
 
+
 @click.command(help = "Motif Discovery and similarity comparision")
 @click.option('-te', "--tevent", type=click.Path(exists=True), 
                 required=True, help="AS treatment event file")
 @click.option('-ce', "--cevent", type=click.Path(exists=True), 
-                help="AS treatment control event files")                     
+                help="AS treatment control event files")
 @click.option('-od', '--outdir', type=click.Path(), default=".",
                  help="output directory")
-# @click.option('-mcmp', '--motifcmp', is_flag=True, 
-#                 default = False, help="motif similarity comparision")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
                  default="CISBP-RNA", help="RBP motif database default=CISBP-RNA")
-@click.option('-org', '--organism', help="RBP organism")                              
+@click.option('-org', '--organism', help="RBP organism")
 @click.option('-pval', '--pvalue', type=float, default=0.05,
                 help="Discovery pvalue cutoff, default=0.05")
 @click.option('-eval', '--evalue', type=float, default=0.5,
@@ -39,7 +40,9 @@ def motif_enrich(*args, **kwargs):
 @click.option('-maxw', '--maxw', type=int, default=15,
                  help="maximal motifs width, default=15")
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
-                help="Input FASTA file. if set, the fasta sequence will be extracted")                        
+                help="Input FASTA file. if set, the fasta sequence will be extracted")
+@click.option('-mcmp', '--motifcmp', is_flag=True, 
+                default = False, help="motif similarity comparision")
 def motif_find(*args, **kwargs):
     mo.motif_find(*args, **kwargs)
 
