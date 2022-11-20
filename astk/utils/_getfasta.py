@@ -1,12 +1,16 @@
 
 
-def get_coor_fa(df, fasta, out, strandedness=False):
-    import pybedtools
+def get_coor_fa(df, fasta, output, strandedness=False, rna=False):
+    from pyfaidx import Fasta
 
-    if df.shape[1] == 6:
-        lines = [f"{v[1]}\t{v[2]}\t{v[3]}\t{v[4]}\t{v[5]}\t{v[6]}" for v in df.itertuples()]
-    else:
-        lines = [f"{v[1]}\t{v[2]}" for v in df.itertuples()]
-    bed = pybedtools.BedTool("\n".join(lines), from_string=True)
-    bed.sequence(fi=fasta, fo=out, name=True, s=strandedness)
-    return bed.seqfn
+    genes = Fasta(fasta)
+    with open(output, "w") as f:
+        for row in df.itertuples():
+            seq = genes[row[1]][row[2]:row[3]]            
+            if strandedness and row[6] == "-":
+                seq = -seq
+            if rna:
+                seq.seq = seq.seq.replace("T", "U")
+            f.write(">" + seq.fancy_name + "\n")
+            f.write(seq.seq + "\n")
+    return output
