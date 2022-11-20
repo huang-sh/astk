@@ -23,7 +23,7 @@ setup(
         "seaborn",
         "tqdm",
         "pysam",
-        "pybedtools",
+        "pyfaidx",
         "nease",
         "biopython",
         "pyecharts",
