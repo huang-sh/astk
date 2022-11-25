@@ -115,6 +115,7 @@ def sc_ssscmp(*args, **kwargs):
 @click.option('-log', "--log", is_flag=True, default=False, help="log2 transformation")
 @click.option('-gn', '--groupNames', cls=MultiOption, type=str, 
                 help="group names, default= g1 g2 ")
+@click.option("--merge-ss", is_flag=True, default=False, help="merge 5'/3' splice sites")      
 @click.option('-mc', '--multiCorrect', type=click.Choice(['bonf', 'HB', 'holm', 'BH' ,'BY']), 
                 help="multiple test correction method")
 @click.option('--pvalText', type=click.Choice(['star', 'simple']), default="star",
@@ -126,10 +127,10 @@ def sc_ssscmp(*args, **kwargs):
 @click.option('-fs', '--figSize', type=(float, float), help="figure size")
 @click.option('-ft', '--figType',  default="box", help="figure display type",
                 type=click.Choice(["point", 'strip', 'box', 'boxen', 'violin', 'bar']))
-@click.option('-ff', '--figFormat', type=click.Choice(['auto', 'png', 'pdf', 'tiff', 'jpeg']), 
+@click.option('-ff', '--figFormat', type=click.Choice(['auto', 'png', 'pdf', 'tiff', 'jpeg']),
                 default="auto", help="output figure format")
 @click.option('-fw', '--width', type=float, help="figure width")
-@click.option('-fh', '--height', type=float, help="figure height")                
+@click.option('-fh', '--height', type=float, help="figure height")  
 def sc_cmp_value(*args, **kwargs):
     fn = len(kwargs["files"])
     if fn < 2:

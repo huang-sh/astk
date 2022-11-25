@@ -69,12 +69,18 @@ def cmp_value(files, output, test, **kwargs):
         df.columns = columns
         df["condition"] = gns[i]
     df = pd.concat(df_ls)
+    ss_cols = df.columns[:-1]
     xn, yn = kwargs["xtitle"], kwargs["ytitle"]    
     dft = df.melt(id_vars=["condition"]) # var_name=xn, value_name=yn
+    if kwargs.pop("merge_ss"):
+        ss_df = dft["variable_0"].str.split("_", n=1, expand=True)
+        dft["variable_0"] = ss_df[1]
+        dft["variable_1"] = ss_df[1]
+        ss_cols = [["5SS", "5SS"], ["3SS","3SS"]]
     dft.rename(columns={"variable_0": xn, "variable_1": "item", "value": yn}, inplace=True)
     sns.set_theme()
     pairs = []
-    for col in df.columns[:-1]:
+    for col in ss_cols:
         for gn_c in combinations(gns, 2):
             pairs.append(((col[0], gn_c[0]), (col[0], gn_c[1])))
     fig_kwargs = {}
@@ -86,7 +92,7 @@ def cmp_value(files, output, test, **kwargs):
         fig_kwargs["col"] = "item"
     if all([kwargs["width"], kwargs["height"]]):
         fig_kwargs["height"] = kwargs["height"]
-        fig_kwargs["aspect"] = kwargs["width"] / kwargs["height"]        
+        fig_kwargs["aspect"] = kwargs["width"] / kwargs["height"]
     g = sns.catplot(
         data=dft, kind=fig_type, x=xn, y=yn, 
         hue="condition", legend=False, **fig_kwargs)
@@ -97,10 +103,10 @@ def cmp_value(files, output, test, **kwargs):
     }        
     if kwargs.get("facet", False):
         l_col_dic = {}
-        for s_col, l_col in df.columns[:-1]:
+        for s_col, l_col in ss_cols:
             l_col_dic.setdefault(l_col, [])
             l_col_dic[l_col].append(s_col)
-        s_col_dic = dict(df.columns[:-1])
+        s_col_dic = dict(ss_cols)
         l_col_ls = [lcol for lcol in l_col_dic.keys()]
         for i, pair in enumerate(pairs):            
             col_g1 = pair[0][0]
