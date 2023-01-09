@@ -80,13 +80,11 @@ class Template:
                 group_name = list(range(1, group_num+1))
             else:
                 raise ValueError("dismatched path files!")
-
             df1 = self.df_generate(group_name, repN1, path1, **kwargs)
             df2 = self.df_generate(group_name, repN2, path2, **kwargs)
             df1.insert(1, "condition", self.condition[0])
             df2.insert(1, "condition", self.condition[1])
-            df = concat([df1, df2]).sort_values(by=["group"])
-  
+            df = concat([df1, df2]).sort_values(by=["group", "condition", "replicate"])  
         else:
             if path1:
                 cdname = self.condition[0]
