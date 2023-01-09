@@ -75,17 +75,21 @@ def pca(*args, **kwargs):
 @click.command(help="Heatmap plot for PSI")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")
-@click.option('-o', '--output', required=True, help="figure output path")
-@click.option('-cls', '--cluster', type=click.Path(exists=True),
-                help="cluster information file")     
+@click.option('-o', '--output', required=True, help="figure output path")  
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                 default="auto", help="output figure format") 
-@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+                 default="auto", help="output figure format")
+@click.option('-cmap', '--colormap', default="crest", help="matplotlib colormap name")                
+@click.option('-fw', '--width', default=6, help="figure width, default=6 inches")
+@click.option('-fh', '--height', default=6, help="figure height, default=6 inches")
 def heatmap(*args, **kwargs):
+    from matplotlib.pyplot import colormaps
+
     if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["colormap"] not in colormaps():
+        msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
+        msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
+        BadParameter(msg)
     draw.heatmap(*args, **kwargs)
 
 
