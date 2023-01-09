@@ -192,5 +192,5 @@ def ds_flow(
 
             ctrl_psi_file = sig_psi_dir / f"{gn}_{et}_c1.sig.psi"
             case_psi_file = sig_psi_dir / f"{gn}_{et}_c2.sig.psi"
-            ctrl_psi.loc[df_fil.index, ].to_csv(ctrl_psi_file, sep="\t")
-            case_psi.loc[df_fil.index, ].to_csv(case_psi_file, sep="\t")
+            ctrl_psi.loc[df_fil.index, ].to_csv(ctrl_psi_file, sep="\t", index_label=False)
+            case_psi.loc[df_fil.index, ].to_csv(case_psi_file, sep="\t", index_label=False)
