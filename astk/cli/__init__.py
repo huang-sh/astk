@@ -14,7 +14,9 @@ from .config import CustomMultiCommand, sc_setting
 @click.group(cls=CustomMultiCommand, 
         context_settings=dict(help_option_names=['-h', '--help']))
 def cli_fun():
-     pass
+     """
+     Welcome to use ASTK!\f
+     """
 
 ## astk configure setting
 cli_fun.add_command(sc_setting, name=["config"])
