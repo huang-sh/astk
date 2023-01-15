@@ -3,7 +3,7 @@ from astk import draw
 from astk.utils import sniff_fig_fmt
 
 
-@click.command(help="Gene Set Enrichment Analysis ploting")
+@cli_fun.command(help="Gene Set Enrichment Analysis ploting")
 @click.option('-id', '--id', "termid", cls=MultiOption, type=str, 
                 help="term id")
 @click.option('-o', '--output', help="output figure path")
@@ -18,7 +18,7 @@ def gseplot(*args, **kwargs):
         kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
     draw.gseplot(*args, **kwargs)
 
-@click.command(help="draw UpSet plots for AS events")
+@cli_fun.command(help="draw UpSet plots for AS events")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")           
 @click.option('-o', '--output', required=True, help="output figure path")
@@ -37,7 +37,7 @@ def upset(*args, **kwargs):
     draw.upset(*args, **kwargs)
 
 
-@click.command(help="Volcano plot analysis for dPSI")
+@cli_fun.command(help="Volcano plot analysis for dPSI; short alias: vol")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 help="input psi files")    
 @click.option('-o', '--output', help="output path")
@@ -52,7 +52,7 @@ def volcano(*args, **kwargs):
     draw.volcano(*args, **kwargs)
 
 
-@click.command(help="PCA analysis for PSI")
+@cli_fun.command(help="PCA analysis for PSI")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")
 @click.option('-o', '--output', required=True, help="figure output path")
@@ -72,7 +72,7 @@ def pca(*args, **kwargs):
     draw.pca(*args, **kwargs)
 
 
-@click.command(help="Heatmap plot for PSI")
+@cli_fun.command(help="Heatmap plot for PSI; short alias: hm")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")
 @click.option('-o', '--output', required=True, help="figure output path")  
@@ -93,7 +93,7 @@ def heatmap(*args, **kwargs):
     draw.heatmap(*args, **kwargs)
 
 
-@click.command(help="barplot ")
+@cli_fun.command(help="barplot ")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")
 @click.option('-o', '--output', required=True, help="output path")

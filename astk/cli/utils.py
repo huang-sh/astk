@@ -4,12 +4,11 @@ astk.cli.utils
 This module provide some utility function
 """
 
-from email.policy import default
 from .config import *
 import astk.utils._cli_func as ul
 
 
-@click.command(help="generate metadata template file")
+@cli_fun.command(help="generate metadata template file")
 @click.option('-c1', '--ctrl', cls=MultiOption, type=click.Path(exists=True),
                 required=True, help="file path for condtion 1")
 @click.option('-c2', '--case', cls=MultiOption, type=click.Path(exists=True),
@@ -31,7 +30,7 @@ def meta(*args, **kwargs):
     ul.meta(*args, **kwargs)
 
 
-@click.command(help = "install R packages")
+@cli_fun.command(help="install R packages")
 @click.option('-r', '--requirement', is_flag=True, default=False,
                 help="install astk requirement R packages")
 @click.option('-OrgDb', '--OrgDb', "OrgDb", cls=MultiOption, type=str, 
@@ -49,7 +48,7 @@ def install(*args, **kwargs):
     ul.install(*args, **kwargs)
 
 
-@click.command(help = "get motif from meme file")
+@cli_fun.command(help="get motif from meme file")
 @click.argument('motifId', nargs=-1, required=True)   
 @click.option('-mm', '--meme', type=click.Path(exists=True), help="meme motif file")
 @click.option('-db', '--database', type=click.Choice(['ATtRACT', 'CISBP-RNA']),
@@ -60,26 +59,26 @@ def getmeme(*args, **kwargs):
 
     ul.getmeme(*args, **kwargs)
 
-@click.command(help = "list OrgDb")
+@cli_fun.command(name="list", help="list OrgDb")
 @click.option('-orgdb', '--OrgDb', "OrgDb", is_flag=True, help="list OrgDb")
 @click.option('-rbpsp', '--RBPSp', "RBPSp", is_flag=True, help="RNA binding protein  ")
 def list_(*args, **kwargs):
     ul.list_(*args, **kwargs)
 
 
-@click.command(help = "generate ChromHMM anchor file")
-@click.argument('file', type=click.Path(exists=True), required=True)
-@click.option('-o', '--output', required=True, help="file output path")
-@click.option('-idx', '--index', type=int, help="element index")
-@click.option('-si', '--sideIndex', type=(int, int), help="the center of two side index")
-@click.option('-u', '--upstreamOffset', "offset5", type=int, default=0, help="upstream offset")
-@click.option('-d', '--downstreamOffset', "offset3", type=int, default=0, help="downstream offset")
-@click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
-def anchor(*args, **kwargs):
-    ul.anchor(*args, **kwargs)
+# @cli_fun.command(help = "generate ChromHMM anchor file")
+# @click.argument('file', type=click.Path(exists=True), required=True)
+# @click.option('-o', '--output', required=True, help="file output path")
+# @click.option('-idx', '--index', type=int, help="element index")
+# @click.option('-si', '--sideIndex', type=(int, int), help="the center of two side index")
+# @click.option('-u', '--upstreamOffset', "offset5", type=int, default=0, help="upstream offset")
+# @click.option('-d', '--downstreamOffset', "offset3", type=int, default=0, help="downstream offset")
+# @click.option('-ss', '--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
+# def anchor(*args, **kwargs):
+#     ul.anchor(*args, **kwargs)
  
 
-@click.command(help = "generate bed file according to selected coordinates")
+@cli_fun.command(help="generate bed file according to selected coordinates")
 @click.option('-i', '--input', 'file', type=click.Path(exists=True),
                 required=True,  help='AS event file')
 @click.option('-o', '--output', required=True, help="file output path")
@@ -98,7 +97,7 @@ def getcoor(*args, **kwargs):
     ul.getcoor(*args, **kwargs)
 
 
-@click.command(help = "Make the TxDb object")
+@cli_fun.command(help="Make the TxDb object")
 @click.argument('gtf', type=click.Path(exists=True), required=True)
 @click.option('-org', '--organism', required=True, help="organism")
 @click.option('-o', '--output', help="file output path")
@@ -106,7 +105,7 @@ def mktxdb(*args, **kwargs):
     ul.mkTxDb(*args, **kwargs)
 
 
-@click.command(help = "get gene ID from AS event file")
+@cli_fun.command(help="get gene ID from AS event file")
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('-o', '--output', type=click.Path(), help="file output path")
 @click.option('-u', '--unique', is_flag=True, help="only save unique gene ID")
@@ -114,7 +113,7 @@ def getgene(*args, **kwargs):
     ul.getgene(*args, **kwargs)
 
 
-@click.command(["merge"], help="merge file")
+@cli_fun.command(name="merge", help="merge file")
 @click.option('-i','--input', 'files' ,cls=MultiOption, type=click.Path(exists=True),
                 required=True , help="input files")
 @click.option('-o', '--output', type=click.Path(), help="output path")

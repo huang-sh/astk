@@ -9,7 +9,7 @@ lines" will plot the profile line based on the average type selected. "fill" fil
 distinguish different profiles. "se" and "std" color the region between the profile and the standard error or standard deviation of the data. (default: lines)")
 """
 
-@click.command(help="signal profile withing splicing sites")
+@cli_fun.command(name="signalProfile", help="signal profile withing splicing sites; short alias: sp")
 @click.option('-o', '--output', required=True, type=click.Path(),
                 help="output path")
 @click.option('-e', '--eventFile', "event_file", type=click.Path(exists=True),
@@ -43,7 +43,7 @@ def signal_profile(*args, **kwargs):
     epi.signal_heatmap(*args, **kwargs)
 
 
-@click.command(help="signal profile comparision")
+@cli_fun.command(name="sp2", help="signal profile comparision")
 @click.option('-o', '--output', required=True, type=click.Path(),
                 help="output path")
 @click.option('-mat', 'mat_file', type=click.Path(exists=True), cls=MultiOption,

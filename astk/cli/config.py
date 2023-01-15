@@ -4,80 +4,21 @@ astk.cli.config
 ~~~~~~~~~~~~~~~~~
 This module provides command line api configure.
 """
-import json
 from pathlib import Path
 from gettext import gettext as _
 
 import click
-from click import UsageError, BadParameter
 from click.core import _check_iter
-from click.exceptions import BadParameter
+from click.exceptions import BadParameter, UsageError
+import configparser
 
 from astk.utils import RunConfigure
+from astk.constant import BASE_DIR
 
 
-class CustomMultiCommand(click.Group):
-    """https://stackoverflow.com/questions/46641928/python-click-multiple-command-names/53144555"""
-    ALIASES  = {}
-    def command(self, *args, **kwargs):
-        """Behaves the same as `click.Group.command()` except if passed
-        a list of names, all after the first will be aliases for the first.
-        """
-        
-        def decorator(f):
-            if args and args[0]:
-                _args = [args[0][0]] + list(args[1:])
-                for alias in args[0][1:]:
-                    self.ALIASES[args[0][0]] = args[0][1]
-                    cmd = super(CustomMultiCommand, self).command(
-                        alias, *args[1:], **kwargs)(f)
-                    cmd.short_help = "Alias for '{}'".format(_args[0])
-            else:
-                _args = args
-            from click.decorators import command
-            cmd = command(*_args, **kwargs)(f)
-            self.add_command(cmd)
-            return cmd
-        return decorator
-
-    def add_command(self, cmd, name=None) -> None:
-        """Registers another :class:`Command` with this group.  If the name
-        is not provided, the name of the command is used.
-        """
-        name = name or [cmd.name]
-        if name is None:
-            raise TypeError("Command has no name.")
-        # _check_multicommand(self, name, cmd, register=True)
-        for n in name:
-            self.commands[n] = cmd
-
-    def resolve_command(self, ctx, args):
-        from click.utils import make_str
-        from click.parser import split_opt
-        cmd_name = make_str(args[0])
-        original_cmd_name = cmd_name
-
-        cmd_name = self.ALIASES.get(cmd_name, cmd_name)
-        # Get the command
-        cmd = self.get_command(ctx, cmd_name)
-
-        # If we can't find the command but there is a normalization
-        # function available, we try with that one.
-        if cmd is None and ctx.token_normalize_func is not None:
-            cmd_name = ctx.token_normalize_func(cmd_name)
-            cmd = self.get_command(ctx, cmd_name)
-
-        # If we don't find the command we want to show an error message
-        # to the user that it was not provided.  However, there is
-        # something else we should do: if the first argument looks like
-        # an option we want to kick off parsing again for arguments to
-        # resolve things like --help which now should go to the main
-        # place.
-        if cmd is None and not ctx.resilient_parsing:
-            if split_opt(cmd_name)[0]:
-                self.parse_args(ctx, ctx.args)
-            ctx.fail(("No such command {name!r}.").format(name=original_cmd_name))
-        return cmd_name if cmd else None, cmd, args[1:]
+parser = configparser.RawConfigParser()
+parser.read([BASE_DIR / "cli/aliases.ini"])
+ALIASES_DIC = dict(parser.items("aliases"))
 
 
 class MultiOption(click.Option):
@@ -149,9 +90,41 @@ class MultiOption(click.Option):
         return convert(value)
 
 
-@click.command(help="ASTK configure setting")
+class AliasedGroup(click.Group):
+    """refer to https://click.palletsprojects.com/en/8.1.x/advanced/"""
+    def get_command(self, ctx, cmd_name):
+        rv = click.Group.get_command(self, ctx, cmd_name)
+        if rv is not None:
+            return rv
+        if cmd_name in ALIASES_DIC:
+            actual_cmd = ALIASES_DIC[cmd_name]
+            return click.Group.get_command(self, ctx, actual_cmd)
+        else:            
+            matches = [x for x in self.list_commands(ctx)
+                    if x.startswith(cmd_name)]
+            if not matches:
+                return None
+            elif len(matches) == 1:
+                return click.Group.get_command(self, ctx, matches[0])
+            ctx.fail(f"Too many matches: {', '.join(sorted(matches))}")
+
+    def resolve_command(self, ctx, args):
+        # always return the full command name
+        _, cmd, args = super().resolve_command(ctx, args)
+        return cmd.name, cmd, args
+
+
+@click.group(cls=AliasedGroup, 
+        context_settings=dict(help_option_names=['-h', '--help']))
+def cli_fun():
+     """
+     Welcome to use ASTK!\f
+     """
+
+
+@cli_fun.command(help="ASTK configure setting")
 @click.option('-R', '--R', "RPath", type=click.Path(exists=True), help="R path setting")
-def sc_setting(*args, **kwargs):
+def config(*args, **kwargs):
 
     rc = RunConfigure()
     rc.update(Rscript=str(Path(kwargs['RPath']).with_name("Rscript")))
