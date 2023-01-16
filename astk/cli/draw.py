@@ -10,8 +10,8 @@ from astk.utils import sniff_fig_fmt
 @click.option('-rd', '--RData', help="output figure path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
                 default="auto", help="output figure format") 
-@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def gseplot(*args, **kwargs):
     if kwargs["fmt"] == "auto":
@@ -28,8 +28,8 @@ def gseplot(*args, **kwargs):
                    (group +: dPSI > 0, group -: dPSI < 0)"))                 
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
                 default="auto", help="output figure format") 
-@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('--height', default=6, help="fig height, default=6 inches")
+@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def upset(*args, **kwargs):
     if kwargs["fmt"] == "auto":
@@ -43,8 +43,8 @@ def upset(*args, **kwargs):
 @click.option('-o', '--output', help="output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
                 default="auto", help="output figure format") 
-@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('--height', default=6, help="fig height, default=6 inches")
+@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def volcano(*args, **kwargs):
     if kwargs["fmt"] == "auto":
@@ -58,8 +58,8 @@ def volcano(*args, **kwargs):
 @click.option('-o', '--output', required=True, help="figure output path")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
                 default="auto", help="output figure format") 
-@click.option('-w', '--width', default=6, help="fig width, default=6 inches")
-@click.option('--height', default=6, help="fig height, default=6 inches")
+@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 @click.option('-gn', '--groupName', cls=MultiOption, type=str, help="group names")
 def pca(*args, **kwargs):
@@ -104,8 +104,8 @@ def heatmap(*args, **kwargs):
                    (group +: dPSI > 0, group -: dPSI < 0)"))   
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
                 default="auto", help="output figure format")
-@click.option('-w', '--width', default=8, help="fig width, default=8 inches")
-@click.option('--height', default=4, help="fig height, default=4 inches")
+@click.option('-fw', '--width', default=8, help="fig width, default=6 inches")
+@click.option('-fh', '--height', default=4, help="fig height, default=6 inches")
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def barplot(*args, **kwargs):
     if kwargs["fmt"] == "auto":

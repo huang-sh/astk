@@ -42,8 +42,8 @@ def gsea_fun(*args, **kwargs):
 @click.option('--simple', is_flag=True, help="simplify GO enrichment")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                  default="pdf", help="output figure format") 
-@click.option('-w', '--width', default=10, help="fig width, default=10 inches")
-@click.option('--height', default=12, help="fig height, default=12 inches")    
+@click.option('-fw', '--width', type=float, default=10, help="figure width, default=6 inches")
+@click.option('-fh', '--height', type=float, default=12, help="figure height, default=6 inches")  
 def enrich(*args, **kwargs):
     gsea.enrich(*args, **kwargs)
 
@@ -65,8 +65,8 @@ def enrich(*args, **kwargs):
                 help="organism: hs|mm")
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
                 default="pdf", help="output figure format")
-@click.option('-fw', '--width', type=float, help="figure width")
-@click.option('-fh', '--height', type=float, help="figure height")
+@click.option('-fw', '--width', type=float, default=6, help="figure width, default=6 inches")
+@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")
 def enrich_cmp(*args, **kwargs):
     gsea.enrich_cmp(*args, **kwargs)
 
@@ -100,8 +100,8 @@ def nease_sc(*args, **kwargs):
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str, help="xlabel")
 @click.option('-ff', '--figFormat', type=click.Choice(['png', 'pdf', 'tiff', 'jpeg']), 
                 default="png", help="output figure format")
-@click.option('-fw', '--width', type=float, help="figure width")
-@click.option('-fh', '--height', type=float, help="figure height")           
+@click.option('-fw', '--width', type=float, default=6, help="figure width, default=6 inches")
+@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")        
 def sc_neasecmp(*args, **kwargs):
     fn = len(kwargs["files"])
     if kwargs["xlabel"] is None:
