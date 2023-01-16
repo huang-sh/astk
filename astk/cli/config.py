@@ -123,7 +123,8 @@ def cli_fun():
 
 
 @cli_fun.command(help="ASTK configure setting")
-@click.option('-R', '--R', "RPath", type=click.Path(exists=True), help="R path setting")
+@click.option('-R', '--R', "RPath", type=click.Path(exists=True), 
+               required=True, help="R path setting")
 def config(*args, **kwargs):
 
     rc = RunConfigure()

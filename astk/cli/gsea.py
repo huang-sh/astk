@@ -5,7 +5,7 @@ from astk import gsea
 
 @cli_fun.command(name="gsea", help="Gene Set Enrichment Analysis")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
-                help="input dpsi files")
+                required=True, help="input dpsi files")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-n', '--name', default="GSEA", help="output name prefix")
 @click.option('-pval', '--pvalue', type=float, default=0.2, help="pvalue cutoff, defualt=0.2")
@@ -27,7 +27,7 @@ def gsea_fun(*args, **kwargs):
 
 @cli_fun.command(help="Over representation enrichment analysis")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
-                help="input dpsi files")
+                required=True, help="input dpsi files")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff, default=0.1")
 @click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff, default=0.1")
@@ -50,7 +50,7 @@ def enrich(*args, **kwargs):
 
 @cli_fun.command(name="enrichCompare", help="function enrichment comparison; short alias: ecmp")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
-                help="input dpsi files")
+                required=True, help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")          
 @click.option('-db', '--database', type=click.Choice(['GO', 'KEGG', 'Reactome']), 
                 default="GO", help="enrich database, default='GO'")
@@ -73,7 +73,7 @@ def enrich_cmp(*args, **kwargs):
 
 @cli_fun.command(name="nease", help="Functional enrichment with NEASE")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
-                help="input dpsi files")
+                required=True, help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")
 @click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
 @click.option('-db', '--database', cls=MultiOption, type=click.Choice(NEASE_DATABASE), 
