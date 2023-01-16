@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),    
     include_package_data=True,
     package_data = {
-    '': ['data/motif/*/*.meme', "data/motif/ELM/*", "data/maxent/*"],
+    '': ['data/motif/*/*.meme', "data/motif/ELM/*", "data/maxent/*", "cli/aliases.ini"],
     },
     install_requires=[
         "click>=8.0.0",
