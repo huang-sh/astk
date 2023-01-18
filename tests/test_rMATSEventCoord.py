@@ -12,11 +12,11 @@ def test_sss_rMATSEventCoord():
         "MXE":"data/MXE.MATS.JC.txt"
     }
     etype_ss_names = {
-        "A3SS": ["A0_3SS", "A1_5SS", "A2_3SS", "A3_3SS", "A4_5SS"],
-        "A5SS": ["A0_3SS", "A1_5SS", "A2_5SS", "A3_3SS", "A4_5SS"],
-        "SE": ["A0_3SS", "A1_5SS", "A2_3SS", "A3_5SS", "A4_3SS", "A5_5SS"],
-        "RI": ["A0_3SS", "A1_5SS", "A2_3SS", "A3_5SS"],
-        "MXE": ["A0_3SS", "A1_5SS", "A2_3SS", "A3_5SS", "A4_3SS", "A5_5SS", "A6_3SS", "A7_5SS"]
+        "A3SS": ["A1_3SS", "A2_5SS", "A3_3SS", "A4_3SS", "A5_5SS"],
+        "A5SS": ["A1_3SS", "A2_5SS", "A3_5SS", "A4_3SS", "A5_5SS"],
+        "SE": ["A1_3SS", "A2_5SS", "A3_3SS", "A4_5SS", "A5_3SS", "A6_5SS"],
+        "RI": ["A1_3SS", "A2_5SS", "A3_3SS", "A4_5SS"],
+        "MXE": ["A1_3SS", "A2_5SS", "A3_3SS", "A4_5SS", "A5_3SS", "A6_5SS", "A7_3SS", "A8_5SS"]
     }
     for etype, file in files.items():
         dpsi_df = pd.read_csv(file, sep="\t", index_col=0)

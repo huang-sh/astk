@@ -4,7 +4,7 @@ from astk.constant import rMATS_POS_COLS
 
 import pandas as pd
 
-def test_sss_SuppaEventCoord():
+def test_sss_SuppaEventCoord():  # sourcery skip: assign-if-exp
 
     files = {
         "A3": "data/fb_e11_12_A3.dpsi",
@@ -16,13 +16,13 @@ def test_sss_SuppaEventCoord():
         "AL":"data/fb_e11_12_AL.sig.dpsi",
     }
     etype_ss_names = {
-        "A3": ["A0_5SS", "A1_3SS", "A2_3SS"],
-        "A5": ["A0_5SS", "A1_5SS", "A2_3SS"],
-        "SE": ["A0_5SS", "A1_3SS", "A2_5SS", "A3_3SS"],
-        "RI": ["A0_3SS", "A1_5SS", "A2_3SS", "A3_5SS"],
-        "MX": ["A0_5SS", "A1_3SS", "A2_5SS", "A3_3SS", "A4_5SS", "A5_3SS"],
-        "AF": ["A1_5SS", "A2_3SS", "A3_5SS", "A4_3SS"],
-        "AL": ["A0_5SS", "A1_3SS", "A2_5SS", "A3_3SS"],
+        "A3": ["A1_5SS", "A2_3SS", "A3_3SS"],
+        "A5": ["A1_5SS", "A2_5SS", "A3_3SS"],
+        "SE": ["A1_5SS", "A2_3SS", "A3_5SS", "A4_3SS"],
+        "RI": ["A1_3SS", "A2_5SS", "A3_3SS", "A4_5SS"],
+        "MX": ["A1_5SS", "A2_3SS", "A3_5SS", "A4_3SS", "A5_5SS", "A6_3SS"],
+        "AF": ['A1_pse_3SS', 'A2_5SS', 'A3_pse_3SS', 'A4_5SS', 'A5_3SS'],
+        "AL": ['A1_5SS', 'A2_3SS', 'A3_pse_5SS', 'A4_3SS', 'A5_pse_5SS'],
     }
 
     def _get_coor(event_id):
@@ -57,30 +57,18 @@ def test_sss_SuppaEventCoord():
         for idx,( key, df) in enumerate(df_dic.items()):
             if key.endswith("3SS"):
                 assert set(df["end"] - df["start"]) == {23}
-                if etype == "AF":                    
-                    assert all(ps_df.iloc[:, idx+1] - 20 - 1 == df.loc[ps_df.index, "start"])
-                    assert all(ns_df.iloc[:, idx+1] - 2 - 1 == df.loc[ns_df.index, "start"])
-                    assert all(ps_df.iloc[:, idx+1] + 2 == df.loc[ps_df.index, "end"])
-                    assert all(ns_df.iloc[:, idx+1] + 20 == df.loc[ns_df.index, "end"])
-                else:
-                    assert all(ps_df.iloc[:, idx] - 20 - 1 == df.loc[ps_df.index, "start"])
-                    assert all(ns_df.iloc[:, idx] - 2 - 1 == df.loc[ns_df.index, "start"])
-                    assert all(ps_df.iloc[:, idx] + 2 == df.loc[ps_df.index, "end"])
-                    assert all(ns_df.iloc[:, idx] + 20 == df.loc[ns_df.index, "end"])                    
+
+                assert all(ps_df.iloc[:, idx] - 20 - 1 == df.loc[ps_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] - 2 - 1 == df.loc[ns_df.index, "start"])
+                assert all(ps_df.iloc[:, idx] + 2 == df.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] + 20 == df.loc[ns_df.index, "end"])                    
             if key.endswith("5SS"):
                 assert set(df["end"] - df["start"]) == {9}
-                if etype == "AF":
-                    assert all(ps_df.iloc[:, idx+1] - 2 -1 == df.loc[ps_df.index, "start"])
-                    assert all(ns_df.iloc[:, idx+1] - 6 -1 == df.loc[ns_df.index, "start"]) 
-                    assert all(ps_df.iloc[:, idx+1] + 6 == df.loc[ps_df.index, "end"])
-                    assert all(ns_df.iloc[:, idx+1] + 2 == df.loc[ns_df.index, "end"])
-                else:
-                    assert all(ps_df.iloc[:, idx] - 2 -1 == df.loc[ps_df.index, "start"])
-                    assert all(ns_df.iloc[:, idx] - 6 -1 == df.loc[ns_df.index, "start"]) 
-                    assert all(ps_df.iloc[:, idx] + 6 == df.loc[ps_df.index, "end"])
-                    assert all(ns_df.iloc[:, idx] + 2 == df.loc[ns_df.index, "end"])
-        if etype == "AF":
-            continue
+                assert all(ps_df.iloc[:, idx] - 2 -1 == df.loc[ps_df.index, "start"])
+                assert all(ns_df.iloc[:, idx] - 6 -1 == df.loc[ns_df.index, "start"]) 
+                assert all(ps_df.iloc[:, idx] + 6 == df.loc[ps_df.index, "end"])
+                assert all(ns_df.iloc[:, idx] + 2 == df.loc[ns_df.index, "end"])
+
         for idx, key in enumerate(etype_ss_names[etype]):
             df_up_bed, df_dw_bed = eventcoor.get_ss_flank_bed(idx, ups_w=100, dws_w=100, split=True, excludeSS=False)
             assert set(df_up_bed["end"] - df_up_bed["start"]) == {100} 
@@ -95,7 +83,7 @@ def test_sss_SuppaEventCoord():
                 assert all(ps_df.iloc[:, idx] + 100 -1 == df_dw_bed.loc[ps_df.index, "end"])
                 assert all(ns_df.iloc[:, idx] - 100  == df_dw_bed.loc[ns_df.index, "start"])
                 assert all(ns_df.iloc[:, idx] == df_dw_bed.loc[ns_df.index, "end"])
-            if key.endswith("5SS"):          
+            if key.endswith("5SS"):
                 assert all(ps_df.iloc[:, idx] - 100 == df_up_bed.loc[ps_df.index, "start"])                
                 assert all(ps_df.iloc[:, idx] == df_up_bed.loc[ps_df.index, "end"])
                 assert all(ns_df.iloc[:, idx] - 1  == df_up_bed.loc[ns_df.index, "start"])
