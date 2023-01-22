@@ -27,7 +27,7 @@ class MultiOption(click.Option):
     def __init__(self, *args, **kwargs):
         self.save_other_options = kwargs.pop('save_other_options', True)
         nargs = kwargs.pop('nargs', -1)
-        assert nargs == -1, 'nargs, if set, must be -1 not {}'.format(nargs)
+        assert nargs == -1, f'nargs, if set, must be -1 not {nargs}'
         # kwargs["nargs"] = -1
         super(MultiOption, self).__init__(*args, **kwargs)
         self._previous_parser_process = None
@@ -114,8 +114,11 @@ class AliasedGroup(click.Group):
         return cmd.name, cmd, args
 
 
-@click.group(cls=AliasedGroup, 
-        context_settings=dict(help_option_names=['-h', '--help']))
+@click.group(
+        cls=AliasedGroup, 
+        context_settings={
+            "help_option_names": ['-h', '--help'],
+            "max_content_width": 120})
 def cli_fun():
      """
      Welcome to use ASTK!\f
