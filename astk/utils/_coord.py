@@ -106,15 +106,10 @@ class EventCoord:
                 ex_ups_w, ex_dws_w = 20, 3
             elif site == 9:
                 ex_ups_w, ex_dws_w = 3, 6
-            else:
-                ex_ups_w, ex_dws_w = 0, 0
         else:
             ex_ups_w, ex_dws_w = 0, 0
         return ex_ups_w, ex_dws_w
     
-    def _ns_adaptor(self):
-        pass
-
     def set_metadata(self, file):
         pass
 
@@ -138,12 +133,9 @@ class SuppaEventCoord(EventCoord):
 
         def _get_coor(event_id):
             ei = SuppaEventID(event_id)
-            if ei.strand == "-":
-                coords = reversed(ei.coordinates)
-            else:
-                coords = ei.coordinates
-            row = ei.Chr, ei.event_id, ei.strand, *coords
-            return row
+            coords = reversed(ei.coordinates) if ei.strand == "-" else ei.coordinates
+            ei = SuppaEventID(event_id)
+            return  ei.Chr, ei.event_id, ei.strand, *coords
         event_df = DataFrame(dpsi_df["event_id"].apply(_get_coor).tolist(),
                              index=dpsi_df.index)
         self.df_ss = event_df.iloc[:, 3:]
@@ -224,8 +216,9 @@ def get_ss_bed(
     **kwargs
     ):
     coori = get_event_coord(event_file, app)
-    df_dic = coori.get_all_flank_bed(ups_w=ups_width,dws_w=dws_width,sss=sss, **kwargs)
-    return df_dic
+    return coori.get_all_flank_bed(
+        ups_w=ups_width, dws_w=dws_width, sss=sss, **kwargs
+    )
 
 
 def get_ss_range(event_file, app):

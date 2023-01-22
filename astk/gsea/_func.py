@@ -35,7 +35,7 @@ def enrich(
     rscript = BASE_DIR / "R" / "enrich.R"
     if not (org_db := ul.select_OrgDb(organism)):
         print(f"{organism} is wrong! Please run 'astk ls -org' to view more")
-    if database in ["KEGG", "Reactome"]:
+    if database in {"KEGG", "Reactome"}:
         organism = PATHWAY_DB_ORG[database].get(organism, None)
     Path(outdir).mkdir(exist_ok=True)
     param_dic = {
@@ -74,7 +74,7 @@ def enrich_cmp(
 
     if not (org_db := ul.select_OrgDb(organism)):
         print(f"{organism} is wrong! Please run 'astk ls -orgdb' to view more")
-    if database in ["KEGG", "Reactome"]:
+    if database in {"KEGG", "Reactome"}:
         organism = PATHWAY_DB_ORG[database].get(organism, None)
     rscript = BASE_DIR / "R" / "enrichCompare.R"
     Path(outdir).mkdir(exist_ok=True)
@@ -100,7 +100,7 @@ def enrich_cmp(
 def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
               gene_id, orgdb, kegg_organism):
     if not (org_db := ul.select_OrgDb(orgdb)):
-        print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")                
+        print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")
     if database == "KEGG":
         ul.check_kegg_RData(kegg_organism)
         if not kegg_organism:
@@ -116,15 +116,14 @@ def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
                  org_db, gene_id, kegg_organism, file]
         info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
         if database == "KEGG" and not ul.check_kegg_RData(kegg_organism):
-             info.wait() 
+             info.wait()
+    if merge:
+        params = [outdir, str(pvalue), str(qvalue), database, cluster,
+             org_db, gene_id, kegg_organism, *files]
+        merge_info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
+        merge_info.wait()
     else:
-        if merge:
-            params = [outdir, str(pvalue), str(qvalue), database, cluster,
-                 org_db, gene_id, kegg_organism, *files]
-            merge_info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
-            merge_info.wait()
-        else:
-            info.wait()
+        info.wait()
 
 
 def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Human', cutoff=0.05):

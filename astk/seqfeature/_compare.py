@@ -20,10 +20,7 @@ def cmp_sss(files, output, test, **kwargs):
     sns.set_theme()
     pairs = [[(i, gn) for gn in gns] for i in df.columns[:-1]]
     fig_type = kwargs.get("figtype", "point")
-    if fig_type == "strip":
-        fig_kwargs = {"split": True}
-    else:
-        fig_kwargs = {}
+    fig_kwargs = {"split": True} if fig_type == "strip" else {}
     if all([kwargs["width"], kwargs["height"]]):
         fig_kwargs["height"] = kwargs["height"]
         fig_kwargs["aspect"] = kwargs["width"] / kwargs["height"]
@@ -40,13 +37,13 @@ def cmp_sss(files, output, test, **kwargs):
     if fig_fmt == "auto":
         fig_fmt = sniff_fig_fmt(output, fmts=['png', 'pdf', 'tiff', 'jpeg'])
 
-    output = Path(output).with_suffix(f".{fig_fmt}")    
+    output = Path(output).with_suffix(f".{fig_fmt}")
     plt.savefig(output, dpi=300, bbox_inches='tight', facecolor="w")  
 
 
 def cmp_value(files, output, test, **kwargs):
     import numpy as np
-    import pandas as pd    
+    import pandas as pd
     import seaborn as sns
     import matplotlib.pyplot as plt
     from statannotations.Annotator import Annotator
@@ -60,9 +57,9 @@ def cmp_value(files, output, test, **kwargs):
         xlabel = kwargs["xlabel"]
         if (xlabel is not None) and (len(xlabel) == df.shape[1]):
             if len(xlabel) == len(set(xlabel)):
-                columns = [(i, j) for i,j in zip(xlabel, xlabel)]
+                columns = list(zip(xlabel, xlabel))
             else:
-                columns = [(i, j) for i,j in zip(origin_col, xlabel)]
+                columns = list(zip(origin_col, xlabel))
         else:            
             columns = [(col, "_".join(col.split("_")[:2])) for col in origin_col]
         columns = pd.MultiIndex.from_tuples(columns)
@@ -70,7 +67,7 @@ def cmp_value(files, output, test, **kwargs):
         df["condition"] = gns[i]
     df = pd.concat(df_ls)
     ss_cols = df.columns[:-1]
-    xn, yn = kwargs["xtitle"], kwargs["ytitle"]    
+    xn, yn = kwargs["xtitle"], kwargs["ytitle"]
     dft = df.melt(id_vars=["condition"]) # var_name=xn, value_name=yn
     if kwargs.pop("merge_ss"):
         ss_df = dft["variable_0"].str.split("_", n=1, expand=True)
@@ -100,15 +97,15 @@ def cmp_value(files, output, test, **kwargs):
         "comparisons_correction": kwargs["multicorrect"], 
         "show_test_name": False,
         "text_format": kwargs["pvaltext"]
-    }        
+    }
     if kwargs.get("facet", False):
         l_col_dic = {}
         for s_col, l_col in ss_cols:
             l_col_dic.setdefault(l_col, [])
             l_col_dic[l_col].append(s_col)
         s_col_dic = dict(ss_cols)
-        l_col_ls = [lcol for lcol in l_col_dic.keys()]
-        for i, pair in enumerate(pairs):            
+        l_col_ls = list(l_col_dic.keys())
+        for pair in pairs:
             col_g1 = pair[0][0]
             ax = g.axes[0][l_col_ls.index(s_col_dic[col_g1])]
             annotator = Annotator(ax, [pair],

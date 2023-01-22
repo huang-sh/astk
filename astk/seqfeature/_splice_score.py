@@ -16,17 +16,17 @@ def ss5_consensus_score(seq):
     bdg = {"A": 0.27, "C": 0.23, "G": 0.23, "T": 0.27}
     cons1 = {'A': 0.004, 'C': 0.0032, 'G': 0.9896, 'T': 0.0032}
     cons2 = {'A': 0.0034, 'C': 0.0039, 'G': 0.0042, 'T': 0.9884}
-    addscore = cons1[seq[3]] * cons2[seq[4]] /( bdg[seq[3]] * bdg[seq[4]])
-    return addscore
+    return cons1[seq[3]] * cons2[seq[4]] /( bdg[seq[3]] * bdg[seq[4]])
 
 
 def ss5_score(seq):
     ss5_score_json = BASE_DIR / "data/maxent/ss5seq_score.json"
     with open(ss5_score_json, "r") as f:
-        ss5_score_dic = json.load(f)    
+        ss5_score_dic = json.load(f)
     seq = seq.upper()[:9]
-    score = log2(ss5_consensus_score(seq) * ss5_score_dic.get(seq[:3]+seq[5:], 1e-12))
-    return score
+    return log2(
+        ss5_consensus_score(seq) * ss5_score_dic.get(seq[:3] + seq[5:], 1e-12)
+    )
 
 
 def ss5_seqs_score(fasta, process=4):
@@ -51,9 +51,8 @@ def hashseq(seq):
 def ss3_consensus_score(seq):
     bdg = {"A": 0.27, "C": 0.23, "G": 0.23, "T": 0.27}
     cons1 = {'A': 0.9903, 'C': 0.0032, 'G': 0.0034, 'T': 0.0030}
-    cons2 = {'A': 0.0027, 'C': 0.0037, 'G': 0.9905, 'T': 0.0030}    
-    addscore = cons1[seq[18]] * cons2[seq[19]]/ (bdg[seq[18]] * bdg[seq[19]]) 
-    return addscore
+    cons2 = {'A': 0.0027, 'C': 0.0037, 'G': 0.9905, 'T': 0.0030}
+    return cons1[seq[18]] * cons2[seq[19]]/ (bdg[seq[18]] * bdg[seq[19]])
 
 
 def ss3_maxentscore(seq):
@@ -61,7 +60,7 @@ def ss3_maxentscore(seq):
     with open(ss3_score_json, "r") as f:
         ss3_score_dic = json.load(f)
     sc = [0] * 9
-    sc[0] = ss3_score_dic['0'][hashseq(seq[0:7])]
+    sc[0] = ss3_score_dic['0'][hashseq(seq[:7])]
     sc[1] = ss3_score_dic['1'][hashseq(seq[7:7+7])]
     sc[2] = ss3_score_dic['2'][hashseq(seq[14:14+7])]
     sc[3] = ss3_score_dic['3'][hashseq(seq[4:4+7])]
@@ -70,14 +69,12 @@ def ss3_maxentscore(seq):
     sc[6] = ss3_score_dic['6'][hashseq(seq[7:7+4])]
     sc[7] = ss3_score_dic['7'][hashseq(seq[11:11+3])]
     sc[8] = ss3_score_dic['8'][hashseq(seq[14:14+4])]
-    finalscore = sc[0]*sc[1]*sc[2]*sc[3]*sc[4]/(sc[5]*sc[6]*sc[7]*sc[8])
-    return finalscore
+    return sc[0]*sc[1]*sc[2]*sc[3]*sc[4]/(sc[5]*sc[6]*sc[7]*sc[8])
 
 
 def ss3_score(seq):
     seq = seq.upper()[:23]
-    score = log2(ss3_consensus_score(seq) * ss3_maxentscore(seq[:18]+seq[20:]))
-    return score
+    return log2(ss3_consensus_score(seq) * ss3_maxentscore(seq[:18]+seq[20:]))
 
 
 def ss3_seqs_score(fasta, process=4):
@@ -101,7 +98,7 @@ def splice_score(file, outdir, gfasta, app, process):
     coord_dic = get_ss_bed(file, sss=True, app=app)
 
     df_score = DataFrame()
-    for idx, (ssn, df) in enumerate(coord_dic.items()):
+    for ssn, df in coord_dic.items():
         ss_dir = outdir / ssn
         ss_dir.mkdir(exist_ok=True)
         get_coor_fa(df, gfasta, ss_dir / f"{ssn}.fa", strandedness=True)

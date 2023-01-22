@@ -22,9 +22,8 @@ def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len, fm
         print( clens[i-1], clens[i])
         subset = [l for l in  ae_lens if clens[i-1] < l <= clens[i]]
         cluster_ls.append(subset)
-    else:
-        subset = [l for l in  ae_lens if l > clens[-1]]
-        cluster_ls.append(subset)
+    subset = [l for l in  ae_lens if l > clens[-1]]
+    cluster_ls.append(subset)
     output = Path(output).with_suffix(f".{fmt}")
     ul.plot_hist_cluster(output, cluster_ls, bin_edges)
 
@@ -38,11 +37,7 @@ def len_cluster(files, indir, outdir, lenrange):
     lrs = list(map(int, lenrange))
     coor_ls = [(lrs[i], lrs[i+1]) for i in range(len(lrs)-1)]
 
-    if indir:
-        files = list(Path(indir).glob("*psi"))
-    else:
-        files = [Path(i) for i in files]
-    
+    files = list(Path(indir).glob("*psi")) if indir else [Path(i) for i in files]
     if len(files) == 1:
         file = Path(files[0])
         outdir.mkdir(exist_ok=True)

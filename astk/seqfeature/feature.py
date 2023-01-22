@@ -25,7 +25,8 @@ def seq_aac(seq, k=1, gap=0, lam=0, count=False):
     def three_f(idx, k, gap, lam, seq_dic):
         a = (seq_dic.get(idx+idx*gap+(lam+1)*i, '') for i in range(k))
         return ''.join(a)
-    seq_dic = {i: v for i,v in enumerate(seq)}
+
+    seq_dic = dict(enumerate(seq))
     nt = [''.join(n) for n in product(NT, repeat=k)]
     f3 = partial(three_f, gap=gap, k=k, lam=lam, seq_dic=seq_dic)
     nt_list = [f3(i) for i in range(len(seq))]
@@ -33,7 +34,7 @@ def seq_aac(seq, k=1, gap=0, lam=0, count=False):
     nt_dict = Counter(nt_list)
     all_count = len(nt_list)
     if count:
-        all_count = 1 
+        all_count = 1
     nt_fre = [nt_dict[i] / all_count for i in nt]
     return nt_fre
 
@@ -83,7 +84,7 @@ def seq_extract(fasta: Tuple[str],
 
     xy_ls = []
     # aa_ls = [''.join(aa) for aa in product(raa, repeat=k)]
-    for idx, file in enumerate(fasta):
+    for file in fasta:
         feature_file = Path(file)
         xy = extract_feature(feature_file, k, gap, lam, count=iscount)
         # new_aa_ls = aa_ls

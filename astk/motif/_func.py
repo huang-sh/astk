@@ -20,11 +20,7 @@ def _centrimo_enrich(outdir, tfa, cfa, motif, ethresh=1):
 
 
 def _ame_enrich(outdir, tfa, cfa, motif):
-    param_dic = {
-        "oc": outdir,
-        "control": cfa if cfa else "--shuffle--",
-        "text": True
-    }
+    param_dic = {"oc": outdir, "control": cfa or "--shuffle--", "text": True}
     param_ls = ul.parse_cmd_r(**param_dic)
     exe_bin = "ame"
     subprocess.run([exe_bin, *param_ls, tfa, motif])

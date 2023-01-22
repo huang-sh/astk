@@ -97,16 +97,16 @@ def parse_gtf_line(line, feature=["gene", "exon", "transcript"]):
     line = line.strip().split('\t')
     if len(line) != 9:
         print('Missmatch in number of Fields. skipping line')
-        return 
+        return
     if line[2] not in feature:
-        return   
-    info_dic = {k:v for k, v in zip(GTF_COLUMNS[:8], line[:8])}
+        return
+    info_dic = dict(zip(GTF_COLUMNS[:8], line[:8]))
     attributes_str = line[-1][:-1].replace('"', "")
     att_dic = {}
     for att in attributes_str.split('; '):
         k, *v = att.split()
         att_dic[k] = " ".join(v)
-    info_dic.update(att_dic)
+    info_dic |= att_dic
     return info_dic
 
 

@@ -19,19 +19,17 @@ def check_gtf_used(gtf):
     f = gtf.open("rb")
     for _ in range(10):
         gtf_hash.update(f.readline().strip())
-    hash_val = gtf_hash.hexdigest()
-    return hash_val
+    return gtf_hash.hexdigest()
 
 
 def gtf_parse_cache(gtf):
     home = Path.home()
-    astk_cache_dir = home / f".astk"
+    astk_cache_dir = home / ".astk"
     astk_cache_dir.mkdir(exist_ok=True)
     gtf_hash = check_gtf_used(gtf)
     gtf_cache_path = astk_cache_dir / "gtfParse"
     gtf_cache_path.mkdir(exist_ok=True)
-    pkl = (gtf_cache_path / gtf_hash).with_suffix(".pkl")
-    return pkl
+    return (gtf_cache_path / gtf_hash).with_suffix(".pkl")
 
 
 def generate_events(gtf, event_types, output, idtype, event_pos):
@@ -118,7 +116,7 @@ def ds_flow(
     ref_dir = Path(outdir) / "ref"
     ref_dir.mkdir(exist_ok=True)
     make_events(ref_dir / "annotation", genome, etypes, id_type, event_pos)
-    
+
     tpm_dir =  Path(outdir) / "tpm"
     psi_dir =  Path(outdir) / "psi"
     dpsi_dir =  Path(outdir) / "dpsi"
@@ -132,10 +130,7 @@ def ds_flow(
 
     for gn, gn_dic in tpm_dic.items():
         for et in etypes:
-            if event_pos is None:
-                es = ""
-            else:
-                es = f"_{event_pos}"
+            es = "" if event_pos is None else f"_{event_pos}"
             ioe = ref_dir / f"annotation{es}_{et}_strict.ioe"
             ioe_df = pd.read_csv(ioe, sep="\t")
             ctrl_tpm_ls = []
@@ -173,7 +168,6 @@ def ds_flow(
             dpsi_out = dpsi_dir / f"{gn}_{et}"
             mca(method, psi_files, exp_files, ioe, 1000, 0, 
                 False, True, 0.05, True, False, False, tpm_threshold, 0, str(dpsi_out))
-            
             sig_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig.dpsi")
             sig_pos_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig+.dpsi")
             sig_neg_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig-.dpsi")
@@ -182,7 +176,7 @@ def ds_flow(
             old_col = dpsi_df.columns
             dpsi_df.columns = ["dpsi", "pval"]
             df_fil = sl.sig_filter(dpsi_df, **kwargs)
-            df_fil.columns = old_col      
+            df_fil.columns = old_col
             df_fil.to_csv(sig_dpsi_out, sep="\t")
 
             pos_df = df_fil.loc[df_fil[old_col[0]] > 0, ]

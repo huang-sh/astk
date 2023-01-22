@@ -52,10 +52,10 @@ def install(requirement, OrgDb, cran, bioconductor, java, mirror, conda):
         shutil.copyfile(pdir/"ChromHMM.jar", pdir/"ChromHMM/ChromHMM.jar")
     param_dic = {
         "requirement": requirement,
-        "OrgDb": OrgDb if OrgDb else False,
-        "CRAN": cran if cran else False, 
-        "bioconductor": bioconductor if bioconductor else False, 
-        "mirror": mirror
+        "OrgDb": OrgDb or False,
+        "CRAN": cran or False,
+        "bioconductor": bioconductor or False,
+        "mirror": mirror,
     }
     param_ls = ulf.parse_cmd_r(**param_dic)
     subprocess.run([ulf.Rscript_bin(), rscript, *param_ls])

@@ -4,10 +4,10 @@ from pathlib import Path
 def cal_psi(alter_tx, total_tx, tpm_df, tpm_th=1):
     alter_tx = [i for i in alter_tx if i in tpm_df.index]
     total_tx = [i for i in total_tx if i in tpm_df.index]
-    if len(total_tx) == 0 or len(alter_tx) == 0:
+    if not total_tx or not alter_tx:
         psi = "nan"
     else:
-        alter_tx_tpm = sum([tpm_df.at[i, tpm_df.columns[0]] for i in alter_tx])
+        alter_tx_tpm = sum(tpm_df.at[i, tpm_df.columns[0]] for i in alter_tx)
         total_tx_tpms = [tpm_df.at[i, tpm_df.columns[0]] for i in total_tx]
         if sum(total_tx_tpms) / len(total_tx_tpms) < tpm_th:
             psi = "nan"
@@ -26,8 +26,7 @@ def ioe_df_row(row, tpm_df, tpm_th):
     """
     alternative_txs = row["alternative_transcripts"].split(",")
     total_txs = row["total_transcripts"].split(",")
-    psi = cal_psi(alternative_txs, total_txs, tpm_df, tpm_th=tpm_th)
-    return psi
+    return cal_psi(alternative_txs, total_txs, tpm_df, tpm_th=tpm_th)
 
 
 def get_ioe_psi(ioe_df, tpm_df, tpm_th=1):

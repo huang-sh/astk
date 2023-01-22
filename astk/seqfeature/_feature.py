@@ -100,11 +100,8 @@ def get_elen(file, outdir, app, log):
     ylabel = "log2(length)" if log else "length"
     fig, axes = plt.subplots(1, df_len.shape[1], sharey=True)
     for idx in range(df_len.shape[1]):
-        if log:
-            data = np.log2(df_len.iloc[:, idx])
-        else:
-            data = df_len.iloc[:, idx]
+        data = np.log2(df_len.iloc[:, idx]) if log else df_len.iloc[:, idx]
         axes[idx].boxplot(data)
         axes[idx].set_ylabel(ylabel)
-    plt.tight_layout() 
+    plt.tight_layout()
     plt.savefig(outdir / "element_len.png")

@@ -15,7 +15,7 @@ from pandas import DataFrame, concat
 
 class Template:
     def __init__(self, condition):
-        self.condition = condition if condition else ["ctrl", "case"]
+        self.condition = condition or ["ctrl", "case"]
 
     def infer_file(self, path, rep):
         rep_num = len(rep)
@@ -26,11 +26,10 @@ class Template:
                 group_num = fold
             else:
                 raise ValueError("path file number or replicate number is wrong!")
+        elif path_num == sum(rep):
+            group_num = rep_num
         else:
-            if path_num == sum(rep):
-                group_num = rep_num
-            else:
-                raise ValueError("path file number or replicate number is wrong!")
+            raise ValueError("path file number or replicate number is wrong!")
         return group_num
 
     def df_generate(self, group_name, rep, path, **kwargs):
@@ -84,27 +83,26 @@ class Template:
             df2 = self.df_generate(group_name, repN2, path2, **kwargs)
             df1.insert(1, "condition", self.condition[0])
             df2.insert(1, "condition", self.condition[1])
-            df = concat([df1, df2]).sort_values(by=["group", "condition", "replicate"])  
+            df = concat([df1, df2]).sort_values(by=["group", "condition", "replicate"])
         else:
             if path1:
-                cdname = self.condition[0]
                 path = path1
                 repN = repN1
             else:
-                cdname = self.condition[0]
                 path = path2
-                repN = repN2            
+                repN = repN2
+            cdname = self.condition[0]
             group_num = self.infer_file(path, repN)
             if len(group) == group_num:
                 group_name = group
             elif len(group) == 0:
                 group_name = list(range(1, group_num+1))
             else:
-                raise ValueError("group names dismatched path files!")                
+                raise ValueError("group names dismatched path files!")
             df = self.df_generate(group_name, repN, path, **kwargs)
-            
+
             df.insert(1, "condition", cdname) 
-        
+
         self.df = df
     
     def to_json(self, out):
