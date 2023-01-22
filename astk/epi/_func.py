@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 
 import astk.utils.func  as ul
 from astk.constant import *
-from astk.types import FilePath
+from astk.types import *
 
 
 def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
@@ -58,15 +58,9 @@ def epi_signal(out, achor_dic, bam_meta, width, binsize):
             raise ValueError("control input number dismatched treatment input")
         tdf_iter = [sdf for _,sdf in tdf.iterrows()]
         cdf_iter = [sdf for _,sdf in cdf.iterrows()]
-    
     for c, t in zip(cdf_iter, tdf_iter):
-        if c is None:
-            csam = None
-        else:
-            csam = pysam.AlignmentFile(c["path"])
-
+        csam = None if c is None else pysam.AlignmentFile(c["path"])
         tsam = pysam.AlignmentFile(t["path"])
-
         for an in achor_dic:
             anchor_df = pd.read_csv(achor_dic[an], sep="\t", header=None)
             for ai, site_row in anchor_df.iterrows():
@@ -254,6 +248,7 @@ def signal_heatmap(
     bin_size: int,
     ups_width: int,
     dws_width: int,
+    sites: Sequence[int], 
     threads: int,
     plot_type: str,
     color_map: str,
@@ -268,9 +263,12 @@ def signal_heatmap(
     from pandas import concat
 
     regionFiles = []
-
     df_dic = ul.get_evnet_ss_bed(event_file, 150, 150)
-    for df in df_dic.values():
+    if sites is None:
+        sites = [i+1 for i in range(len(df_dic))]
+    for idx, df in enumerate(df_dic.values(), 1):
+        if idx not in sites:
+            continue
         f = NamedTemporaryFile(delete=False)
         f.close()
         df.to_csv(f.name, index=False, header=False, sep="\t")
@@ -361,3 +359,53 @@ def signal_metaplot(
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
+
+
+def extract_signal(
+    event: FilePath,
+    bigwig: FilePath,
+    stype : str,
+    sites: Sequence[int], 
+    exon_width: int,
+    intron_width: int,
+    binsize: int,
+    output: FilePath
+) -> str:
+    """extract bigwig signal from AS event file
+
+    Args:
+        event (FilePath): AS event file
+        bigwig (FilePath): bigwig files
+        exon_width (int):  exon flank window width
+        intron_width (int): intron flank window width
+        binsize (int): bin size
+        output (FilePath): output
+
+    Returns:
+        str: _description_
+    """
+    import pyBigWig
+    import astk.utils as ul
+    import pandas as pd
+
+    def _get_signal(row, bw, stype, nbins):
+        values = bw.stats(row[0], row[1], row[2], type=stype, nBins=nbins, exact=True)
+        if row[5] == "-":
+            values = reversed(values)
+        return pd.Series(values)
+    
+    coord_dic = ul.get_ss_bed(event, exon_width, intron_width)
+    nbins = (exon_width + intron_width) // binsize
+    sdf_ls = []
+    if sites is None:
+        sites = [i+1 for i in range(len(coord_dic))]
+    for idx, (ss, df) in enumerate(coord_dic.items(), 1):
+        if idx not in sites:
+            continue      
+        bw = pyBigWig.open(bigwig)
+        _func = partial(_get_signal, bw=bw, stype=stype, nbins=nbins)
+        sdf = df.apply(_func, axis=1)
+        sdf.columns = [f"{ss}_{i}" for i in sdf.columns]
+        sdf_ls.append(sdf)
+    dfm = pd.concat(sdf_ls, axis=1)
+    dfm.to_csv(output)

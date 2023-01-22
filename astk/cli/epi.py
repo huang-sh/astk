@@ -22,6 +22,8 @@ distinguish different profiles. "se" and "std" color the region between the prof
                 help="upstream width, default=150")
 @click.option('-dw', '--downStreamWidth', "dws_width", default=150, type=int, 
                 help="downstream width, default=150")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
+                help="splice site index")
 @click.option('-p', '--process', "threads", default=4, type=int, 
                 help="running processors, default=4")
 @click.option('--plotType', 'plot_type', type=click.Choice(['lines',"fill","se",'std']), 
@@ -63,26 +65,50 @@ def signal_profile2(*args, **kwargs):
     epi.signal_metaplot(*args, **kwargs)
 
 
-@click.command(help="epi feature extract")
-@click.option('-e', '--eventFile', "event_file", cls=MultiOption, type=click.Path(exists=True),
-                help="AS event files that including AS event id")
-@click.option('-el', '--eventLabel', "event_label", cls=MultiOption, type=str, 
-                help="AS event files label")
-@click.option('-bam', '--bamFile', "bam_file", cls=MultiOption, type=click.Path(exists=True),
-                help="AS event files that including AS event id")
-@click.option('-bl', '--bamLabel', "bam_label", cls=MultiOption, type=str,
-                help="bam files label")
-@click.option('-w', '--width',cls=MultiOption, type=str,
-                help="window width, default=300")
-@click.option('-bs', '--binSize', "bin_size", default=5, type=int, help="bin size, default=5")
+@cli_fun.command(name="signalExtract", help="Extract bigwig signal of splice sites; short alias: se")
+@click.option('-e', '--event', type=click.Path(exists=True), required=True, 
+                help="AS event file")
+@click.option('-bw', '--bigwig', type=click.Path(exists=True), help="bigwig file")
+@click.option('-st', '--signalType', "stype", type=click.Choice(["mean", "min", "max", "coverage", "std"]), 
+                default="max", help="signal type")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
+                help="splice site index")
+@click.option('-ew', '--exonWidth', "exon_width", type=int, default=150, 
+                help="exon flank window width, default=150")
+@click.option('-iw', '--intronWidth', "intron_width", type=int, default=150, 
+                help="intron flank window width, default=150")
+@click.option('-bs', '--binSize', default=50, type=int, help="bin size, default=50")
+@click.option('-o', '--output', required=True, help="output name")                                 
+def sc_extract_signal(*args, **kwargs):
+    epi.extract_signal(*args, **kwargs)
+
+
+@cli_fun.command(name="signalHeatmap", help="Plot signal heatmap; short alias: shm")
+@click.option('-s', '--score', "files", cls=MultiOption, type=click.Path(exists=True),  
+                required=True, help="AS event file")
 @click.option('-o', '--output', required=True, help="output name")
-@click.option('-nm', '--normalMethod', default="count", type=click.Choice(['count', 'CPM']))
-@click.option('-pe', '--pairedEnd', "paired_end", is_flag=True, default=False)
-@click.option('--title', default="AS sites signal Profile", help="plot title")
-@click.option('--bamMerge', "bam_merge", is_flag=True, default=False, help="bam feature merge")
-@click.option('-et', "--eventType", "as_type", help="bam feature merge")
-def epi_sc(*args, **kwargs):
-    epi.epi_sc(*args, **kwargs)
+@click.option('-st', '--summaryType', "stype", default="median", 
+                type=click.Choice(["mean","median","min","max","std","sum"]), 
+                help="""Define the type of statistic that should be plotted in the summary\n\b
+                        image above the heatmap""")
+@click.option('--label', cls=MultiOption, help="AS event file labels")
+@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
+@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
+@click.option('-cmap', '--colormap', default="RdYlBu", help="heatmap color")
+@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf']),
+                default="auto", help="output figure format")                                 
+def sc_plot_heatmap(*args, **kwargs):
+    from matplotlib.pyplot import colormaps
+    from astk import draw
+
+    if kwargs["fmt"] == "auto":
+        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["colormap"] not in colormaps():
+        msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
+        msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
+        BadParameter(msg)
+    draw.plot_signal_heatmap(*args, **kwargs)
+
 
 @click.command(help="epi signal profile")
 @click.argument('file', nargs=-1, type=click.Path(exists=True), required=True)
@@ -96,6 +122,7 @@ def epi_sc(*args, **kwargs):
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
 def epi_profile_sc(*args, **kwargs):
     epi.epi_profile(*args, **kwargs)
+
 
 @click.command(help="epi signal heatmap")
 @click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)
