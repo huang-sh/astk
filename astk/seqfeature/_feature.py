@@ -95,7 +95,7 @@ def get_elen(file, outdir, app, log):
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
 
-    df_len = ul.get_ss_range(file, app)
+    df_len = ul.get_all_ss_distance(file, app)
     df_len.to_csv(outdir / "element_len.csv")
     ylabel = "log2(length)" if log else "length"
     fig, axes = plt.subplots(1, df_len.shape[1], sharey=True)
