@@ -78,23 +78,44 @@ def list_(*args, **kwargs):
 #     ul.anchor(*args, **kwargs)
  
 
-@cli_fun.command(help="generate bed file according to selected coordinates")
-@click.option('-i', '--input', 'file', type=click.Path(exists=True),
+@cli_fun.command(help="retrieve coordinates from splice site region")
+@click.option('-i', '--input', 'event_file', type=click.Path(exists=True),
                 required=True,  help='AS event file')
-@click.option('-o', '--output', required=True, help="file output path")
-@click.option('-a', '--anchor', cls=MultiOption, type=int, 
+@click.option('-o', '--output', required=True, help="output path")
+@click.option('-si', '--siteIndex', "site_idx", type=int, default=0,
                 help="splice site index. if not set, it will use all splice sites. 1-based")
-@click.option('-uw', '--upstreamWidth', "upstream_w", type=int, default=50,
+@click.option('-uw', '--upstreamWidth', "ups_width", type=int, default=150,
                 help="flank width of splice site upstream")
-@click.option('-dw', '--downstreamWidth', "downstream_w", type=int, default=50,
+@click.option('-dw', '--downstreamWidth', "dws_width", type=int, default=150,
                 help="flank width of splice site downstream")
+@click.option('-ss', '--spliceSite', "sss", is_flag=True, 
+                help="get splice site region window sizes")
 @click.option('--interval', type=(int, int), default=(None, None),
-                help="splice site start and end index, 1-based")
-@click.option('--strandSpecifc', "strand_sp", is_flag=True, help="strand specifc")
-@click.option('-fi', 'fasta', type=click.Path(exists=True), 
+                help="interval the between two splice sites, 1-based")
+@click.option('-fi', 'fasta', type=click.Path(exists=True),
                 help="Input FASTA file. if set, the fasta sequence will be extracted")
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", help="the program that generates event file")
 def getcoor(*args, **kwargs):
-    ul.getcoor(*args, **kwargs)
+    import astk.utils as ul
+
+    output = kwargs.pop("output")
+    interval_idx = kwargs.pop("interval")
+    fasta = kwargs.pop("fasta")
+    if kwargs["site_idx"]:
+        sites = [kwargs["site_idx"] - 1]
+    elif all(interval_idx):
+        sites = [i-1 for i in sorted(interval_idx)]
+
+    kwargs["site_idx"] = sites
+    coord_dic = ul.get_ss_bed(*args, **kwargs)
+    if len(coord_dic) == 1:
+        df = list(coord_dic.values())[0]
+        df.to_csv(output, sep="\t", index=False, header=False)
+        print(list(coord_dic.values())[0].head())
+    elif len(coord_dic) == 2:
+        df = ul.get_ss_range(kwargs["event_file"], *sites, kwargs["app"])
+        df.to_csv(output, sep="\t", index=False, header=False)
 
 
 @cli_fun.command(help="Make the TxDb object")

@@ -94,34 +94,6 @@ def anchor(file, output, index, sideindex, offset5, offset3, strand_sp):
         print(e)
  
 
-def getcoor(
-    file: Union[str, Path],
-    output: Union[str, Path],
-    anchor: Sequence[int], 
-    upstream_w: int, 
-    downstream_w: int, 
-    interval: Tuple[int, int],
-    strand_sp: bool,
-    fasta: Union[str, Path]
-    ):
-    start, end = interval
-    if not any([start, end, anchor]):
-        etype = ulf.sniff_AS_type(file)
-        anchors = list(range(1, SSN[etype]+1))
-    else:
-        anchors = anchor
-
-    for  a in anchors:
-        try:
-            coor_df = ulf.get_coor_bed(file, start, end, strand_sp, a, upstream_w, downstream_w)
-            out_bed = Path(output).with_suffix(f".a{a}.bed")
-            coor_df.to_csv(out_bed, index=False, header=False, sep="\t")
-            if fasta:
-                ulf.get_coor_fa(coor_df, fasta, Path(output).with_suffix(f".a{a}.fa"))
-        except BaseException as e:
-            print(e)
-
-
 def mkTxDb(gtf, organism, output):
     sp = RBP_sp_dic.get(organism, None)
     sp = sp.replace("_", " ")

@@ -1,6 +1,6 @@
 from astk.event import SuppaEventID
 from astk.constant import SS_SCORE_LEN, rMATS_POS_COLS
-from astk.types import FilePath
+from astk.types import *
 from astk.utils import detect_file_info
 
 
@@ -67,13 +67,18 @@ class EventCoord:
         sss: bool = False,
         based0 = True,
         **kwargs
-    ):  
+    ):
         """get all splice site flank coordination bed and return a dict
         """
         dic = {}
         slens = SS_SCORE_LEN[self.app][self.etype]
         site_dic = {23: "3SS", 9: "5SS", -23: "pse_3SS", -9: "pse_5SS"}
+        sites = kwargs.get("site_idx", False)
+        if not sites:
+            sites = list(range(len(slens)))
         for idx, slen in enumerate(slens):
+            if idx not in sites:
+                continue
             sn = site_dic[slen]
             key = f"A{idx+1}_{sn}"
             dic[key] = self.get_ss_flank_bed(idx, ups_w, dws_w, sss, based0, **kwargs)
@@ -120,7 +125,7 @@ class SuppaEventCoord(EventCoord):
         super().__init__(file)
 
     def set_metadata(self, file):
-        from pandas import DataFrame, read_csv
+        from pandas import DataFrame, Series, read_csv
 
         fileinfo = detect_file_info(file)
         self.etype = fileinfo["etype"]
@@ -134,9 +139,9 @@ class SuppaEventCoord(EventCoord):
         def _get_coor(event_id):
             ei = SuppaEventID(event_id)
             coords = reversed(ei.coordinates) if ei.strand == "-" else ei.coordinates
-            return  ei.Chr, ei.event_id, ei.strand, *coords
-        event_df = DataFrame(dpsi_df["event_id"].apply(_get_coor).tolist(),
-                             index=dpsi_df.index)
+            return  Series((ei.Chr, ei.event_id, ei.strand, *coords))
+        
+        event_df = dpsi_df["event_id"].apply(_get_coor)
         self.df_ss = event_df.iloc[:, 3:]
         self.df_ss.columns = range(self.df_ss.shape[1])
         self.ps_idx = event_df.loc[event_df.iloc[:, 2] == "+", ].index
@@ -209,7 +214,6 @@ def get_ss_bed(
     event_file: FilePath, 
     ups_width: int = 150, 
     dws_width: int = 150,
-    strand_sp: bool = False,
     sss: bool = False,
     app: str = "auto",
     **kwargs
@@ -220,7 +224,7 @@ def get_ss_bed(
     )
 
 
-def get_ss_range(event_file, app):
+def get_all_ss_distance(event_file, app):
     from pandas import DataFrame
     
     coori = get_event_coord(event_file, app)
@@ -230,3 +234,22 @@ def get_ss_range(event_file, app):
     for idx in range(ncol):
         df_len.iloc[:, idx] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
     return df_len
+
+
+def get_ss_range(
+    event_file: FilePath,
+    start: int,
+    end: int,
+    app: str = "auto",
+    **kwargs
+):
+    coori = get_event_coord(event_file, app)
+    df_ss = coori.df_ss
+    coord = sorted([start, end])
+    df = coori.df_temp
+    ps_df = df_ss.loc[coori.ps_idx, coord]
+    ns_df = df_ss.loc[coori.ns_idx, reversed(coord)]
+    df.loc[coori.ps_idx, ["start", "end"]] = ps_df.values
+    df.loc[coori.ns_idx, ["start", "end"]] = ns_df.values
+    df["start"] -= 1
+    return df
