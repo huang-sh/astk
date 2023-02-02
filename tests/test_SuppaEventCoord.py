@@ -115,3 +115,6 @@ def test_sss_SuppaEventCoord():  # sourcery skip: assign-if-exp
                 assert all(ps_df.iloc[:, idx] + 200 == df_dw_bed.loc[ps_df.index, "end"])
                 assert all(ns_df.iloc[:, idx] - 200 - 1  == df_dw_bed.loc[ns_df.index, "start"])        
                 assert all(ns_df.iloc[:, idx] - 1  == df_dw_bed.loc[ns_df.index, "end"])
+        
+        df_dic = eventcoor.get_all_flank_bed(sss=True, site_idx=[0, 1])
+        assert len(df_dic.keys()) == 2

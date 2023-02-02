@@ -70,14 +70,14 @@ def signal_profile2(*args, **kwargs):
                 help="AS event file")
 @click.option('-bw', '--bigwig', type=click.Path(exists=True), help="bigwig file")
 @click.option('-st', '--signalType', "stype", type=click.Choice(["mean", "min", "max", "coverage", "std"]), 
-                default="max", help="signal type")
+                default="max", help="signal type, default='max'")
 @click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
                 help="splice site index")
 @click.option('-ew', '--exonWidth', "exon_width", type=int, default=150, 
                 help="exon flank window width, default=150")
 @click.option('-iw', '--intronWidth', "intron_width", type=int, default=150, 
                 help="intron flank window width, default=150")
-@click.option('-bs', '--binSize', default=50, type=int, help="bin size, default=50")
+@click.option('-bs', '--binSize', default=5, type=int, help="bin size, default=50")
 @click.option('-o', '--output', required=True, help="output name")                                 
 def sc_extract_signal(*args, **kwargs):
     epi.extract_signal(*args, **kwargs)
