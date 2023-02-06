@@ -47,7 +47,7 @@ def generatePsi(*args, **kwargs):
 @click.option('-psi', '--psiFile', "psi_files", cls=MultiOption, required=True, 
                 type=click.Path(exists=True),  help="AS event PSI files")
 @click.option('-exp', '--expressFile', "exp_files", cls=MultiOption, required=True, 
-                type=click.Path(exists=True), help="transcript quantification files from salmon")
+                type=click.Path(exists=True), help="transcript TPM quantification files")
 @click.option('-ref', '--reference', type=click.Path(exists=True),
                 help="ioe reference file")
 @click.option('-o', '--output', help="output directory")
