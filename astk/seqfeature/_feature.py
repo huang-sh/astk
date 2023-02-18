@@ -35,7 +35,7 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
     import matplotlib.pyplot as plt
     from pandas import concat
     
-    if app := kwargs.get("app", "auto") == "auto":
+    if (app := kwargs.get("app", "auto")) == "auto":
         app = ul.detect_file_info(file)["app"]
 
     kwargs = {
