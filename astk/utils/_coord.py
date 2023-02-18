@@ -107,9 +107,9 @@ class EventCoord:
     
     def _exclude_region(self, site, **kwargs):
         if kwargs.get("excludeSS", False):
-            if site == 23:
+            if abs(site) == 23:
                 ex_ups_w, ex_dws_w = 20, 3
-            elif site == 9:
+            elif abs(site) == 9:
                 ex_ups_w, ex_dws_w = 3, 6
         else:
             ex_ups_w, ex_dws_w = 0, 0
