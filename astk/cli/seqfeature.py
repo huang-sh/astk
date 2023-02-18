@@ -66,13 +66,14 @@ def sc_get_elen(*args, **kwargs):
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
-@click.option('-bs', '--binsize', default=0, help="use bin size or slide window to compute exon/intron GC content")
-@click.option('-ef', '--exonFlank', default=150, help="the exon flank width")
-@click.option('-if', '--intronFlank', default=150, help="the intron flank width")
+@click.option('-bs', '--binsize', default=15, 
+                help="use bin size or slide window to compute exon/intron GC content, default=15")
+@click.option('-ef', '--exonFlank', default=150, help="the exon flank width, default=150")
+@click.option('-if', '--intronFlank', default=150, help="the intron flank width, default=150")
 @click.option('--includeSS', is_flag=True, default=False, help="include splice site flank region")
 # @click.option('-ele', '--element', is_flag=True, default=False, help="compute the whole exon/intron GC content")
 @click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
-                default="auto", help="the program that generates event file")
+                default="auto", help="the program that generates event file, default='auto'")
 @click.option('-p', '--process', default=4, help="process number, default=4")
 def sc_get_gcc(*args, **kwargs):
     get_gcc(*args, **kwargs)
