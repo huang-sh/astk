@@ -132,9 +132,9 @@ class SuppaEventCoord(EventCoord):
         self.app = fileinfo["app"]
 
         dpsi_df = read_csv(file, sep="\t", index_col=0)
+        dpsi_df["event_id"] = dpsi_df.index
         dpsi_df.drop_duplicates(inplace=True)
         dpsi_df.dropna(inplace=True)
-        dpsi_df["event_id"] = dpsi_df.index
 
         def _get_coor(event_id):
             ei = SuppaEventID(event_id)
