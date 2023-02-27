@@ -117,12 +117,38 @@ def sigfilter(file, output, dpsi, pval, qval, abs_dpsi, sep, app):
         neg_df.to_csv(neg_out, sep="\t")
 
 
-def psi_filter(file, output, psi, quantile):
+def psi_filter(
+    file: str, 
+    output: str, 
+    minv: float = 0, 
+    maxv: float = 1, 
+    minq: float = 0, 
+    maxq: float = 1, 
+    app: str = "auto"
+):
+    from pandas import read_csv
 
-    if file:
-        pf = sl.PsiFilter(file, output, psi, quantile)
-        pf.run()
-  
+    def _rmats_mean_psi(vstr):
+        strings = vstr.split(",")
+        values = [float(i) for i in strings if i != "NA"]
+        return sum(values) / len(values)
+        
+    dpsi_df = read_csv(file, sep="\t", index_col=0).dropna()
+    if app == "auto":
+        app = ul.detect_file_info(file)["app"]
+    if app == "rMATS":        
+        dpsi_df["PSI"] = dpsi_df["IncLevel1"].apply(_rmats_mean_psi)
+    elif app == "SUPPA2":
+        dpsi_df["PSI"] = dpsi_df.apply(lambda row: sum(row)/len(row), axis=1)
+
+    min_psi = max([dpsi_df["PSI"].quantile(minq), minv])
+    max_psi = min([dpsi_df["PSI"].quantile(maxq), maxv])
+    keep = (dpsi_df["PSI"] >= min_psi) & (dpsi_df["PSI"] <= max_psi)
+    df_fil = dpsi_df.loc[keep, ]
+    del df_fil["PSI"]
+    df_fil.to_csv(output, sep="\t")
+    return df_fil
+
 
 def intersect(
     file_a: FilePath,
@@ -130,7 +156,7 @@ def intersect(
     output: FilePath, 
     ioeb: FilePath, 
     ignoreb: bool
-    ) -> None:
+) -> None:
 
     from pandas import read_csv
 

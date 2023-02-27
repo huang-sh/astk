@@ -1,5 +1,5 @@
 from .config import *
-from astk.event import _cli_func as et
+import astk.event as et
 
 
 @cli_fun.command(name="lenDist", help="length distribution; short alias: ld")
@@ -40,12 +40,20 @@ def len_pick(*args, **kwargs):
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 help="input psi file")
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-psi', '--psi', type=float, default=0, help="psi threshold value, defualt=0")
-@click.option('-qt', '--quantile', type=float, default=0, help="quantile threshold value, defualt=0")
+@click.option('-minv', '--minValue', "minv", type=float, default=0, 
+                help="minimum PSI threshold value, defualt=0")
+@click.option('-maxv', '--maxValue', "maxv", type=float, default=1, 
+                help="maximal PSI threshold value, defualt=1")
+@click.option('-minq', '--minQuantile', "minq", type=float, default=0, 
+                help="minimum quantile threshold value, defualt=0")
+@click.option('-maxq', '--maxQuantile', "maxq", type=float, default=1, 
+                help="maximal quantile threshold value, defualt=1")
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                default="auto", help="the program that generates event file, defualt='auto'")
 def psi_filter(*args, **kwargs):
     et.psi_filter(*args, **kwargs)
 
- 
+
 @cli_fun.command(help="intersect AS event")
 @click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="dpsi or psi file A")
 @click.option('-b', "file_b", type=click.Path(exists=True), help="dpsi or psi file B")
