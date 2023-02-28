@@ -3,8 +3,7 @@ import sys
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Sequence, Union, Tuple
-
+from typing import Sequence
 
 import astk.ChromHMM as ch
 from astk.constant import *
@@ -12,27 +11,33 @@ from . import func as ulf
 from astk.utils.meta_template import Template
 
 
-def meta(output, replicate, groupname, ctrl, case, replicate1, replicate2, **kwargs):
-
-    if not (pdir:= Path(output).parent).exists():
-        print(f"{pdir} doest not exist")
-        exit() 
-    if replicate:
-        repN1 = [int(i) for i in replicate]
-        repN2 = [int(i) for i in replicate]
-    elif all([replicate1, replicate1]):
-        repN1 = [int(i) for i in replicate1]
-        repN2 = [int(i) for i in replicate2]
-    else:
-        print("repN1 and repN2 must be set!")    
-        sys.exit()
+def meta(
+    output: str,
+    ctrl_file: Sequence[str], 
+    case_file: Sequence[str], 
+    ctrl_rep: Sequence[int], 
+    case_rep: Sequence[int], 
+    groupname: Sequence[str], 
+    **kwargs
+):
+    app = kwargs.pop("app")
     try:
         tp = Template(kwargs.pop("condition", None))
-        tp.complete_df(groupname, ctrl, case, repN1, repN2, **kwargs)
-        tp.to_csv(output)
-        tp.to_json(output)
+        tp.complete_df(groupname, ctrl_file, case_file, ctrl_rep, case_rep, **kwargs)
     except BaseException as e:
         print(e)
+        sys.exit()
+
+    if app == "SUPPA2":        
+        tp.to_csv(output)
+        tp.to_json(output)
+    elif app == "rMATS":
+        for gn, gdf in tp.df.groupby("group"):
+            for cn, cdf in gdf.groupby("condition"):
+                path_str = ",".join(cdf["path"].tolist())
+                out = Path(output).with_suffix(f".{gn}.{cn}.txt")
+                with open(out, "w") as f:
+                    f.write(path_str)
 
 
 def install(requirement, OrgDb, cran, bioconductor, java, mirror, conda):
