@@ -93,16 +93,6 @@ SS_SCORE_LEN = {
     }
 }
 
-rMATS_EXON_COLS = {
-    "SE": [
-            "upstreamES", "upstreamEE", "exonStart_0base", "exonEnd",
-            "downstreamES", "downstreamEE"
-        ],
-    "A5SS": [
-        "longExonStart_0base","longExonEnd","shortES","shortEE","flankingES","flankingEE"
-    ]
-}
-
 rMATS_POS_COLS = {
     "A5SS": {
         "+": ["longExonStart_0base", "shortEE", "longExonEnd", "flankingES", "flankingEE"],
@@ -129,5 +119,24 @@ rMATS_POS_COLS = {
     "RI": {
         "+": ["upstreamES", "upstreamEE", "downstreamES", "downstreamEE"],
         "-": ["downstreamEE", "downstreamES", "upstreamEE", "upstreamES"],
+    }
+}
+
+ALT_IDX = {
+    "rMATS": {
+        "SE": [2, 3],
+        "A5SS": [1, 2],
+        "A3SS": [2, 3],
+        "MXE": [2, 3, 4, 5],
+        "RI": [1, 2]
+    },
+    "SUPPA2": {
+        "SE": [1, 2],
+        "MX": [1, 2, 3, 4],
+        "A5": [0, 1],
+        "A3": [1, 2],
+        "RI": [1, 2],
+        "AF": [1, 3],
+        "AL": [1, 3]
     }
 }
