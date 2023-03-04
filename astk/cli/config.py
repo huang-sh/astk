@@ -10,6 +10,7 @@ from gettext import gettext as _
 import click
 from click.core import _check_iter
 from click.exceptions import BadParameter, UsageError
+from click_option_group import GroupedOption
 import configparser
 
 from astk.utils import RunConfigure
@@ -88,6 +89,10 @@ class MultiOption(click.Option):
             value = tuple(check_iter(value))
             return tuple(self.type(x, self, ctx) for x in value)
         return convert(value)
+
+
+class GroupedMultiOption(MultiOption, GroupedOption):
+    pass
 
 
 class AliasedGroup(click.Group):
