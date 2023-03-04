@@ -90,7 +90,7 @@ def sc_get_gcc(*args, **kwargs):
                 help="If true, the facets will not x axes across rows.")
 @click.option('-log', "--log", is_flag=True, default=False, help="log2 transformation")
 @click.option('-gn', '--groupNames', cls=MultiOption, type=str, 
-                help="group names, default= g1 g2 ")
+                help="group names, default= g1 g2... ")
 @click.option("--merge-ss", is_flag=True, default=False, help="merge 5'/3' splice sites")      
 @click.option('-mc', '--multiCorrect', type=click.Choice(['bonf', 'HB', 'holm', 'BH' ,'BY']), 
                 help="multiple test correction method")

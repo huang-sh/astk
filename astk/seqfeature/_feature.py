@@ -50,6 +50,7 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
     df_ls = []
     fig, axes = plt.subplots(1, len(coord_dic), figsize= (10, 5))
     for idx, (ssn, (df_up, df_dw)) in enumerate(coord_dic.items()):
+        # print(df_up.shape)
         ss_dir = outdir / ssn
         ss_dir.mkdir(exist_ok=True)
         ul.get_coor_fa(df_up, gfasta, ss_dir / f"{ssn}_ups.fa", strandedness=True)
