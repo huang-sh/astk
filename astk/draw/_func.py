@@ -174,3 +174,26 @@ def plot_signal_heatmap(
     fig.colorbar(im, ax=axs[1:, :])
     plt.savefig(output, bbox_inches='tight', pad_inches=0.1, format=fmt)
     plt.close()
+
+
+def plot_cor_heatmap(**kwargs):
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    if (glabels := kwargs["grouplabel"]) is not None:
+        df_ls = []
+        for idx, file in enumerate(kwargs["files"]):
+            df = pd.read_csv(file, index_col=0)
+            df.columns = [f"{glabels[idx]}_{col}" for col in df.columns]
+            df_ls.append(df)        
+    else:
+        df_ls = [pd.read_csv(file, index_col=0) for file in kwargs["files"]]
+    dfm = pd.concat(df_ls, axis=1)
+    cor = dfm.corr(method=kwargs["method"])
+    fig, ax = plt.subplots(figsize=(kwargs["width"], kwargs["height"]))
+    plt.title(kwargs["title"])
+    sns.heatmap(cor, mask=np.zeros_like(cor, dtype=np.bool), cmap=kwargs["colormap"],
+                square=True, ax=ax)
+    plt.savefig(kwargs["output"], bbox_inches="tight")
