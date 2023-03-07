@@ -78,7 +78,8 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
                 ups_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(-ups_gcc.shape[1], 0)]
                 dws_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(dws_gcc.shape[1])]
         df = concat([ups_gcc, dws_gcc], axis=1)
-        df.index = df_up.iloc[:, 3]
+        # df.index = df_up.iloc[:, 3]
+        df.index = df_up.index
         gcc_mean = df.mean()
         gcc_mean.index = range(-ups_gcc.shape[1], dws_gcc.shape[1])
         axes[idx].plot(gcc_mean)

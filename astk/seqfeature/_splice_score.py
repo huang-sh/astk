@@ -108,7 +108,8 @@ def splice_score(file, outdir, gfasta, app, process):
         elif ssn.endswith("3SS"):
             df_score[ssn] = ss3_seqs_score(ss_dir / f"{ssn}.fa", process)
 
-    df_score.index = df.iloc[:, 3]
+    # df_score.index = df.iloc[:, 3]
+    df_score.index = df.index
     df_score.to_csv(outdir / "splice_scores.csv")
     ax = df_score.plot.box()
     fig = ax.get_figure()
