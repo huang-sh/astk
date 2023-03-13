@@ -2,6 +2,11 @@ from pathlib import Path
 import multiprocessing as mp
 
 import astk.utils as ul
+from astk.lazy_loader import LazyLoader
+
+np = LazyLoader("np", globals(), "numpy")
+pd = LazyLoader("np", globals(), "pandas")
+plt = LazyLoader("plt", globals(), "matplotlib.pyplot")
 
 
 def _seq_gcc(seq):
@@ -20,37 +25,22 @@ def _get_seq_gcc(seq, binsize):
 
 
 def get_seq_gcc(fasta, binsize, process=4):
-    from pandas import DataFrame
-
     with open(fasta, "r") as rh:
         seqs = ul.read_fasta(rh)
         pool = mp.Pool(process)
         gccs = [pool.apply(_get_seq_gcc, args=(seq[1], binsize)) for seq in seqs]
         pool.close()
     
-    return DataFrame(gccs)
+    return pd.DataFrame(gccs)
 
 
-def get_gcc(file, outdir, gfasta, binsize, **kwargs):
-    import matplotlib.pyplot as plt
-    from pandas import concat
-    
-    if (app := kwargs.get("app", "auto")) == "auto":
-        app = ul.detect_file_info(file)["app"]
-
-    kwargs = {
-             "split": True,
-             "excludeSS": not kwargs["includess"],
-             "exon_width": kwargs["exonflank"],
-             "intron_width": kwargs["intronflank"]
-             }
+def get_gcc(coor_dic, outdir, gfasta, binsize):
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
-    coord_dic = ul.get_ss_bed(file, app=app, **kwargs)
+
     df_ls = []
-    fig, axes = plt.subplots(1, len(coord_dic), figsize= (10, 5))
-    for idx, (ssn, (df_up, df_dw)) in enumerate(coord_dic.items()):
-        # print(df_up.shape)
+    fig, axes = plt.subplots(1, len(coor_dic), figsize= (10, 5))
+    for idx, (ssn, (df_up, df_dw)) in enumerate(coor_dic.items()):
         ss_dir = outdir / ssn
         ss_dir.mkdir(exist_ok=True)
         ul.get_coor_fa(df_up, gfasta, ss_dir / f"{ssn}_ups.fa", strandedness=True)
@@ -77,7 +67,7 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
             else:
                 ups_gcc.columns = [f"{ssn}_intron_b{i}" for i in range(-ups_gcc.shape[1], 0)]
                 dws_gcc.columns = [f"{ssn}_exon_b{i}" for i in range(dws_gcc.shape[1])]
-        df = concat([ups_gcc, dws_gcc], axis=1)
+        df = pd.concat([ups_gcc, dws_gcc], axis=1)
         # df.index = df_up.iloc[:, 3]
         df.index = df_up.index
         gcc_mean = df.mean()
@@ -85,16 +75,13 @@ def get_gcc(file, outdir, gfasta, binsize, **kwargs):
         axes[idx].plot(gcc_mean)
         axes[idx].set_ylim([min(0.35, min(gcc_mean)), max(0.65, max(gcc_mean))])
         df_ls.append(df)
-    dfs = concat(df_ls, axis=1)
+    dfs = pd.concat(df_ls, axis=1)
     dfs.to_csv(outdir / "gcc.csv")
     plt.tight_layout()
     plt.savefig(outdir / "gcc.png")
 
 
 def get_elen(file, outdir, app, log):
-    import matplotlib.pyplot as plt
-    import numpy as np
-
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
 

@@ -11,6 +11,9 @@ from tempfile import NamedTemporaryFile
 import astk.utils.func  as ul
 from astk.constant import *
 from astk.types import *
+from astk.lazy_loader import LazyLoader
+
+pd = LazyLoader("np", globals(), "pandas")
 
 
 def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
@@ -362,31 +365,25 @@ def signal_metaplot(
 
 
 def extract_signal(
-    event: FilePath,
+    output: FilePath,        
+    coor_dic: Dict,
     bigwig: FilePath,
     stype : str,
-    sites: Sequence[int], 
-    exon_width: int,
-    intron_width: int,
-    binsize: int,
-    output: FilePath
-) -> str:
-    """extract bigwig signal from AS event file
+    nbins: int
+):
+    """extract bigwig signal from coordinate
 
     Args:
-        event (FilePath): AS event file
+        output (FilePath): output    
+        coor_dic (Dict): AS event splice sites coordinate dict
         bigwig (FilePath): bigwig files
-        exon_width (int):  exon flank window width
-        intron_width (int): intron flank window width
-        binsize (int): bin size
-        output (FilePath): output
+        stype (str): extract bigwig signal type
+        nbins (int): bin number
 
     Returns:
         str: _description_
     """
     import pyBigWig
-    import astk.utils as ul
-    import pandas as pd
 
     def _get_signal(row, bw, stype, nbins):
         values = bw.stats(row[0], row[1], row[2], type=stype, nBins=nbins, exact=True)
@@ -394,14 +391,8 @@ def extract_signal(
             values = reversed(values)
         return pd.Series(values)
     
-    coord_dic = ul.get_ss_bed(event, exon_width, intron_width)
-    nbins = (exon_width + intron_width) // binsize
     sdf_ls = []
-    if sites is None:
-        sites = [i+1 for i in range(len(coord_dic))]
-    for idx, (ss, df) in enumerate(coord_dic.items(), 1):
-        if idx not in sites:
-            continue      
+    for ss, df in coor_dic.items():  
         bw = pyBigWig.open(bigwig)
         _func = partial(_get_signal, bw=bw, stype=stype, nbins=nbins)
         sdf = df.apply(_func, axis=1)

@@ -1,5 +1,5 @@
 from astk.event import SuppaEventID
-from astk.constant import SS_SCORE_LEN, rMATS_POS_COLS
+from astk.constant import SS_SCORE_LEN, rMATS_POS_COLS, ALT_IDX
 from astk.types import *
 from astk.utils import detect_file_info
 
@@ -73,9 +73,11 @@ class EventCoord:
         dic = {}
         slens = SS_SCORE_LEN[self.app][self.etype]
         site_dic = {23: "3SS", 9: "5SS", -23: "pse_3SS", -9: "pse_5SS"}
-        sites = kwargs.get("site_idx", False)
+        sites = kwargs.get("ss_idx", False)
         if not sites:
             sites = list(range(len(slens)))
+        if kwargs.get("altidx", False):
+            sites = ALT_IDX[self.app][self.etype]
         for idx, slen in enumerate(slens):
             if idx not in sites:
                 continue
@@ -217,7 +219,9 @@ def get_ss_bed(
     sss: bool = False,
     app: str = "auto",
     **kwargs
-    ):
+) -> Dict:
+    if app == "auto":
+        app = detect_file_info(event_file)["app"]
     coori = get_event_coord(event_file, app)
     return coori.get_all_flank_bed(
         ups_w=ups_width, dws_w=dws_width, sss=sss, **kwargs

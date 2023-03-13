@@ -6,6 +6,7 @@ This module provide sequence feature extraction cli api
 
 from .config import *
 import astk.seqfeature.feature as sf
+import astk.utils as ul
 from astk.seqfeature import splice_score, get_elen, get_gcc
 from astk.seqfeature import cmp_value
 
@@ -39,15 +40,31 @@ def sc_seqlogo(*args, **kwargs):
 
 
 @cli_fun.command(name="spliceScore", help="Compute 5/3 Splice site strength; short alias: sss")
-@click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
+@click.option('-e', "--event", type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
-@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
-                default="auto", help="the program that generates event file")
-@click.option('-p', '--process', default=4, help="process number, default=4")
+@click.option('-fi', "--fasta",'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
+                default=[], help="splice site index, 0-index")
+@click.option('-alt', '--altIdx', is_flag=True, default=False, show_default=True,
+                help="get alternative splicing sites index")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", show_default=True, help="the program that generates event file")
+@click.option('-p', '--process', type=int, default=4, show_default=True, help="process number")
 def sc_splice_score(*args, **kwargs):
-    splice_score(*args, **kwargs)
+    coor_dic = ul.get_ss_bed(
+        kwargs["event"], 
+        sss=True,
+        app=kwargs["app"],
+        ss_idx=[i+1 for i in kwargs["sites"]],
+        altidx=kwargs["altidx"]        
+    )
+    splice_score(
+        coor_dic,
+        kwargs["outdir"],
+        kwargs["gfasta"],
+        kwargs["process"]
+    )
 
 
 @cli_fun.command(name="getlen", help="Compute element length")
@@ -62,10 +79,14 @@ def sc_get_elen(*args, **kwargs):
 
 
 @cli_fun.command(name="gcc", help="Compute GC content")
-@click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
+@click.option('-e', "--event", type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-fi', '--fasta', 'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
+                default=[], help="splice site index, 1-index")
+@click.option('-alt', '--altIdx', is_flag=True, default=False, show_default=True,
+                help="get alternative splicing sites index")
 @click.option('-bs', '--binsize', default=15, 
                 help="use bin size or slide window to compute exon/intron GC content, default=15")
 @click.option('-ef', '--exonFlank', default=150, help="the exon flank width, default=150")
@@ -75,8 +96,23 @@ def sc_get_elen(*args, **kwargs):
 @click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
                 default="auto", help="the program that generates event file, default='auto'")
 @click.option('-p', '--process', default=4, help="process number, default=4")
-def sc_get_gcc(*args, **kwargs):
-    get_gcc(*args, **kwargs)
+def sc_get_gcc(*args, **kwargs):  
+    coor_dic = ul.get_ss_bed(
+        kwargs["event"], 
+        split=True,
+        app=kwargs["app"],
+        excludeSS=(not kwargs["includess"]),
+        exon_width=kwargs["exonflank"],
+        intron_width=kwargs["intronflank"],
+        ss_idx=[i+1 for i in kwargs["sites"]],
+        altidx=kwargs["altidx"]          
+    )    
+    get_gcc(
+        coor_dic,
+        kwargs["outdir"],
+        kwargs["gfasta"],
+        kwargs["binsize"]
+    )
 
 
 @cli_fun.command(name="vcmp", help="Compare sequence feature value among multiple conditions")
