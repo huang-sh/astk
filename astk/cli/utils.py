@@ -110,7 +110,7 @@ def list_(*args, **kwargs):
 @click.option('-i', '--input', 'event_file', type=click.Path(exists=True),
                 required=True,  help='AS event file')
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-si', '--siteIndex', "site_idx", type=int, default=0,
+@click.option('-si', '--siteIndex', "ss_idx", type=int, default=0,
                 help="splice site index. if not set, it will use all splice sites. 1-based")
 @click.option('-uw', '--upstreamWidth', "ups_width", type=int, default=150,
                 help="flank width of splice site upstream")
@@ -135,7 +135,7 @@ def getcoor(*args, **kwargs):
     elif all(interval_idx):
         sites = [i-1 for i in sorted(interval_idx)]
 
-    kwargs["site_idx"] = sites
+    kwargs["ss_idx"] = sites
     coord_dic = ul.get_ss_bed(*args, **kwargs)
     if len(coord_dic) == 1:
         df = list(coord_dic.values())[0]
@@ -243,138 +243,3 @@ def sc_region_test(*args, **kwargs):
     dpsi_df1.loc[event_ls1, ].to_csv(Path(file1).with_suffix(".peak.dpsi"), sep="\t")
     dpsi_df2.loc[event_ls2, ].to_csv(Path(file2).with_suffix(".peak.dpsi"), sep="\t")
 
-
-
-@cli_fun.command(name="model", help="model prediction")
-@click.option('-i', "--input", 'files', cls=MultiOption, type=click.Path(exists=True), 
-                required=True, help="feature files")
-@click.option('-cv', "--cv", 'nfold', type=int, help="cross validation fold")                
-@click.option('-o', '--output', type=click.Path(), help="output path")              
-def sc_model_eval(*args, **kwargs):
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    from sklearn.model_selection import cross_val_predict
-    from sklearn.model_selection import  StratifiedKFold,StratifiedShuffleSplit
-    from sklearn.metrics import accuracy_score
-    from sklearn.metrics import matthews_corrcoef
-    from sklearn.metrics import precision_recall_fscore_support
-    from sklearn.metrics import confusion_matrix, multilabel_confusion_matrix
-    from sklearn.model_selection import LeaveOneOut
-    from sklearn.metrics import roc_curve, auc, RocCurveDisplay, plot_roc_curve
-    from sklearn.preprocessing import StandardScaler, Normalizer
-    from sklearn.svm import SVC
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.utils import shuffle    
-    import pyranges as pr
-    from pandas import DataFrame
-    from astk.utils._getfasta import get_coor_fa
-    from astk.utils import get_ss_bed, read_fasta, detect_file_info
-    from statsmodels.stats.proportion import proportions_chisquare
-    import numpy as np
-
-
-    def _metrics(y_true, y_pred):
-        cm = confusion_matrix(y_true, y_pred)
-        mcm = multilabel_confusion_matrix(y_true, y_pred)
-        tn = mcm[:, 0, 0]
-        tp = mcm[:, 1, 1]
-        fn = mcm[:, 1, 0]
-        fp = mcm[:, 0, 1]
-        acc = accuracy_score(y_true, y_pred)
-        mcc = matthews_corrcoef(y_true, y_pred)
-        p, r, f1, s = precision_recall_fscore_support(y_true, y_pred, zero_division=0)
-        result = {'tn': tn, 'tp': tp, 'fn': fn, 'fp': fp, 
-                    'precision': p, 'recall': r, "f1-score": f1,
-                    'acc': acc, 'mcc': mcc, 'cm': cm}
-        return result
-
-    # StratifiedShuffleSplit
-    # StratifiedKFold
-    def cv_metrics(clf, x, y, cv):
-        cver = StratifiedKFold(n_splits=cv)
-        # cver = StratifiedShuffleSplit(n_splits=cv, test_size=0.2, random_state=0)
-        y_pred = cross_val_predict(clf, x, y, cv=cver)
-        result = {}
-        for idx, (_, test_idx) in enumerate(cver.split(x, y)):
-            sub_yt, sub_yp = y[test_idx], y_pred[test_idx]
-            result[idx] = _metrics(sub_yt, sub_yp)
-        return result
-
-    def cv_roc_curve_plot(clf, x, y, cv):
-        tprs = []
-        aucs = []        
-        mean_fpr = np.linspace(0, 1, len(y))
-        fig, ax = plt.subplots()
-        cver = StratifiedKFold(n_splits=cv)
-        for i, (train_idx, test_idx) in enumerate(cver.split(x, y)):
-            clf.fit(x[train_idx], y[train_idx])
-            viz = plot_roc_curve(clf, x[test_idx], y[test_idx], ax=ax, name=f"ROC fold {i}", alpha=.3, lw=1)
-            interp_tpr = np.interp(mean_fpr, viz.fpr, viz.tpr)
-            tprs.append(interp_tpr)
-            aucs.append(viz.roc_auc)    
-        ax.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Chance', alpha=.8)
-        mean_fpr = np.linspace(0, 1, len(y))
-        mean_tpr = np.mean(tprs, axis=0)
-        mean_tpr[-1] = 1.0
-        mean_auc = auc(mean_fpr, mean_tpr)
-        std_auc = np.std(aucs)
-        ax.plot(mean_fpr, mean_tpr, color='b', lw=2, alpha=.8,
-                label=r'Mean ROC (AUC = %0.4f)' % mean_auc)
-        std_tpr = np.std(tprs, axis=0)
-        tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-        tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-        ax.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=.2,
-                        label=r'$\pm$ %0.4f std. dev.' % std_auc)
-        ax.set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05],
-            title="Receiver operating characteristic")
-        ax.legend(loc="lower right")
-        name =  clf.__class__.__name__
-        viz = RocCurveDisplay(fpr=mean_fpr, tpr=mean_tpr,
-                                roc_auc=mean_auc, estimator_name=name)
-        return viz
-    
-    def normal_data(data):
-        scaler = Normalizer()
-        new_data = scaler.fit_transform(data)
-        return new_data
-
-    def save_report(metric_dic, report_file):
-        with open(report_file, "w", encoding="utf-8") as f:
-            head = (f"     {'tp':^5}{'fn':^5}{'fp':^5}{'tn':^5}" +
-                    f"{'recall':^8}{'precision':^11}{'f1-score':^11}\n")
-            for idx, sm in metric_dic.items():
-                f.write(f"{idx:^50}")
-                f.write('\n')
-                for i, j in enumerate(sm['cm']):
-                    f.write(f"{i:<4}")
-                    f.write('  '.join(map(str, j.tolist())))
-                    f.write('\n')
-                f.write('\n')
-                f.write(head)
-                tp, fn, fp, tn = sm['tp'], sm['fn'], sm['fp'], sm['tn']
-                ppr, recall, f1s = sm['precision'], sm['recall'], sm['f1-score']
-                cls_i = "{:^5}{:^5}{:^5}{:^5}{:^5}{:^8.2f}{:^11.2f}{:^11.2f}\n"
-                acc_i = "acc{:>48.2f}\n"
-                mcc_i = "mcc{:>48.2f}"
-                for i in range(len(tp)):
-                    line = (i, tp[i], fn[i], fp[i], tn[i], recall[i], ppr[i], f1s[i])
-                    f.write(cls_i.format(*line))
-                f.write(acc_i.format(sm['acc']))
-                f.write(mcc_i.format(sm['mcc']))
-                f.write("\n")
-                f.write("-"*55)
-                f.write("\n")
-            f.write("\n")
-    df_ls = [pd.read_csv(file, index_col=0) for file in kwargs["files"]]
-    for idx, sdf in enumerate(df_ls):
-        sdf["label"] = idx
-    df = pd.concat(df_ls)
-    df.index = range(df.shape[0]) 
-    X = np.array(df.iloc[:, range(df.shape[1]-1)])
-    y = df.iloc[:, -1]
-    X = normal_data(X)
-    clf = SVC(class_weight="balanced")
-    me = cv_metrics(clf, X, y, 3)        
-    # me = loo_metrics(clf, X, y)        
-    save_report(me, kwargs["output"])
