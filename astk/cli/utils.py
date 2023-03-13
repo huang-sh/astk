@@ -170,9 +170,14 @@ def getgene(*args, **kwargs):
                 help="merge direction, 0 for row merge and 1 for column merge")
 @click.option('-rmdup', '--rmdup', type=click.Choice(["index", 'all', 'content']), 
                 help="remove duplicate rows")
-@click.option('-rmna', '--rmna', is_flag=True, help="remove NA data")                
+@click.option('-rmna', '--rmna', is_flag=True, help="remove NA data")
+@click.option('-gl', '--groupLabel', cls=MultiOption, help="add label prefix for different files")
 def sub_merge_files(*args, **kwargs):
     from astk.utils.func import merge_files
+
+    if grouplabel := kwargs["grouplabel"]:
+        if len(grouplabel) != len(kwargs["files"]):
+            raise UsageError("-gl/--groupLabel and -i/--input values number muset be same!")
     merge_files(*args, **kwargs)
 
 

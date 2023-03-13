@@ -451,18 +451,21 @@ def sniff_file_sep(file):
     return sep
 
 
-def merge_files(files, output, axis, rmdup, rmna):
+def merge_files(files, output, axis, rmdup, rmna, grouplabel):
     from pandas import read_csv, concat
 
     sep = sniff_file_sep(files[0])
     df_ls = []
-    for file in files:
+    for idx, file in enumerate(files):
         df = read_csv(file, sep=sep, index_col=0)
         if axis == 0:
             df.columns = [f"c{i}" for i in range(df.shape[1])]
+        if axis == 1 and grouplabel:
+            lp = grouplabel[idx]
+            df.columns = [f"{lp}_{i}" for i in df.columns]
         df_ls.append(df)
     df = concat(df_ls, axis=axis)
-    if rmdup == "all":        
+    if rmdup == "all":    
         df["event_id"] = df.index
         df = df.drop_duplicates()
         del df["event_id"]
