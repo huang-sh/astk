@@ -40,16 +40,16 @@ def len_pick(*args, **kwargs):
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 help="input psi file")
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-minv', '--minValue', "minv", type=float, default=0, show_default=True, 
-                help="minimum PSI threshold value")
-@click.option('-maxv', '--maxValue', "maxv", type=float, default=1, show_default=True, 
-                help="maximal PSI threshold value")
-@click.option('-minq', '--minQuantile', "minq", type=float, default=0, show_default=True, 
-                help="minimum quantile threshold value")
-@click.option('-maxq', '--maxQuantile', "maxq", type=float, default=1, show_default=True, 
-                help="maximal quantile threshold value")
-@click.option('-app','--app', show_default=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]),
-                default="auto", help="the program that generates event file, defualt='auto'")
+@click.option('-minv', '--minValue', "minv", type=click.FloatRange(min=0, max=1), 
+                default=0, show_default=True, help="minimum PSI threshold value")
+@click.option('-maxv', '--maxValue', "maxv", type=click.FloatRange(min=0, max=1), 
+                default=1, show_default=True,  help="maximal PSI threshold value")
+@click.option('-minq', '--minQuantile', "minq", type=click.FloatRange(min=0, max=1), 
+                default=0, show_default=True, help="minimum quantile threshold value")
+@click.option('-maxq', '--maxQuantile', "maxq", type=click.FloatRange(min=0, max=1), 
+                default=1, show_default=True, help="maximal quantile threshold value")
+@click.option('-app','--app', default="auto", type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                show_default=True, help="the program that generates event file")
 def psi_filter(*args, **kwargs):
     et.psi_filter(*args, **kwargs)
 
