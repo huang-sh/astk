@@ -4,7 +4,7 @@ from typing import Sequence
 
 from astk.constant import BASE_DIR, PATHWAY_DB_ORG
 import astk.utils.func  as ul
-from astk.types import FilePath
+from astk.ctypes import FilePath
 from astk.event import SuppaEventID
                 
 def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):

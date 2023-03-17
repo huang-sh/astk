@@ -3,7 +3,7 @@ import sys
 import json
 from pathlib import Path
 
-from astk.types import *
+from astk.ctypes import *
 import astk.utils.select as sl
 from .AS_event import make_events
 from .event_psi import get_ioe_psi

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from astk.constant import *
 import astk.utils.func as ul
-from astk.types import *
+from astk.ctypes import *
 
 
 def gseplot(termid, output, rdata, fmt, width, height, resolution):

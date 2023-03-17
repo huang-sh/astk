@@ -2,7 +2,7 @@ from pathlib import Path
 
 import astk.utils.func  as ul
 import astk.utils.select as sl
-from astk.types import FilePath
+from astk.ctypes import FilePath
 from .eid import SuppaEventID
 
 

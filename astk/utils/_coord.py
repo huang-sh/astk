@@ -1,6 +1,6 @@
 from astk.event import SuppaEventID
 from astk.constant import SS_SCORE_LEN, rMATS_POS_COLS, ALT_IDX
-from astk.types import *
+from astk.ctypes import *
 from astk.utils import detect_file_info
 
 

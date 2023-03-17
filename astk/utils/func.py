@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from functools import partial
 
-from astk.types import FilePath
+from astk.ctypes import FilePath
 from astk.event import SuppaEventID
 from astk.constant import OrgDb_dic, BASE_DIR, SSN, RBP_sp_dic
 

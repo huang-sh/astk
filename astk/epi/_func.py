@@ -10,10 +10,10 @@ from tempfile import NamedTemporaryFile
 
 import astk.utils.func  as ul
 from astk.constant import *
-from astk.types import *
+from astk.ctypes import *
 from astk.lazy_loader import LazyLoader
 
-pd = LazyLoader("np", globals(), "pandas")
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 def site_flanking(chrN, site, sam, control_sam=None, window=150, bins=15):
