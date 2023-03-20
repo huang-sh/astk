@@ -5,7 +5,6 @@ This module provide some experimental function
 """
 
 from .config import *
-import astk.utils._cli_func as ul
 from astk import draw
 
 
@@ -20,12 +19,17 @@ from astk import draw
 @click.option('-cmap', '--colormap', default="RdYlBu", show_default=True, help="matplotlib colormap name")
 @click.option('-title', '--title', default="Correlation Plot", help="figure title")
 @click.option('-gl', '--groupLabel', cls=MultiOption, help="label prefix for multiple files")
+@click.option('-axis', '--axis', type=int, default=0, show_default=True, help="multiple files merge direction")
 def sub_vcor(*args, **kwargs):
     from matplotlib.pyplot import colormaps
 
     if kwargs["colormap"] not in colormaps():
         msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
         msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
-        BadParameter(msg)
-    
+        raise BadParameter(msg)
+    if kwargs["grouplabel"] is not None:
+        if kwargs["axis"] == 0:
+            raise UsageError("-gl/--groupLabel can't be set when --axis 0")
+        if len(kwargs["grouplabel"]) != len(kwargs["files"]):
+            raise BadParameter("-gl/--groupLabel values number must be same with -i/--input values")    
     draw.plot_cor_heatmap(**kwargs)
