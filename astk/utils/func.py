@@ -6,7 +6,12 @@ from functools import partial
 
 from astk.ctypes import FilePath
 from astk.event import SuppaEventID
+from astk.lazy_loader import LazyLoader
 from astk.constant import OrgDb_dic, BASE_DIR, SSN, RBP_sp_dic
+
+
+np = LazyLoader("np", globals(), "numpy")
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 class RunConfigure:
@@ -57,8 +62,6 @@ def sig_filter(df, dpsi=0, abs_dpsi=0, pval=0.05):
 
 
 def compute_feature_len(df):
-    import pandas as pd
-
     AS_len = lambda x: SuppaEventID(x).alter_element_len
     lens = df["event_id"].apply(AS_len)
     len_df = pd.DataFrame(lens.tolist())
@@ -66,8 +69,6 @@ def compute_feature_len(df):
 
 
 def extract_info(df):
-    import pandas as pd
-
     AS_len = lambda x: SuppaEventID(x).alter_element_len
     chrs = df["event_id"].apply(lambda x: x.split(":")[1])
     genes = df["event_id"].apply(lambda x: x.split(";")[0].strip())
@@ -84,8 +85,6 @@ def extract_info(df):
 
 
 def len_hist(len_counts, width, max_len):
-    import numpy as np
-
     offset = (width - max_len % width) if max_len % width else 0
     bins =  (max_len + offset) // width
     counts, bin_edges = np.histogram(len_counts, bins=bins, range=(1, max_len+offset+1))
@@ -103,8 +102,6 @@ def plot_hist_cluster(out, cluster_ls, bins):
 
                                                          
 def custome_cluster_len(df, out, lens, width=10, max_len=500):
-    import pandas as pd
-
     len_count = df["len"]
     counts, bin_edges = len_hist(len_count, width, max_len)
     cluster_ls = []
@@ -134,8 +131,6 @@ def custome_cluster_len(df, out, lens, width=10, max_len=500):
 
 def cluster_len(df, out, n_cls=5, width=10, max_len=500, len_weight=5):
     from sklearn.cluster import KMeans
-    import pandas as pd
-    import numpy as np
 
     len_count = df["len"]
     counts, bin_edges = len_hist(df["len"], width, max_len)
@@ -225,8 +220,6 @@ def get_coor(event_id, start, end, strand_sp, anchor, upstream_w, downstream_w):
 
 #TODO re-code it
 def get_coor_bed(dpsi_file, start, end, strand_sp, anchor, upstream_w, downstream_w):
-    import pandas as pd
-
     wget_coor_coor = partial(get_coor, start=start, end=end, strand_sp=strand_sp,
                     anchor=anchor, upstream_w=upstream_w, downstream_w=downstream_w)
     dpsi_df = pd.read_csv(dpsi_file, sep="\t", index_col=0)
@@ -263,7 +256,6 @@ def get_anchor_coor(event_id, index, sideindex, offset5, offset3, strand_sp):
 
 
 def gen_anchor_bed(dpsi_file, out, index, sideindex, offset5, offset3, strand_sp):
-    import pandas as pd
     from functools import partial
 
     wget_anchor_coor = partial(get_anchor_coor, index=index, 
@@ -282,7 +274,6 @@ def get_evnet_ss_bed(
     ups_width: int, 
     dws_width: int
     ):
-    from pandas import concat
     dic = {}
     etype = sniff_AS_type(event_file)
     for i in range(1, SSN[etype]+1):
@@ -290,7 +281,7 @@ def get_evnet_ss_bed(
                         i, ups_width, dws_width)
         ns_coor_df = get_coor_bed(event_file, None, None, False, 
                         SSN[etype]+1-i, dws_width, ups_width)
-        ai_coor_df = concat([
+        ai_coor_df = pd.concat([
                         ps_coor_df.loc[ps_coor_df[5] == "+", ],
                         ns_coor_df.loc[ns_coor_df[5] == "-", ]])
         dic[f"A{i}"] = ai_coor_df
@@ -335,8 +326,6 @@ def sep_name(name, sep, *idx):
 
 
 def df_len_select(infile, outfile, s, e):
-    import pandas as pd
-
     AS_len = lambda x: SuppaEventID(x).alter_element_len
     sep = sniff_file_sep(infile)
     df = pd.read_csv(infile, sep=sep, index_col=0)
@@ -452,19 +441,17 @@ def sniff_file_sep(file):
 
 
 def merge_files(files, output, axis, rmdup, rmna, grouplabel):
-    from pandas import read_csv, concat
-
     sep = sniff_file_sep(files[0])
     df_ls = []
     for idx, file in enumerate(files):
-        df = read_csv(file, sep=sep, index_col=0)
+        df = pd.read_csv(file, sep=sep, index_col=0)
         if axis == 0:
             df.columns = [f"c{i}" for i in range(df.shape[1])]
         if axis == 1 and grouplabel:
             lp = grouplabel[idx]
             df.columns = [f"{lp}_{i}" for i in df.columns]
         df_ls.append(df)
-    df = concat(df_ls, axis=axis)
+    df = pd.concat(df_ls, axis=axis)
     if rmdup == "all":    
         df["event_id"] = df.index
         df = df.drop_duplicates()
@@ -481,8 +468,6 @@ def merge_files(files, output, axis, rmdup, rmna, grouplabel):
 
 
 def shift2nease(file):
-    import pandas as pd
-
     get_geneid = lambda x: SuppaEventID(x).gene_id.split(".")[0]
     get_start = lambda x: SuppaEventID(x).alter_element_coor[0]
     get_end = lambda x: SuppaEventID(x).alter_element_coor[1]
