@@ -160,6 +160,21 @@ def clf_common_options(func):
     return func
 
 
+def fig_common_options(func):
+    options = [
+       optgroup.group("Figure saveing setting parameters"),
+       optgroup.option('-ff', '--figFormat', "fmt", type=click.Choice(['auto', 'png', 'pdf']),
+                        default="auto", show_default=True, help="output figure format") ,
+       optgroup.option('-fw', '--width', type=float, default=6, show_default=True, 
+                        help="figure width (inch)"),
+       optgroup.option('-fh', '--height', type=float, default=6, show_default=True, 
+                       help="figure height (inch)"),
+    ]
+    for option in reversed(options):
+        func = option(func)
+    return func
+
+
 class IntChoice(click.ParamType):
     name = 'integer choice'
 
