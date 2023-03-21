@@ -119,30 +119,27 @@ def sc_get_gcc(*args, **kwargs):
 @click.option('-e', "--events", 'files', type=click.Path(exists=True), cls=MultiOption, 
                 required=True, help="event files")
 @click.option('-o', '--output', type=click.Path(), help="output path")
-@click.option('-test', '--test', default="Mann-Whitney", 
+@click.option('-test', '--test', default="Mann-Whitney", show_default=True, 
                 type=click.Choice(['Mann-Whitney', 't-test_ind', 't-test_welch', "Wilcoxon"]), 
-                help=" statistical test method, default='Mann-Whitney'") 
-@click.option('-facet', "--facet", is_flag=True, default=False, 
+                help=" statistical test method") 
+@click.option('-facet', "--facet", is_flag=True, default=False, show_default=True, 
                 help="If true, the facets will not x axes across rows.")
-@click.option('-log', "--log", is_flag=True, default=False, help="log2 transformation")
+@click.option('-log', "--log", is_flag=True, default=False, show_default=True, help="log2 transformation")
 @click.option('-gn', '--groupNames', cls=MultiOption, type=str, 
                 help="group names, default= g1 g2... ")
-@click.option("--merge-ss", is_flag=True, default=False, help="merge 5'/3' splice sites")      
+@click.option("--merge-ss", is_flag=True, default=False, show_default=True, help="merge 5'/3' splice sites")      
 @click.option('-mc', '--multiCorrect', type=click.Choice(['bonf', 'HB', 'holm', 'BH' ,'BY']), 
                 help="multiple test correction method")
 @click.option('--pvalText', type=click.Choice(['star', 'simple']), default="star",
-                help="p-value display format, default='star'")
-@click.option('--xtitle', default="item", help="x title, default='item'")
-@click.option('--ytitle', default="value", help="y title, default='value'")
+                show_default=True, help="p-value display format")
+@click.option('--xtitle', default="xtitle", show_default=True, help="x title")
+@click.option('--ytitle', default="ytitle", show_default=True, help="y title")
 @click.option('--xlabel', cls=MultiOption, type= str, help="x labels, default is input file colnames")
-@click.option('--xrotation', type=int, default=0, help="x tick labels rotation")
+@click.option('--xrotation', type=float, default=0, show_default=True, help="x tick labels rotation")
 @click.option('-fs', '--figSize', type=(float, float), help="figure size")
-@click.option('-ft', '--figType',  default="box", help="figure display type",
+@click.option('-ft', '--figType',  default="box", show_default=True, help="figure display type",
                 type=click.Choice(["point", 'strip', 'box', 'boxen', 'violin', 'bar']))
-@click.option('-ff', '--figFormat', type=click.Choice(['auto', 'png', 'pdf', 'tiff', 'jpeg']),
-                default="auto", help="output figure format")
-@click.option('-fw', '--width', type=float, help="figure width")
-@click.option('-fh', '--height', type=float, help="figure height")  
+@fig_common_options
 def sc_cmp_value(*args, **kwargs):
     fn = len(kwargs["files"])
     if fn < 2:

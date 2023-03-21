@@ -91,7 +91,7 @@ def cmp_value(files, output, test, **kwargs):
         fig_kwargs["height"] = kwargs["height"]
         fig_kwargs["aspect"] = kwargs["width"] / kwargs["height"]
     g = sns.catplot(
-        data=dft, kind=fig_type, x=xn, y=yn, 
+        data=dft, kind=fig_type, x=xn, y=yn,
         hue="condition", legend=False, **fig_kwargs)
     test_kwargs = {
         "comparisons_correction": kwargs["multicorrect"], 
@@ -122,7 +122,7 @@ def cmp_value(files, output, test, **kwargs):
         annotator.apply_test()
         annotator.annotate() 
     plt.legend(loc='upper left', bbox_to_anchor=(1.03, 1))
-    fig_fmt = kwargs.get("figformat", "auto")
+    fig_fmt = kwargs.get("figfmt", "auto")
     if fig_fmt == "auto":
         fig_fmt = sniff_fig_fmt(output, fmts=['png', 'pdf', 'tiff', 'jpeg'])
     output = Path(output).with_suffix(f".{fig_fmt}")
