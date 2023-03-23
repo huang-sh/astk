@@ -163,7 +163,7 @@ def clf_common_options(func):
 def fig_common_options(func):
     options = [
        optgroup.group("Figure saveing setting parameters"),
-       optgroup.option('-ff', '--figFormat', "fmt", type=click.Choice(['auto', 'png', 'pdf']),
+       optgroup.option('-ff', '--figFormat', "figfmt", type=click.Choice(['auto', 'png', 'pdf']),
                         default="auto", show_default=True, help="output figure format") ,
        optgroup.option('-fw', '--width', type=float, default=6, show_default=True, 
                         help="figure width (inch)"),
