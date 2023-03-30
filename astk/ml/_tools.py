@@ -90,5 +90,35 @@ def choose_clf(**kwargs):
     return clf
 
 
-def pca_():
+def plot_pca(output, data, label):
+    import matplotlib.pyplot as plt
     from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
+
+    # Preprocess the data by scaling it to have zero mean and unit variance
+    scaler = StandardScaler()
+    X = scaler.fit_transform(data)
+
+    # Perform PCA on the preprocessed data
+    pca = PCA(n_components=2)
+    pcs = pca.fit_transform(X)    
+
+    # Create a new DataFrame with the principal components and the labels
+    pc_df = pd.DataFrame(data=pcs, columns=['PC1', 'PC2'])
+    pc_df['label'] = label
+
+    # Plot the results
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_xlabel('PC1 ({:.2f}%)'.format(pca.explained_variance_ratio_[0]*100), fontsize=15)
+    ax.set_ylabel('PC2 ({:.2f}%)'.format(pca.explained_variance_ratio_[1]*100), fontsize=15)
+    ax.set_title('PCA', fontsize=20)
+
+    for target in list(dict.fromkeys(label)):
+        indices = pc_df['label'] == target
+        ax.scatter(
+                pc_df.loc[indices, 'PC1'],
+                pc_df.loc[indices, 'PC2'],
+                label=target)
+    ax.legend()
+    plt.savefig(output)

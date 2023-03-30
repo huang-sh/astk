@@ -52,7 +52,7 @@ def volcano(*args, **kwargs):
     draw.volcano(*args, **kwargs)
 
 
-@cli_fun.command(help="PCA analysis for PSI")
+@cli_fun.command(name="pca1", help="PCA analysis for PSI")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 required=True, help="input psi files")
 @click.option('-o', '--output', required=True, help="figure output path")
@@ -70,6 +70,39 @@ def pca(*args, **kwargs):
             print("-gn/--groupName values number must be same as -i/--input")
             exit()
     draw.pca(*args, **kwargs)
+
+
+@cli_fun.command(name="pca", help="PCA analysis for PSI")
+@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
+                required=True, help="input psi files")
+@click.option('-o', '--output', required=True, help="figure output path")
+@click.option('-gl', '--groupLabel', cls=MultiOption, type=str, help="file label")
+@click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), 
+                help="separator of file content")
+@fig_common_options
+def sc_pca(*args, **kwargs):
+    import pandas as pd
+    from .ml import plot_pca
+
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
+    if gn := kwargs.get("grouplabel", []):
+        if len(gn) != len(kwargs["files"]):
+            raise UsageError("-gl/--groupLabel number must be same as -i/--input")
+    else:
+        gn = [idx for idx, _ in enumerate(kwargs["files"])]
+    if kwargs["sep"] in ("\\t", "t"):
+        sep = "\t"
+    else:
+        sep = kwargs["sep"]
+
+    dfs, labels = [], [ ]
+    for idx, file in enumerate(kwargs["files"]):
+        df = pd.read_csv(file, sep=sep, index_col=0)
+        labels.extend([gn[idx]] * df.shape[1])
+        dfs.append(df)
+    dfm = pd.concat(dfs, axis=1, join='inner').dropna().T
+    plot_pca(kwargs["output"], dfm, labels)
 
 
 @cli_fun.command(help="Heatmap plot for PSI; short alias: hm")
