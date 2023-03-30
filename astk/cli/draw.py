@@ -79,6 +79,9 @@ def pca(*args, **kwargs):
 @click.option('-gl', '--groupLabel', cls=MultiOption, type=str, help="file label")
 @click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), 
                 help="separator of file content")
+@click.option('-gb', '--groupBy', type=click.Choice(["row", "col"]), required=True, 
+                help=("this option is used to choose whether the sample information is stored in rows or columns;"
+                       "AS event PSI use col, feature values use row"))
 @fig_common_options
 def sc_pca(*args, **kwargs):
     import pandas as pd
@@ -96,12 +99,15 @@ def sc_pca(*args, **kwargs):
     else:
         sep = kwargs["sep"]
 
-    dfs, labels = [], [ ]
+    axis = 1 if kwargs["groupby"] == "col" else 0
+    dfs, labels = [], []
     for idx, file in enumerate(kwargs["files"]):
         df = pd.read_csv(file, sep=sep, index_col=0)
-        labels.extend([gn[idx]] * df.shape[1])
+        labels.extend([gn[idx]] * df.shape[axis])
         dfs.append(df)
-    dfm = pd.concat(dfs, axis=1, join='inner').dropna().T
+    dfm = pd.concat(dfs, axis=axis, join='inner').dropna()
+    dfm = dfm.T if axis == 1 else dfm
+    print(dfm.head())
     plot_pca(kwargs["output"], dfm, labels)
 
 
