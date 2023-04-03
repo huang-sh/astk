@@ -28,9 +28,10 @@ def enrich(
     gene_id: str, 
     organism: str, 
     simple: bool,
-    fmt: str, 
+    figfmt: str, 
     width: float, 
-    height: float
+    height: float,
+    app: str
 ) -> None:
     rscript = BASE_DIR / "R" / "enrich.R"
     if not (org_db := ul.select_OrgDb(organism)):
@@ -51,12 +52,13 @@ def enrich(
         "simple": simple,
         "width": width,
         "height": height,
-        "fmt": fmt
+        "fmt": figfmt,
+        "app": app
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
-             
+
 def enrich_cmp(
     files: Sequence[FilePath],
     outdir: FilePath, 
@@ -67,9 +69,10 @@ def enrich_cmp(
     xlabel: Sequence[str],
     gene_id: str,
     organism: str,
-    fmt: str,
+    figfmt: str,
     width: float,
-    height: float
+    height: float,
+    app: str
 ) -> None:
 
     if not (org_db := ul.select_OrgDb(organism)):
@@ -91,7 +94,8 @@ def enrich_cmp(
         "ontology": ontology,
         "width": width,
         "height": height,
-        "fmt": fmt
+        "fmt": figfmt,
+        "app": app
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])

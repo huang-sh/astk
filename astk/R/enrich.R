@@ -15,6 +15,7 @@ parser$add_argument("--genetype", help="gene type")
 parser$add_argument("--organism", help="kegg organism")
 parser$add_argument("--file", help="dpsi files")
 parser$add_argument("--simple", action='store_true', help="simple")
+parser$add_argument("--app", help="software output")
 
 args <- parser$parse_args()
 
@@ -27,18 +28,23 @@ gene_type <- args$genetype
 org_db <- args$orgdb
 organism <- args$organism
 dpsi_file <- args$file
+app <- args$app
 
 suppressMessages(library(org_db, character.only = T))
 
+if (app == "SUPPA2"){
+    dpsi <- read_tsv(dpsi_file, 
+                    skip      = 1, 
+                    col_names = F,
+                    col_types = cols("c", "d", "d"))
 
-dpsi <- read_tsv(dpsi_file, 
-                skip      = 1, 
-                col_names = F,
-                col_types = cols("c", "d", "d"))
+    colnames(dpsi) = c("event_id", "dpsi", "pval")
+    genes <- gsub("\\..*", "",  dpsi$event_id)  
+} else if (app == "rMATS"){
+    df  <-  read_tsv(dpsi_file)
+    genes <- gsub("\\..*", "",  df$GeneID)   
+}
 
-colnames(dpsi) = c("event_id", "dpsi", "pval")
-
-genes <- gsub("\\..*", "",  dpsi$event_id) 
 
 if (db == "GO"){
     p <- enrichGOSep(genes, 

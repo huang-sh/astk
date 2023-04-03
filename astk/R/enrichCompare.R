@@ -15,6 +15,7 @@ parser$add_argument("--genetype", help="gene type")
 parser$add_argument("--organism", help="organism")
 parser$add_argument("--files",  nargs='+', help="dpsi files")
 parser$add_argument("--xlabel",  nargs='+', help="dpsi files")
+parser$add_argument("--app", help="software output")
 
 args <- parser$parse_args()
 
@@ -28,6 +29,7 @@ organism <- args$organism
 dpsi_files <- args$files
 xlabel <- args$xlabel
 ontology <- args$ontology
+app <- args$app
 
 suppressMessages(library(orgdb, character.only = T))
 
@@ -44,13 +46,19 @@ if (length(unique(xlabel)) == length(dpsi_files)){
    filenames <- filenames
 }
 
-
 gene_ls <- lapply(dpsi_files, function(file){
-    dpsi <- read_tsv(file, 
-                    skip      = 1, 
-                    col_names = F,
-                    col_types = cols("c", "d", "d"))
-    genes <- unique(gsub("\\..*", "",  dpsi$X1))   
+    if (app == "SUPPA2"){
+        dpsi <- read_tsv(file, 
+                        skip      = 1, 
+                        col_names = F,
+                        col_types = cols("c", "d", "d")
+                        )
+        colnames(dpsi) = c("event_id", "dpsi", "pval")
+        genes <- gsub("\\..*", "",  dpsi$event_id)  
+    } else if (app == "rMATS"){
+        df  <-  read_tsv(file)
+        genes <- gsub("\\..*", "",  df$GeneID)   
+    }
     return(genes)
 })
 

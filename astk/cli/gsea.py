@@ -1,6 +1,9 @@
+from click_option_group import optgroup
+
 from .config import *
 from astk.constant import NEASE_DATABASE
 from astk import gsea
+from astk.utils import detect_file_info
 
 
 @cli_fun.command(name="gsea", help="Gene Set Enrichment Analysis")
@@ -20,8 +23,10 @@ from astk import gsea
                 default="BP", help="one of 'BP', 'MF', and 'CC' subontologies.")  
 @click.option('-org', '--keggOrganism', "organism", default = "",
                 help="KEGG organism short alias.This is required if -db is KEGG.\
-                    Organism list in http://www.genome.jp/kegg/catalog/org_list.html")                            
+                    Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
 def gsea_fun(*args, **kwargs):
+    if app := detect_file_info(kwargs["file"])["app"]:
+        raise UsageError("-i/--input only support SUPPA2 output in gsea sub-command")    
     gsea.gsea_fun(*args, **kwargs)
 
 
@@ -40,11 +45,14 @@ def gsea_fun(*args, **kwargs):
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), 
                 required=True, help="organism")
 @click.option('--simple', is_flag=True, help="simplify GO enrichment")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                 default="pdf", help="output figure format") 
-@click.option('-fw', '--width', type=float, default=10, help="figure width, default=6 inches")
-@click.option('-fh', '--height', type=float, default=12, help="figure height, default=6 inches")  
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", help="the program that generates event file")
+@fig_common_options()          
 def enrich(*args, **kwargs):
+    if kwargs["app"] == "auto":
+        kwargs["app"] = detect_file_info(kwargs["file"])["app"]
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = "png"        
     gsea.enrich(*args, **kwargs)
 
 
@@ -63,11 +71,14 @@ def enrich(*args, **kwargs):
                 default="ENSEMBL", help="gene ID type")                      
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True,
                 help="organism: hs|mm")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="pdf", help="output figure format")
-@click.option('-fw', '--width', type=float, default=6, help="figure width, default=6 inches")
-@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")
+@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", help="the program that generates event file")
+@fig_common_options()
 def enrich_cmp(*args, **kwargs):
+    if kwargs["app"] == "auto":
+        kwargs["app"] = detect_file_info(kwargs["files"][0])["app"]
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = "png"
     gsea.enrich_cmp(*args, **kwargs)
 
 
