@@ -9,6 +9,9 @@ from .AS_event import make_events
 from .event_psi import get_ioe_psi
 from .gtf_parse import construct_genome
 from astk.suppa.lib.diff_tools import multiple_conditions_analysis as mca
+from astk.lazy_loader import LazyLoader
+
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 def check_gtf_used(gtf):
@@ -16,7 +19,7 @@ def check_gtf_used(gtf):
     gtf_hash = hashlib.blake2b()
     gtf_size = gtf.stat().st_size
     gtf_hash.update(str(gtf_size).encode('utf-8'))
-    f = gtf.open("rb")
+    f = gtf.open("rb") 
     for _ in range(10):
         gtf_hash.update(f.readline().strip())
     return gtf_hash.hexdigest()
@@ -55,8 +58,6 @@ def diff_splice(
 
 
 def read_tpm(file, colname, tpm_col):
-    import pandas as pd
-
     quant_df = pd.read_csv(file, sep = "\t")
     tpm_df = pd.DataFrame({colname: quant_df.iloc[:, tpm_col-1]})
     tpm_df.index = quant_df.iloc[:, 0]
@@ -64,9 +65,7 @@ def read_tpm(file, colname, tpm_col):
 
 
 def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
-    import pandas as pd
     ioe_df = pd.read_csv(ioe, sep="\t")
-
     psi_dic = {}
     tpm_ls = []
     for tf in tpm_files:
@@ -81,7 +80,6 @@ def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
 
 
 def parse_meta(meta_file: FilePath) -> Dict:
-
     tpm_dic = {}
     with open(meta_file, "r") as f:
         try:
@@ -108,8 +106,6 @@ def ds_flow(
     tpm_threshold: float,
     event_pos: str
     ):
-    import pandas as pd
-
     Path(outdir).mkdir(exist_ok=True)
     tpm_dic = parse_meta(meta)
     genome = construct_genome(gtf)
