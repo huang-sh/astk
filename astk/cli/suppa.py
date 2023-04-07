@@ -15,7 +15,7 @@ from astk.constant import AS_TYPE
                 default="ALL", help="AS event Type")
 @click.option('-o', '--output', required=True, 
                 help="name of the output file without any extension")
-@click.option('--idType', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
+@click.option('--id-type', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
                 help="output event ID type, default='SUPPA2'") 
 @click.option('-ep','--event-pos', type=click.Choice(['body', 'FT', 'LT']), 
                 help="AS event exon that overlapping the transcript first or last \
@@ -31,7 +31,7 @@ def generateEvents(*args, **kwargs):
                 help="transcript quantification files")
 @click.option('--tpmThreshold', "tpm_th", type=float, default=0, show_default=True,
                 help="minimum transcript TPM value that using for calculates PSI")                
-@click.option('--tpmCol', "tpm_col", type=int, default=4, show_default=True, 
+@click.option('--tpm-col', "tpm_col", type=int, default=4, show_default=True, 
                 help="TPM columns index, 1-based")
 @click.option('--txCol', "tx_col", type=int, default=0, show_default=True,
                 help="transcript ID columns index, 1-based")
@@ -68,7 +68,7 @@ def diffSplice(*args, **kwargs):
 @click.option('-m', '--method', type=click.Choice(['empirical', 'classical']), default="empirical",
                 show_default=True, help="The method to calculate the significance")
 @click.option('-p', '--pval', type=click.FloatRange(min=0, max=1), 
-                default=0.05, show_default=True, help="pval threshold value")
+                default=0.05, show_default=True, help="pval threshold  value")
 @click.option('-adpsi', '--abs-dpsi', type=click.FloatRange(min=0, max=1), 
                 default=0.1, show_default=True, help="absulte dpsi threshold value")
 @click.option('--id-type', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
@@ -77,7 +77,8 @@ def diffSplice(*args, **kwargs):
              help="Defines the number of nucleotides to display in the output GTF. (Default: 100 nt)")             
 @click.option('-pg', '--pool-genes', default=False, is_flag=True, 
              help="pool together overlapping genes")
-@click.option('--tpm-col', type=int, help="TPM columns index, default=4")
+@click.option('--tpm-col', "tpm_col", type=int, default=4, show_default=True, 
+                help="TPM columns index, 1-based")
 @click.option('--tpm-threshold', type=float, default=0, 
                 help="Minimum TPM value to be included in the analysis. default=0")
 @click.option('-ep','--event-pos', type=click.Choice(['body', 'FT', 'LT']), 
@@ -97,5 +98,6 @@ def dsflow(*args, **kwargs):
         kwargs.get("pval"),
         kwargs.get("abs_dpsi"),
         kwargs.get("tpm_threshold"),
-        kwargs.get("event_pos")
+        kwargs.get("event_pos"),
+        kwargs.get("tpm_col")
     )
