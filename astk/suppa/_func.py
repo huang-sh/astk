@@ -104,7 +104,8 @@ def ds_flow(
     pval: float,
     abs_dpsi: float,
     tpm_threshold: float,
-    event_pos: str
+    event_pos: str,
+    tpm_col: int
     ):
     Path(outdir).mkdir(exist_ok=True)
     tpm_dic = parse_meta(meta)
@@ -134,8 +135,8 @@ def ds_flow(
             ctrl_psi_ls = []
             case_psi_ls = []
             for (cf, cn), (tf, tn) in zip(gn_dic["ctrl"], gn_dic["case"]):
-                cdf = read_tpm(cf, cn, 4)
-                tdf = read_tpm(tf, tn, 4)
+                cdf = read_tpm(cf, cn, tpm_col)
+                tdf = read_tpm(tf, tn, tpm_col)
                 ctrl_tpm_ls.append(cdf)
                 case_tpm_ls.append(tdf)
 
