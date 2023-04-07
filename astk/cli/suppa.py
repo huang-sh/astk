@@ -28,12 +28,13 @@ def generateEvents(*args, **kwargs):
 @click.option('-o', '--output', type=click.Path(), required=True, help="output file path")
 @click.option('-ioe', '--ioe', type=click.Path(exists=True), help="ioe file path")
 @click.option('-qf', '--quantifyFile', "tpm_files", cls=MultiOption, type=click.Path(exists=True),
-                help="transcript quantification files from salmon")
-@click.option('--tpmThreshold', "tpm_th", type=float, default=0, 
-                help="minimum transcript TPM value that using for calculates PSI, default=0")                
-@click.option('--tpmCol', "tpm_col", type=int, default=4, help="TPM columns index,0-based, default=4")
-@click.option('--txCol', "tx_col", type=int, default=0, 
-                help="transcript ID columns index, 0-based")
+                help="transcript quantification files")
+@click.option('--tpmThreshold', "tpm_th", type=float, default=0, show_default=True,
+                help="minimum transcript TPM value that using for calculates PSI")                
+@click.option('--tpmCol', "tpm_col", type=int, default=4, show_default=True, 
+                help="TPM columns index, 1-based")
+@click.option('--txCol', "tx_col", type=int, default=0, show_default=True,
+                help="transcript ID columns index, 1-based")
 def generatePsi(*args, **kwargs):
     from pathlib import Path
     
