@@ -124,7 +124,7 @@ def sc_eval(*args, **kwargs):
                    default="accuracy", show_default=True, help="scorer to use")
 @optgroup.option('-repeatN', '--repeatN', type=int, default=5, show_default=True, 
                    help="number of times to permute a feature.")
-@fig_common_options
+@fig_common_options()
 @optgroup.group("Important feature saving")
 @optgroup.option('-topN', "--topN", type=int, default=0, show_default=True, 
                    help="the top number feature to save")

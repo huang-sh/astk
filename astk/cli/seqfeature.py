@@ -139,7 +139,7 @@ def sc_get_gcc(*args, **kwargs):
 @click.option('-fs', '--figSize', type=(float, float), help="figure size")
 @click.option('-ft', '--figType',  default="box", show_default=True, help="figure display type",
                 type=click.Choice(["point", 'strip', 'box', 'boxen', 'violin', 'bar']))
-@fig_common_options
+@fig_common_options()
 def sc_cmp_value(*args, **kwargs):
     fn = len(kwargs["files"])
     if fn < 2:

@@ -82,7 +82,7 @@ def pca(*args, **kwargs):
 @click.option('-gb', '--groupBy', type=click.Choice(["row", "col"]), required=True, 
                 help=("this option is used to choose whether the sample information is stored in rows or columns;"
                        "AS event PSI use col, feature values use row"))
-@fig_common_options
+@fig_common_options()
 def sc_pca(*args, **kwargs):
     import pandas as pd
     from .ml import plot_pca
@@ -98,7 +98,6 @@ def sc_pca(*args, **kwargs):
         sep = "\t"
     else:
         sep = kwargs["sep"]
-
     axis = 1 if kwargs["groupby"] == "col" else 0
     dfs, labels = [], []
     for idx, file in enumerate(kwargs["files"]):
@@ -107,7 +106,6 @@ def sc_pca(*args, **kwargs):
         dfs.append(df)
     dfm = pd.concat(dfs, axis=axis, join='inner').dropna()
     dfm = dfm.T if axis == 1 else dfm
-    print(dfm.head())
     plot_pca(kwargs["output"], dfm, labels)
 
 
