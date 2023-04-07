@@ -4,16 +4,16 @@ from astk.constant import rMATS_POS_COLS
 
 import pandas as pd
 
-def test_sss_SuppaEventCoord():  # sourcery skip: assign-if-exp
+def test_sss_SuppaEventCoord(shared_datadir):  # sourcery skip: assign-if-exp
 
     files = {
-        "A3": "data/fb_e11_12_A3.dpsi",
-        "A5": "data/fb_e11_12_A5.sig.dpsi",
-        "SE": "data/fb_e11_12_SE.sig.dpsi",
-        "RI": "data/fb_e11_12_RI.sig.dpsi",
-        "MX":"data/fb_e11_12_MX.sig.dpsi",
-        "AF":"data/fb_e11_12_AF.sig.dpsi",
-        "AL":"data/fb_e11_12_AL.sig.dpsi",
+        "A3": f"{shared_datadir}/fb_e11_12_A3.dpsi",
+        "A5": f"{shared_datadir}/fb_e11_12_A5.sig.dpsi",
+        "SE": f"{shared_datadir}/fb_e11_12_SE.sig.dpsi",
+        "RI": f"{shared_datadir}/fb_e11_12_RI.sig.dpsi",
+        "MX":f"{shared_datadir}/fb_e11_12_MX.sig.dpsi",
+        "AF":f"{shared_datadir}/fb_e11_12_AF.sig.dpsi",
+        "AL":f"{shared_datadir}/fb_e11_12_AL.sig.dpsi",
     }
     etype_ss_names = {
         "A3": ["A1_5SS", "A2_3SS", "A3_3SS"],
@@ -116,5 +116,5 @@ def test_sss_SuppaEventCoord():  # sourcery skip: assign-if-exp
                 assert all(ns_df.iloc[:, idx] - 200 - 1  == df_dw_bed.loc[ns_df.index, "start"])        
                 assert all(ns_df.iloc[:, idx] - 1  == df_dw_bed.loc[ns_df.index, "end"])
         
-        df_dic = eventcoor.get_all_flank_bed(sss=True, site_idx=[0, 1])
+        df_dic = eventcoor.get_all_flank_bed(sss=True, ss_idx=[0, 1])
         assert len(df_dic.keys()) == 2

@@ -2,8 +2,8 @@ from pandas import read_csv
 import astk.event as et
 
 
-def test_rmats_psi_filter():
-    rmats_file = "data/test_psi_filter_rmats.txt"
+def test_rmats_psi_filter(shared_datadir):
+    rmats_file = f"{shared_datadir}/test_psi_filter_rmats.txt"
 
     dpsi_df = read_csv(rmats_file, sep="\t", index_col=0).dropna()
 
@@ -33,8 +33,8 @@ def test_rmats_psi_filter():
     assert rmats_df_max.equals(df_fil_max)
 
 
-def test_suppa2_psi_filter():
-    suppa_file = "data/test_psi_filter_suppa2.psi"
+def test_suppa2_psi_filter(shared_datadir):
+    suppa_file = f"{shared_datadir}/test_psi_filter_suppa2.psi"
         
     dpsi_df = read_csv(suppa_file, sep="\t", index_col=0).dropna()
 

@@ -4,8 +4,8 @@ import pandas as pd
 from astk.utils import get_ss_bed
 
 
-def test_SUPPA2_get_ss_bed():
-    file = "data/fb_e11_12_SE.sig.dpsi"
+def test_SUPPA2_get_ss_bed(shared_datadir):
+    file = f"{shared_datadir}/fb_e11_12_SE.sig.dpsi"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 2], app="SUPPA2")
     assert len(coor_dic1) == 2
     assert list(coor_dic1.keys()) == ["A2_3SS", "A3_5SS"]
@@ -26,7 +26,7 @@ def test_SUPPA2_get_ss_bed():
     assert len(coor_dic) == 2
     assert list(coor_dic.keys()) == ["A2_3SS", "A3_5SS"]
 
-    file = "data/fb_e11_12_A3.dpsi"
+    file = f"{shared_datadir}/fb_e11_12_A3.dpsi"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 2])
     assert len(coor_dic1) == 2
     assert list(coor_dic1.keys()) == ["A2_3SS", "A3_3SS"]
@@ -39,7 +39,7 @@ def test_SUPPA2_get_ss_bed():
     assert len(coor_dic) == 2
     assert list(coor_dic.keys()) == ["A2_3SS", "A3_3SS"]
 
-    file = "data/fb_e11_12_A5.sig.dpsi"
+    file = f"{shared_datadir}/fb_e11_12_A5.sig.dpsi"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 2])
     assert len(coor_dic1) == 2
     assert list(coor_dic1.keys()) == ["A2_5SS", "A3_3SS"]
@@ -52,7 +52,7 @@ def test_SUPPA2_get_ss_bed():
     assert len(coor_dic) == 2
     assert list(coor_dic.keys()) == ["A1_5SS", "A2_5SS"]
 
-    file = "data/fb_e11_12_AF.sig.dpsi"
+    file = f"{shared_datadir}/fb_e11_12_AF.sig.dpsi"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 2])
     assert len(coor_dic1) == 2
     assert list(coor_dic1.keys()) == ["A2_5SS", "A3_pse_3SS"]
@@ -66,8 +66,8 @@ def test_SUPPA2_get_ss_bed():
     assert list(coor_dic.keys()) == ["A2_5SS", "A4_5SS"]
 
 
-def test_rMATS_get_ss_bed():
-    file = "data/A3SS.MATS.JC.txt"
+def test_rMATS_get_ss_bed(shared_datadir):
+    file = f"{shared_datadir}/A3SS.MATS.JC.txt"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 2], app="rMATS")
     assert len(coor_dic1) == 2
     assert list(coor_dic1.keys()) == ["A2_5SS", "A3_3SS"]
@@ -76,7 +76,7 @@ def test_rMATS_get_ss_bed():
     assert len(coor_dic) == 2
     assert list(coor_dic.keys()) == ["A3_3SS", "A4_3SS"]
  
-    file = "data/MXE.MATS.JC.txt"
+    file = f"{shared_datadir}/MXE.MATS.JC.txt"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 6])
     assert len(coor_dic1) == 2
     assert list(coor_dic1.keys()) == ["A2_5SS", "A7_3SS"]
@@ -89,7 +89,7 @@ def test_rMATS_get_ss_bed():
     assert len(coor_dic) == 4
     assert list(coor_dic.keys()) == ["A3_3SS", "A4_5SS", "A5_3SS", "A6_5SS"]
 
-    file = "data/RI.MATS.JCEC.txt"
+    file = f"{shared_datadir}/RI.MATS.JCEC.txt"
     coor_dic1 = get_ss_bed(file, ss_idx=[0, 1, 2])
     assert len(coor_dic1) == 3
     assert list(coor_dic1.keys()) == ["A1_3SS", "A2_5SS", "A3_3SS"]
@@ -98,7 +98,7 @@ def test_rMATS_get_ss_bed():
     assert len(coor_dic) == 2
     assert list(coor_dic.keys()) == ["A2_5SS", "A3_3SS"]
 
-    file = "data/SE.MATS.JC.txt"
+    file = f"{shared_datadir}/SE.MATS.JC.txt"
     coor_dic1 = get_ss_bed(file, ss_idx=[1, 2, 3])
     assert len(coor_dic1) == 3
     assert list(coor_dic1.keys()) == ["A2_5SS", "A3_3SS", "A4_5SS"]
