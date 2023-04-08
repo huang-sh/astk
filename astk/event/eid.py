@@ -64,8 +64,6 @@ class SuppaEventID:
             e1, s2, _, s3 = map(int, nums)
             coors = (e1, s2, s3)
             self.alter_element_coor = (s2, s3)
-        else:
-            coors = ()
         return coors
 
     def _parse_RI_coor(self):
@@ -90,7 +88,5 @@ class SuppaEventID:
             e1, s2, e2, _, s3, e3 = map(int, nums)
             coors = (e1, s2, e2, s3, e3)
             self.alter_element_coor = (s3, e3)
-        else:
-            coors = ()
         return coors
 
