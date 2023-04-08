@@ -5,7 +5,7 @@ import astk.utils as ul
 from astk.lazy_loader import LazyLoader
 
 np = LazyLoader("np", globals(), "numpy")
-pd = LazyLoader("np", globals(), "pandas")
+pd = LazyLoader("pd", globals(), "pandas")
 plt = LazyLoader("plt", globals(), "matplotlib.pyplot")
 
 
@@ -81,16 +81,22 @@ def get_gcc(coor_dic, outdir, gfasta, binsize):
     plt.savefig(outdir / "gcc.png")
 
 
-def get_elen(file, outdir, app, log):
+def get_elen(file, outdir, scale, app):
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
-
     df_len = ul.get_all_ss_distance(file, app)
+    ylabel = "length"
+    if scale == "log":
+        ylabel = "log2(length)"
+        df_len = np.log2(df_len)
+    elif scale == "MinMaxScaler":
+        from sklearn.preprocessing import MinMaxScaler
+        df_len.iloc[:] = MinMaxScaler().fit_transform(np.log2(df_len))
+        ylabel = "scale(length)"
     df_len.to_csv(outdir / "element_len.csv")
-    ylabel = "log2(length)" if log else "length"
     fig, axes = plt.subplots(1, df_len.shape[1], sharey=True)
     for idx in range(df_len.shape[1]):
-        data = np.log2(df_len.iloc[:, idx]) if log else df_len.iloc[:, idx]
+        data = df_len.iloc[:, idx]
         axes[idx].boxplot(data)
         axes[idx].set_ylabel(ylabel)
     plt.tight_layout()
