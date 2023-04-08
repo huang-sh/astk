@@ -236,7 +236,7 @@ def get_all_ss_distance(event_file, app):
     ncol = df_ss.shape[1] - 1
     df_len = DataFrame(index=df_ss.index, columns=range(ncol))
     for idx in range(ncol):
-        df_len.iloc[:, idx] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
+        df_len[df_len.columns[idx]] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
     return df_len
 
 
