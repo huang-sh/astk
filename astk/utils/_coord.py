@@ -2,6 +2,9 @@ from astk.event import SuppaEventID
 from astk.constant import SS_SCORE_LEN, rMATS_POS_COLS, ALT_IDX
 from astk.ctypes import *
 from astk.utils import detect_file_info
+from astk.lazy_loader import LazyLoader
+
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 class EventCoord:
@@ -127,13 +130,11 @@ class SuppaEventCoord(EventCoord):
         super().__init__(file)
 
     def set_metadata(self, file):
-        from pandas import DataFrame, Series, read_csv
-
         fileinfo = detect_file_info(file)
         self.etype = fileinfo["etype"]
         self.app = fileinfo["app"]
 
-        dpsi_df = read_csv(file, sep="\t", index_col=0)
+        dpsi_df = pd.read_csv(file, sep="\t", index_col=0)
         dpsi_df["event_id"] = dpsi_df.index
         dpsi_df.drop_duplicates(inplace=True)
         dpsi_df.dropna(inplace=True)
@@ -141,7 +142,7 @@ class SuppaEventCoord(EventCoord):
         def _get_coor(event_id):
             ei = SuppaEventID(event_id)
             coords = reversed(ei.coordinates) if ei.strand == "-" else ei.coordinates
-            return  Series((ei.Chr, ei.event_id, ei.strand, *coords))
+            return  pd.Series((ei.Chr, ei.event_id, ei.strand, *coords))
         
         event_df = dpsi_df["event_id"].apply(_get_coor)
         self.df_ss = event_df.iloc[:, 3:]
@@ -150,7 +151,7 @@ class SuppaEventCoord(EventCoord):
         self.ns_idx = event_df.loc[event_df.iloc[:, 2] == "-", ].index
 
         cols = ["seqname", "start", "end", "name", "score", "strand"]
-        df_temp = DataFrame(columns=cols, index=dpsi_df.index)
+        df_temp = pd.DataFrame(columns=cols, index=dpsi_df.index)
         df_temp["seqname"] = event_df[0]
         df_temp["strand"] = event_df[2]
         df_temp["score"] = 0
@@ -164,9 +165,7 @@ class rMATSEventCoord(EventCoord):
         super().__init__(file)
 
     def set_metadata(self, file):
-        from pandas import DataFrame, read_csv, concat
-
-        dpsi_df = read_csv(file, sep="\t", index_col=0)
+        dpsi_df = pd.read_csv(file, sep="\t", index_col=0)
         dpsi_df.drop_duplicates(inplace=True)
         dpsi_df.dropna(inplace=True)
         fileinfo = detect_file_info(file)
@@ -177,7 +176,7 @@ class rMATSEventCoord(EventCoord):
         self.ns_idx = dpsi_df.loc[dpsi_df["strand"] == "-", ].index
 
         cols = ["seqname", "start", "end", "name", "score", "strand"]
-        df_temp = DataFrame(columns=cols, index=dpsi_df.index)
+        df_temp = pd.DataFrame(columns=cols, index=dpsi_df.index)
         df_temp["seqname"] = dpsi_df["chr"]
         df_temp["strand"] = dpsi_df["strand"]
         df_temp["score"] = 0
@@ -199,7 +198,7 @@ class rMATSEventCoord(EventCoord):
         ns_df = dpsi_df.loc[self.ns_idx, rMATS_POS_COLS[self.etype]["-"]]
         ps_df.columns = range(len(rMATS_POS_COLS[self.etype]["+"]))
         ns_df.columns = range(len(rMATS_POS_COLS[self.etype]["-"]))
-        self.df_ss = concat([ps_df, ns_df]).loc[dpsi_df.index, :]
+        self.df_ss = pd.concat([ps_df, ns_df]).loc[dpsi_df.index, :]
 
 
 def get_event_coord(event, app):
@@ -229,12 +228,10 @@ def get_ss_bed(
 
 
 def get_all_ss_distance(event_file, app):
-    from pandas import DataFrame
-    
     coori = get_event_coord(event_file, app)
     df_ss = coori.df_ss
     ncol = df_ss.shape[1] - 1
-    df_len = DataFrame(index=df_ss.index, columns=range(ncol))
+    df_len = pd.DataFrame(index=df_ss.index, columns=range(ncol))
     for idx in range(ncol):
         df_len[df_len.columns[idx]] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
     return df_len
