@@ -57,7 +57,7 @@ def diff_splice(
         False, True, 0.05, True, False, False, 0, 0, str(output))                 
 
 
-def read_tpm(file, colname, tpm_col):
+def read_tpm(file, colname="sample", tpm_col=4):
     quant_df = pd.read_csv(file, sep = "\t")
     tpm_df = pd.DataFrame({colname: quant_df.iloc[:, tpm_col-1]})
     tpm_df.index = quant_df.iloc[:, 0]
