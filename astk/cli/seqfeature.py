@@ -72,6 +72,8 @@ def sc_splice_score(*args, **kwargs):
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
 @click.option('--scale', type=click.Choice(["log", "MinMaxScaler"]), help="length value scale method")
+@click.option('--mode', type=click.Choice(["near", "junction"]), default="near", show_default=True,
+                help="the mode to compute the length, the junction mode is specific to the MX type")
 @click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
                 default="auto", help="the program that generates event file")
 def sc_get_elen(*args, **kwargs):

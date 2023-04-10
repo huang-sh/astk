@@ -81,10 +81,10 @@ def get_gcc(coor_dic, outdir, gfasta, binsize):
     plt.savefig(outdir / "gcc.png")
 
 
-def get_elen(file, outdir, scale, app):
+def get_elen(file, outdir, scale, mode, app):
     outdir = Path(outdir)
     Path(outdir).mkdir(exist_ok=True)
-    df_len = ul.get_all_ss_distance(file, app)
+    df_len = ul.get_all_ss_distance(file, mode, app)
     ylabel = "length"
     if scale == "log":
         ylabel = "log2(length)"

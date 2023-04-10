@@ -227,13 +227,27 @@ def get_ss_bed(
     )
 
 
-def get_all_ss_distance(event_file, app):
+def get_all_ss_distance(event_file, mode, app):
+    einfo = detect_file_info(event_file)
+    app, etype = einfo["app"], einfo["etype"]
     coori = get_event_coord(event_file, app)
     df_ss = coori.df_ss
     ncol = df_ss.shape[1] - 1
-    df_len = pd.DataFrame(index=df_ss.index, columns=range(ncol))
-    for idx in range(ncol):
-        df_len[df_len.columns[idx]] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
+    df_len = pd.DataFrame(index=df_ss.index)
+    if mode == "junction" and etype in ("MX", "MXE"):
+        if app == "SUPPA2":
+            cols1 = [0, 1, 2, 5]
+            cols2 = [0, 3, 4, 5]
+        elif app == "rMATS":
+            cols1 = [0, 1, 2, 3, 6, 7]
+            cols2 = [1, 4, 5, 6]
+        for i in range(len(cols1)-1):   
+            df_len[i] = abs(df_ss.iloc[:, cols1[i+1]] - df_ss.iloc[:, cols1[i]])
+        for i in range(len(cols2)-1):
+            df_len[len(cols1)+i] = abs(df_ss.iloc[:, cols2[i+1]] - df_ss.iloc[:, cols2[i]])
+    else:
+        for idx in range(ncol):
+            df_len[idx] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
     return df_len
 
 
