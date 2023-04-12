@@ -112,11 +112,9 @@ def sc_eval(*args, **kwargs):
 
 @cli_fun.command(name="fs", help="Feature importance score")
 @click.option('-i', "--input", 'files', cls=MultiOption, type=click.Path(exists=True), 
-                required=True, help="feature file for hpyper-parameter optimization")
+                required=True, help="feature files")
 @click.option('-o', "--output", type=click.Path(), required=True, help="output path")
-@click.option('-gf', "--groupFeature", is_flag=True, default=False, show_default=True, 
-                help="group features for permutation")
-@click.option('-m', '--method', type=click.Choice(['permutation']), default="permutation",
+@click.option('-m', '--method', type=click.Choice(["permutation", "tree"]), default="permutation",
                 show_default=True, help="feature importance compute method")
 @clf_common_options
 @optgroup.group("Permutation feature importance parameters")
@@ -124,6 +122,8 @@ def sc_eval(*args, **kwargs):
                    default="accuracy", show_default=True, help="scorer to use")
 @optgroup.option('-repeatN', '--repeatN', type=int, default=5, show_default=True, 
                    help="number of times to permute a feature.")
+@optgroup.option('-gf', "--group-feature", is_flag=True, default=False, show_default=True, 
+                help="group features for permutation")
 @fig_common_options()
 @optgroup.group("Important feature saving")
 @optgroup.option('-topN', "--topN", type=int, default=0, show_default=True, 
@@ -131,9 +131,10 @@ def sc_eval(*args, **kwargs):
 def sc_fs(*args, **kwargs):
     from itertools import groupby
     from sklearn.model_selection import StratifiedKFold
+    from sklearn.ensemble import RandomForestClassifier
 
     X, y, colnames = load_feature(kwargs["files"], colname=True)
-    if kwargs["groupfeature"]:
+    if kwargs["group_feature"]:
         col_idx_ls = []
         feature_names = []
         group_list = groupby([i.split("_")[0] for i in colnames])
@@ -146,31 +147,37 @@ def sc_fs(*args, **kwargs):
     else:
         feature_names = colnames
         col_idx_ls = range(len(colnames))
+
+    if kwargs["method"] == "tree":
+        kwargs["classifier"] == "RF"        
     if kwargs["classifier"] in ("SVM", "KNN"):
         X = normal_data(X)
-
     clf = choose_clf(**kwargs)
     cver = StratifiedKFold(n_splits=kwargs["cv"])
-    pe_importance_ls = []
+    importance_ls = []
 
     for train_idx, test_idx in cver.split(X, y):
         clf.fit(X[train_idx], y[train_idx])
-        result = permutation_importance(
-            clf, 
-            X[test_idx], 
-            y[test_idx], 
-            col_idx_ls=col_idx_ls,
-            n_repeats=kwargs["repeatn"], 
-            scoring=kwargs["scoring"],
-            n_jobs=kwargs["process"],
-            random_state=42
-        )
-        pe_importance_ls.append(result.importances_mean)
-    importances = pd.Series(np.mean(np.array(pe_importance_ls), axis=0), index=feature_names)
+        if kwargs["method"] == "tree":
+            importances = clf.feature_importances_
+        else:
+            result = permutation_importance(
+                clf, 
+                X[test_idx], 
+                y[test_idx], 
+                col_idx_ls=col_idx_ls,
+                n_repeats=kwargs["repeatn"], 
+                scoring=kwargs["scoring"],
+                n_jobs=kwargs["process"],
+                random_state=42
+            )
+            importances = result.importances_mean
+        importance_ls.append(importances)
+    importances = pd.Series(np.mean(np.array(importance_ls), axis=0), index=feature_names)
     fig, ax = plt.subplots(figsize=(kwargs["width"], kwargs["height"]))
-    importances.plot.barh(yerr=np.std(pe_importance_ls, axis=0), ax=ax, )
-    ax.set_title("Feature importances")
-    ax.set_ylabel("Decrease in accuracy score")
+    importances.plot.barh(yerr=np.std(importance_ls, axis=0), ax=ax)
+    ax.set_title("importance score")
+    ax.set_ylabel("feature")
     fig.tight_layout()
     outfig = Path(kwargs["output"])
     outfig.with_suffix(f".{kwargs['figfmt']}")
@@ -183,4 +190,3 @@ def sc_fs(*args, **kwargs):
             suffix = Path(file).suffix
             out = Path(file).with_suffix(f".top{topn}{suffix}")
             sdf.loc[:, top_features].to_csv(out)
-
