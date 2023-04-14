@@ -43,6 +43,9 @@ if (app == "SUPPA2"){
 } else if (app == "rMATS"){
     df  <-  read_tsv(dpsi_file)
     genes <- gsub("\\..*", "",  df$GeneID)   
+} else if (app == "EventPointer"){
+    df  <-  read_csv(dpsi_file)
+    genes <- gsub("\\..*", "",  df$Gene)   
 }
 
 

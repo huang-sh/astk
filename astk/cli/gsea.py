@@ -34,25 +34,25 @@ def gsea_fun(*args, **kwargs):
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 required=True, help="input dpsi files")
 @click.option('-od', '--outdir', default=".", help="outdir")
-@click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff, default=0.1")
-@click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff, default=0.1")
+@click.option('-pval', '--pvalue', type=float, default=0.1, show_default=True, help="pvalue cutoff")
+@click.option('-qval', '--qvalue', type=float, default=0.1, show_default=True, help="qvalue cutoff")
 @click.option('-db', '--database', type=click.Choice(['GO', 'KEGG', 'Reactome']), 
-                default="GO", help="enrich database GO|KEGG|Reactome, default=GO")
-@click.option('-ont', '--ontology', type=click.Choice(['ALL', 'BP', 'CC','MF']), default="BP",
-                help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three. default=BP")                
-@click.option('-gene_id', '-gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
-                default="ENSEMBL", help="gene ID type")
-@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), 
-                required=True, help="organism")
+                default="GO", show_default=True, help="enrich database")
+@click.option('-ont', '--ontology', type=click.Choice(['ALL', 'BP', 'CC','MF']), default="BP", show_default=True,
+                help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three")                
+@click.option('-gi', '--gene-id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
+                default="ENSEMBL", show_default=True, help="gene ID type")
+@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True, 
+                show_default=True, help="organism")
 @click.option('--simple', is_flag=True, help="simplify GO enrichment")
-@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
-                default="auto", help="the program that generates event file")
+@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]), 
+                help="the software that generates event file")
 @fig_common_options()          
 def enrich(*args, **kwargs):
-    if kwargs["app"] == "auto":
+    if kwargs["app"] is None: # it will not run
         kwargs["app"] = detect_file_info(kwargs["file"])["app"]
     if kwargs["figfmt"] == "auto":
-        kwargs["figfmt"] = "png"        
+        kwargs["figfmt"] = "png"
     gsea.enrich(*args, **kwargs)
 
 
@@ -61,21 +61,21 @@ def enrich(*args, **kwargs):
                 required=True, help="input dpsi files")
 @click.option('-od', '--outdir', required=True, help="output directory")          
 @click.option('-db', '--database', type=click.Choice(['GO', 'KEGG', 'Reactome']), 
-                default="GO", help="enrich database, default='GO'")
-@click.option('-ont', '--ontology', type=click.Choice(['ALL', 'BP', 'CC','MF']), default="BP",
-                help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three. default=BP")                  
-@click.option('-pval', '--pvalue', type=float, default=0.1, help="pvalue cutoff")
-@click.option('-qval', '--qvalue', type=float, default=0.1, help="pvalue cutoff")
+                default="GO", show_default=True, help="enrich database")
+@click.option('-ont', '--ontology', type=click.Choice(['ALL', 'BP', 'CC','MF']), default="BP", show_default=True,
+                help="One of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three.")                  
+@click.option('-pval', '--pvalue', type=float, default=0.1, show_default=True, help="pvalue cutoff")
+@click.option('-qval', '--qvalue', type=float, default=0.1, show_default=True, help="qvalue cutoff")
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str, help="xlabel")
-@click.option('-gene_id', '--gene_id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
-                default="ENSEMBL", help="gene ID type")                      
-@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True,
-                help="organism: hs|mm")
-@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
-                default="auto", help="the program that generates event file")
+@click.option('-gi', '--gene-id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
+                default="ENSEMBL", show_default=True, help="gene ID type")
+@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True, 
+                show_default=True, help="organism")
+@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]),
+                help="the software that generates event file")
 @fig_common_options()
 def enrich_cmp(*args, **kwargs):
-    if kwargs["app"] == "auto":
+    if kwargs["app"] is None:  # it will not run
         kwargs["app"] = detect_file_info(kwargs["files"][0])["app"]
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = "png"
