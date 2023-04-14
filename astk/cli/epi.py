@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from astk.utils import sniff_fig_fmt
+import astk.utils as ul
 from .config import *
 from astk import epi
 
@@ -41,7 +41,7 @@ distinguish different profiles. "se" and "std" color the region between the prof
                 help="bw samples labels")
 def signal_profile(*args, **kwargs):
     if kwargs["plot_format"] == "auto":
-        kwargs["plot_format"] = sniff_fig_fmt(kwargs["output"], fmts=['png',"pdf","svg",'plotly'])       
+        kwargs["plot_format"] = ul.sniff_fig_fmt(kwargs["output"], fmts=['png',"pdf","svg",'plotly'])       
     epi.signal_heatmap(*args, **kwargs)
 
 
@@ -61,7 +61,7 @@ def signal_profile(*args, **kwargs):
 @click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")                
 def signal_profile2(*args, **kwargs):
     if kwargs["fig_format"] == "auto":
-        kwargs["fig_format"] = sniff_fig_fmt(kwargs["output"], fmts=['png',"pdf"])       
+        kwargs["fig_format"] = ul.sniff_fig_fmt(kwargs["output"], fmts=['png',"pdf"])       
     epi.signal_metaplot(*args, **kwargs)
 
 
@@ -69,28 +69,46 @@ def signal_profile2(*args, **kwargs):
 @click.option('-e', '--event', type=click.Path(exists=True), required=True, 
                 help="AS event file")
 @click.option('-bw', '--bigwig', type=click.Path(exists=True), help="bigwig file")
-@click.option('-st', '--signalType', "stype", type=click.Choice(["mean", "min", "max", "coverage", "std"]), 
-                default="max", help="signal type, default='max'")
-@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
-                help="splice site index")
+@click.option('-st', '--signalType', "stype", default="max", show_default=True,
+                type=click.Choice(["mean", "min", "max", "coverage", "std"]), 
+                help="bigwig bin signal extraction type")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int, 
+                default=[], help="splice site index, 1-index")
+@click.option('-alt', '--altIdx', is_flag=True, default=False, show_default=True,
+                help="get alternative splicing sites index")
 @click.option('-ew', '--exonWidth', "exon_width", type=int, default=150, 
-                help="exon flank window width, default=150")
+                show_default=True, help="exon flank window width")
 @click.option('-iw', '--intronWidth', "intron_width", type=int, default=150, 
-                help="intron flank window width, default=150")
-@click.option('-bs', '--binSize', default=5, type=int, help="bin size, default=50")
+                show_default=True,help="intron flank window width")
+@click.option('-bs', '--binSize', type=int, default=5, show_default=True,
+                help="bin size")
 @click.option('-o', '--output', required=True, help="output name")                                 
 def sc_extract_signal(*args, **kwargs):
-    epi.extract_signal(*args, **kwargs)
+    coor_dic = ul.get_ss_bed(
+        kwargs["event"], 
+        exon_width=kwargs["exon_width"], 
+        intron_width=kwargs["intron_width"],
+        ss_idx=[i+1 for i in kwargs["sites"]],
+        altidx=kwargs["altidx"]
+    )
+    nbins = (kwargs["exon_width"] + kwargs["intron_width"]) // kwargs["binsize"]
+    epi.extract_signal(
+        kwargs["output"], 
+        coor_dic, 
+        kwargs["bigwig"], 
+        kwargs["stype"],
+        nbins
+    )
 
 
 @cli_fun.command(name="signalHeatmap", help="Plot signal heatmap; short alias: shm")
 @click.option('-s', '--score', "files", cls=MultiOption, type=click.Path(exists=True),  
                 required=True, help="AS event file")
 @click.option('-o', '--output', required=True, help="output name")
-@click.option('-st', '--summaryType', "stype", default="median", 
+@click.option('-st', '--summaryType', "stype", default="mean", 
                 type=click.Choice(["mean","median","min","max","std","sum"]), 
                 help="""Define the type of statistic that should be plotted in the summary\n\b
-                        image above the heatmap""")
+                        image above the heatmap, default=mean""")
 @click.option('--label', cls=MultiOption, help="AS event file labels")
 @click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
 @click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
@@ -102,7 +120,7 @@ def sc_plot_heatmap(*args, **kwargs):
     from astk import draw
 
     if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+        kwargs["fmt"] = ul.sniff_fig_fmt(kwargs["output"])
     if kwargs["colormap"] not in colormaps():
         msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
         msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        

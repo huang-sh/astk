@@ -7,3 +7,5 @@ from .epi import *
 from .draw import *
 from .suppa import *
 from .seqfeature import *
+from .experiment import *
+from .ml import *

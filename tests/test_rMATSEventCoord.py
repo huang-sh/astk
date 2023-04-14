@@ -2,14 +2,14 @@ from astk.utils import rMATSEventCoord
 from astk.constant import rMATS_POS_COLS
 import pandas as pd
 
-def test_sss_rMATSEventCoord():
+def test_sss_rMATSEventCoord(shared_datadir):
 
     files = {
-        "A3SS": "data/A3SS.MATS.JC.txt",
-        "A5SS": "data/A5SS.MATS.JCEC.txt",
-        "SE": "data/SE.MATS.JC.txt",
-        "RI": "data/RI.MATS.JCEC.txt",
-        "MXE":"data/MXE.MATS.JC.txt"
+        "A3SS": f"{shared_datadir}/A3SS.MATS.JC.txt",
+        "A5SS": f"{shared_datadir}/A5SS.MATS.JCEC.txt",
+        "SE": f"{shared_datadir}/SE.MATS.JC.txt",
+        "RI": f"{shared_datadir}/RI.MATS.JCEC.txt",
+        "MXE":f"{shared_datadir}/MXE.MATS.JC.txt"
     }
     etype_ss_names = {
         "A3SS": ["A1_3SS", "A2_5SS", "A3_3SS", "A4_3SS", "A5_5SS"],

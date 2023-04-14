@@ -6,6 +6,7 @@ This module provide sequence feature extraction cli api
 
 from .config import *
 import astk.seqfeature.feature as sf
+import astk.utils as ul
 from astk.seqfeature import splice_score, get_elen, get_gcc
 from astk.seqfeature import cmp_value
 
@@ -39,22 +40,40 @@ def sc_seqlogo(*args, **kwargs):
 
 
 @cli_fun.command(name="spliceScore", help="Compute 5/3 Splice site strength; short alias: sss")
-@click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
+@click.option('-e', "--event", type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
-@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
-                default="auto", help="the program that generates event file")
-@click.option('-p', '--process', default=4, help="process number, default=4")
+@click.option('-fi', "--fasta",'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
+                default=[], help="splice site index, 0-index")
+@click.option('-alt', '--altIdx', is_flag=True, default=False, show_default=True,
+                help="get alternative splicing sites index")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
+                default="auto", show_default=True, help="the program that generates event file")
+@click.option('-p', '--process', type=int, default=4, show_default=True, help="process number")
 def sc_splice_score(*args, **kwargs):
-    splice_score(*args, **kwargs)
+    coor_dic = ul.get_ss_bed(
+        kwargs["event"], 
+        sss=True,
+        app=kwargs["app"],
+        ss_idx=[i+1 for i in kwargs["sites"]],
+        altidx=kwargs["altidx"]        
+    )
+    splice_score(
+        coor_dic,
+        kwargs["outdir"],
+        kwargs["gfasta"],
+        kwargs["process"]
+    )
 
 
 @cli_fun.command(name="getlen", help="Compute element length")
 @click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-log', "--log", is_flag=True, default=False, help="log2 transformation")
+@click.option('--scale', type=click.Choice(["log", "MinMaxScaler"]), help="length value scale method")
+@click.option('--mode', type=click.Choice(["near", "junction"]), default="near", show_default=True,
+                help="the mode to compute the length, the junction mode is specific to the MX type")
 @click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
                 default="auto", help="the program that generates event file")
 def sc_get_elen(*args, **kwargs):
@@ -62,10 +81,14 @@ def sc_get_elen(*args, **kwargs):
 
 
 @cli_fun.command(name="gcc", help="Compute GC content")
-@click.option('-e', "--event", 'file', type=click.Path(exists=True), required=True,
+@click.option('-e', "--event", type=click.Path(exists=True), required=True,
                 help="event file")
 @click.option('-od', '--outdir', type=click.Path(), default=".", help="output directory")
-@click.option('-fi', 'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-fi', '--fasta', 'gfasta', type=click.Path(exists=True), help="genome fasta")
+@click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int,
+                default=[], help="splice site index, 1-index")
+@click.option('-alt', '--altIdx', is_flag=True, default=False, show_default=True,
+                help="get alternative splicing sites index")
 @click.option('-bs', '--binsize', default=15, 
                 help="use bin size or slide window to compute exon/intron GC content, default=15")
 @click.option('-ef', '--exonFlank', default=150, help="the exon flank width, default=150")
@@ -75,38 +98,50 @@ def sc_get_elen(*args, **kwargs):
 @click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]), 
                 default="auto", help="the program that generates event file, default='auto'")
 @click.option('-p', '--process', default=4, help="process number, default=4")
-def sc_get_gcc(*args, **kwargs):
-    get_gcc(*args, **kwargs)
+def sc_get_gcc(*args, **kwargs):  
+    coor_dic = ul.get_ss_bed(
+        kwargs["event"], 
+        split=True,
+        app=kwargs["app"],
+        excludeSS=(not kwargs["includess"]),
+        exon_width=kwargs["exonflank"],
+        intron_width=kwargs["intronflank"],
+        ss_idx=[i+1 for i in kwargs["sites"]],
+        altidx=kwargs["altidx"]          
+    )    
+    get_gcc(
+        coor_dic,
+        kwargs["outdir"],
+        kwargs["gfasta"],
+        kwargs["binsize"]
+    )
 
 
 @cli_fun.command(name="vcmp", help="Compare sequence feature value among multiple conditions")
 @click.option('-e', "--events", 'files', type=click.Path(exists=True), cls=MultiOption, 
                 required=True, help="event files")
 @click.option('-o', '--output', type=click.Path(), help="output path")
-@click.option('-test', '--test', default="Mann-Whitney", 
+@click.option('-test', '--test', default="Mann-Whitney", show_default=True, 
                 type=click.Choice(['Mann-Whitney', 't-test_ind', 't-test_welch', "Wilcoxon"]), 
-                help=" statistical test method, default='Mann-Whitney'") 
-@click.option('-facet', "--facet", is_flag=True, default=False, 
+                help=" statistical test method") 
+@click.option('-facet', "--facet", is_flag=True, default=False, show_default=True, 
                 help="If true, the facets will not x axes across rows.")
-@click.option('-log', "--log", is_flag=True, default=False, help="log2 transformation")
+@click.option('-log', "--log", is_flag=True, default=False, show_default=True, help="log2 transformation")
 @click.option('-gn', '--groupNames', cls=MultiOption, type=str, 
-                help="group names, default= g1 g2 ")
-@click.option("--merge-ss", is_flag=True, default=False, help="merge 5'/3' splice sites")      
+                help="group names, default= g1 g2... ")
+@click.option("--merge-ss", is_flag=True, default=False, show_default=True, help="merge 5'/3' splice sites")      
 @click.option('-mc', '--multiCorrect', type=click.Choice(['bonf', 'HB', 'holm', 'BH' ,'BY']), 
                 help="multiple test correction method")
 @click.option('--pvalText', type=click.Choice(['star', 'simple']), default="star",
-                help="p-value display format, default='star'")
-@click.option('--xtitle', default="item", help="x title, default='item'")
-@click.option('--ytitle', default="value", help="y title, default='value'")
+                show_default=True, help="p-value display format")
+@click.option('--xtitle', default="xtitle", show_default=True, help="x title")
+@click.option('--ytitle', default="ytitle", show_default=True, help="y title")
 @click.option('--xlabel', cls=MultiOption, type= str, help="x labels, default is input file colnames")
-@click.option('--xrotation', type=int, default=0, help="x tick labels rotation")
+@click.option('--xrotation', type=float, default=0, show_default=True, help="x tick labels rotation")
 @click.option('-fs', '--figSize', type=(float, float), help="figure size")
-@click.option('-ft', '--figType',  default="box", help="figure display type",
+@click.option('-ft', '--figType',  default="box", show_default=True, help="figure display type",
                 type=click.Choice(["point", 'strip', 'box', 'boxen', 'violin', 'bar']))
-@click.option('-ff', '--figFormat', type=click.Choice(['auto', 'png', 'pdf', 'tiff', 'jpeg']),
-                default="auto", help="output figure format")
-@click.option('-fw', '--width', type=float, help="figure width")
-@click.option('-fh', '--height', type=float, help="figure height")  
+@fig_common_options()
 def sc_cmp_value(*args, **kwargs):
     fn = len(kwargs["files"])
     if fn < 2:

@@ -27,7 +27,8 @@ setup(
         "nease",
         "biopython",
         "pyecharts",
-        "deeptools"
+        "deeptools",
+        "click_option_group"
     ],
     entry_points={
         "console_scripts": [

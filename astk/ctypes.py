@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-astk.types
+astk.ctypes
 ~~~~~~~~~~~~~~~~~
-This module stores param type.
+This module provide custom  parameter types.
 """
 from pathlib import Path
 from typing import TypeVar, Dict, Iterable, Tuple, Sequence

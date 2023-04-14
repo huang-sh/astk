@@ -4,16 +4,29 @@ from typing import Sequence
 
 from astk.constant import BASE_DIR, PATHWAY_DB_ORG
 import astk.utils.func  as ul
-from astk.types import FilePath
+from astk.ctypes import FilePath
 from astk.event import SuppaEventID
-                
-def gsea_fun(file, outdir, name, pvalue, database, geneid, orgdb, ont, organism):
-    Path(outdir).mkdir(exist_ok=True)
-    if not (org_db := ul.select_OrgDb(orgdb)):
-        print(f"{orgdb} is wrong! Please run 'astk ls -org' to view more")
 
+
+def gsea_fun(
+    file: FilePath, 
+    outdir: FilePath, 
+    name: str, 
+    pvalue: float, 
+    database: str, 
+    gene_id: str, 
+    ontology: str, 
+    organism: str,
+    app: str
+):
+    Path(outdir).mkdir(exist_ok=True)
+    if not (org_db := ul.select_OrgDb(organism)):
+        print(f"{organism} is wrong! Please run 'astk ls -org' to view more")
+    if database in {"KEGG", "Reactome"}:
+        organism = PATHWAY_DB_ORG[database].get(organism, None)
     rscript = BASE_DIR / "R" / "gsea.R"
-    params = [outdir, str(pvalue), org_db, ont, geneid, name, database, organism, file]
+    params = [outdir, str(pvalue), org_db, ontology, 
+                gene_id, name, database, organism, file, app]
     info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
     info.wait()
 
@@ -28,9 +41,10 @@ def enrich(
     gene_id: str, 
     organism: str, 
     simple: bool,
-    fmt: str, 
+    figfmt: str, 
     width: float, 
-    height: float
+    height: float,
+    app: str
 ) -> None:
     rscript = BASE_DIR / "R" / "enrich.R"
     if not (org_db := ul.select_OrgDb(organism)):
@@ -51,12 +65,13 @@ def enrich(
         "simple": simple,
         "width": width,
         "height": height,
-        "fmt": fmt
+        "fmt": figfmt,
+        "app": app
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
-             
+
 def enrich_cmp(
     files: Sequence[FilePath],
     outdir: FilePath, 
@@ -67,9 +82,10 @@ def enrich_cmp(
     xlabel: Sequence[str],
     gene_id: str,
     organism: str,
-    fmt: str,
+    figfmt: str,
     width: float,
-    height: float
+    height: float,
+    app: str
 ) -> None:
 
     if not (org_db := ul.select_OrgDb(organism)):
@@ -91,7 +107,8 @@ def enrich_cmp(
         "ontology": ontology,
         "width": width,
         "height": height,
-        "fmt": fmt
+        "fmt": figfmt,
+        "app": app
     }
     param_ls = ul.parse_cmd_r(**param_dic)
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])

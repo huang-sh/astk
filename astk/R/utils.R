@@ -170,14 +170,12 @@ compareClusterSep <- function(gene_ls,
             dev.off()
             next()           
           }
-
           p <- dotplot(cpk, title = sprintf("%s_%s",name, ont.i)) + 
                 scale_color_gradientn(colours = c("#b3eebe", "#46bac2", "#371ea3"),
                                       guide   = guide_colorbar(reverse=TRUE, order=1)) +
                 guides(size = guide_legend(override.aes=list(shape=1))) +
                 theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
                       panel.grid.major.x = element_blank())
-
           save_fig(p, 
               out.pdf, 
               format = format,

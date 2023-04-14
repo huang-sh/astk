@@ -3,12 +3,15 @@ import sys
 import json
 from pathlib import Path
 
-from astk.types import *
+from astk.ctypes import *
 import astk.utils.select as sl
 from .AS_event import make_events
 from .event_psi import get_ioe_psi
 from .gtf_parse import construct_genome
 from astk.suppa.lib.diff_tools import multiple_conditions_analysis as mca
+from astk.lazy_loader import LazyLoader
+
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 def check_gtf_used(gtf):
@@ -16,7 +19,7 @@ def check_gtf_used(gtf):
     gtf_hash = hashlib.blake2b()
     gtf_size = gtf.stat().st_size
     gtf_hash.update(str(gtf_size).encode('utf-8'))
-    f = gtf.open("rb")
+    f = gtf.open("rb") 
     for _ in range(10):
         gtf_hash.update(f.readline().strip())
     return gtf_hash.hexdigest()
@@ -54,9 +57,7 @@ def diff_splice(
         False, True, 0.05, True, False, False, 0, 0, str(output))                 
 
 
-def read_tpm(file, colname, tpm_col):
-    import pandas as pd
-
+def read_tpm(file, colname="sample", tpm_col=4):
     quant_df = pd.read_csv(file, sep = "\t")
     tpm_df = pd.DataFrame({colname: quant_df.iloc[:, tpm_col-1]})
     tpm_df.index = quant_df.iloc[:, 0]
@@ -64,9 +65,7 @@ def read_tpm(file, colname, tpm_col):
 
 
 def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
-    import pandas as pd
     ioe_df = pd.read_csv(ioe, sep="\t")
-
     psi_dic = {}
     tpm_ls = []
     for tf in tpm_files:
@@ -81,7 +80,6 @@ def calculate_psi(ioe, tpm_files, tpm_th, tpm_col, tx_col):
 
 
 def parse_meta(meta_file: FilePath) -> Dict:
-
     tpm_dic = {}
     with open(meta_file, "r") as f:
         try:
@@ -106,10 +104,9 @@ def ds_flow(
     pval: float,
     abs_dpsi: float,
     tpm_threshold: float,
-    event_pos: str
+    event_pos: str,
+    tpm_col: int
     ):
-    import pandas as pd
-
     Path(outdir).mkdir(exist_ok=True)
     tpm_dic = parse_meta(meta)
     genome = construct_genome(gtf)
@@ -138,8 +135,8 @@ def ds_flow(
             ctrl_psi_ls = []
             case_psi_ls = []
             for (cf, cn), (tf, tn) in zip(gn_dic["ctrl"], gn_dic["case"]):
-                cdf = read_tpm(cf, cn, 4)
-                tdf = read_tpm(tf, tn, 4)
+                cdf = read_tpm(cf, cn, tpm_col)
+                tdf = read_tpm(tf, tn, tpm_col)
                 ctrl_tpm_ls.append(cdf)
                 case_tpm_ls.append(tdf)
 

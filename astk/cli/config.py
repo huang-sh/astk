@@ -10,6 +10,7 @@ from gettext import gettext as _
 import click
 from click.core import _check_iter
 from click.exceptions import BadParameter, UsageError
+from click_option_group import GroupedOption, optgroup
 import configparser
 
 from astk.utils import RunConfigure
@@ -90,6 +91,10 @@ class MultiOption(click.Option):
         return convert(value)
 
 
+class GroupedMultiOption(MultiOption, GroupedOption):
+    pass
+
+
 class AliasedGroup(click.Group):
     """refer to https://click.palletsprojects.com/en/8.1.x/advanced/"""
     def get_command(self, ctx, cmd_name):
@@ -112,6 +117,82 @@ class AliasedGroup(click.Group):
         # always return the full command name
         _, cmd, args = super().resolve_command(ctx, args)
         return cmd.name, cmd, args
+    
+
+# Define machine learning common options as a decorator function
+def clf_common_options(func):
+    options = [
+       click.option('-clf', '--classifier', type=click.Choice(['SVM', 'RF', "KNN"]),
+                        default="RF", show_default=True, help="classifier selection"),
+       click.option('-cv', "--cv", type=int, default=5, help="cross validation fold"),
+       click.option('-p', "--process", type=int, default=4, help="process number"),
+       optgroup.group("SVM classifier parameters"),
+       optgroup.option('-C', '--C', "C", type=float, default=1, show_default=True,
+                        help="regularization parameter, default=1"),
+       optgroup.option('-g', '--gamma', type=float, default=1, show_default=True,
+                        help="kernel coefficient,format"),
+       optgroup.option('-k', "--kernel", default="rbf", show_default=True, 
+                        help="kernel type to be used in SVM"),
+       optgroup.group("Random Forest classifier parameters"),
+       optgroup.option("--n-estimators", type=int, default=100, show_default=True, 
+                        help="the number of trees in the forest."),
+       optgroup.option('--criterion', default="gini", show_default=True,
+                        type=click.Choice(["gini", "entropy", "log_loss"]), 
+                        help="the criterion to measure the quality of a split"),
+       optgroup.option('--max-features', default="sqrt", show_default=True,
+                        help="the number of features to consider when looking for the best split"),
+       optgroup.option('--max-depth', type=int, help="the maximum depth of the tree."),
+       optgroup.group("K-nearest neighbors classifier parameters"),
+       optgroup.option("--n-neighbors", type=int, help="number of neighbors to use"),
+       optgroup.option('--weights', default="uniform", show_default=True,
+                        type=click.Choice(["uniform", "distance"]), 
+                        help="weight function used in prediction."),
+       optgroup.option('--algorithm', default="auto", show_default=True, 
+                        help="algorithm used to compute the nearest neighbors"),
+       optgroup.option('--leaf-size', type=int, default=30, show_default=True, 
+                        help="Leaf size passed to BallTree or KDTree."),
+       optgroup.option('--metric', default="minkowski", show_default=True, 
+                        type=click.Choice(["minkowski", "cityblock", "euclidean", "manhattan"]), 
+                        help="metric to use for distance computation. ")
+    ]
+    for option in reversed(options):
+        func = option(func)
+    return func
+
+
+def fig_common_options(width=6, height=6):
+    def decorator(func):
+        options = [
+            optgroup.group("Figure saveing setting parameters"),
+            optgroup.option('-ff', '--figFormat', "figfmt", type=click.Choice(['auto', 'png', 'pdf']),
+                                default="auto", show_default=True, help="output figure format") ,
+            optgroup.option('-fw', '--width', type=float, default=width, show_default=True, 
+                                help="figure width (inch)"),
+            optgroup.option('-fh', '--height', type=float, default=height, show_default=True, 
+                            help="figure height (inch)")
+        ]
+        for option in reversed(options):
+            func = option(func)
+        return func
+    return decorator
+
+
+class IntChoice(click.ParamType):
+    name = 'integer choice'
+
+    def __init__(self, choices):
+        self.choices = choices
+
+    def convert(self, value, param, ctx):
+        try:
+            value = int(value)
+        except ValueError:
+            self.fail(f'{value} is not a valid integer', param, ctx)
+
+        if value not in self.choices:
+            self.fail(f'{value} is not one of the allowed values: {self.choices}', param, ctx)
+
+        return value
 
 
 @click.group(

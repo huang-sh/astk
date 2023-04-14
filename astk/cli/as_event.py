@@ -1,5 +1,5 @@
 from .config import *
-from astk.event import _cli_func as et
+import astk.event as et
 
 
 @cli_fun.command(name="lenDist", help="length distribution; short alias: ld")
@@ -37,15 +37,23 @@ def len_pick(*args, **kwargs):
 
 
 @cli_fun.command(name="psiFilter", help="filter psi result; short alias: pf")
-@click.option('-i', '--input', "file", type=click.Path(exists=True),
+@click.option('-i', '--input', "file", required=True, type=click.Path(exists=True),
                 help="input psi file")
 @click.option('-o', '--output', required=True, help="output path")
-@click.option('-psi', '--psi', type=float, default=0, help="psi threshold value, defualt=0")
-@click.option('-qt', '--quantile', type=float, default=0, help="quantile threshold value, defualt=0")
+@click.option('-minv', '--minValue', "minv", type=click.FloatRange(min=0, max=1), 
+                default=0, show_default=True, help="minimum PSI threshold value")
+@click.option('-maxv', '--maxValue', "maxv", type=click.FloatRange(min=0, max=1), 
+                default=1, show_default=True,  help="maximal PSI threshold value")
+@click.option('-minq', '--minQuantile', "minq", type=click.FloatRange(min=0, max=1), 
+                default=0, show_default=True, help="minimum quantile threshold value")
+@click.option('-maxq', '--maxQuantile', "maxq", type=click.FloatRange(min=0, max=1), 
+                default=1, show_default=True, help="maximal quantile threshold value")
+@click.option('-app','--app', default="auto", type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                show_default=True, help="the program that generates event file")
 def psi_filter(*args, **kwargs):
     et.psi_filter(*args, **kwargs)
 
- 
+
 @cli_fun.command(help="intersect AS event")
 @click.option('-a', "file_a", type=click.Path(exists=True), required=True, help="dpsi or psi file A")
 @click.option('-b', "file_b", type=click.Path(exists=True), help="dpsi or psi file B")
@@ -58,17 +66,20 @@ def intersect(*args, **kwargs):
 
 
 @cli_fun.command(name="sigFilter", help="filter significant result; short alias: sf")
-@click.option('-i', '--input', "file", type=click.Path(exists=True),
+@click.option('-i', '--input', "file", required=True, type=click.Path(exists=True),
                 help="input dpsi file")
-@click.option('-o', '--output', help="output directory")
-@click.option('-dpsi', '--dpsi', type=float, default=0, help="dpsi threshold value, defualt=0")
-@click.option('-p', '--pval', type=float, default=0.05, help="pval threshold value, defualt=0.05")
-@click.option('-q', '--qval', type=float, default=1, help="qval threshold value, defualt=1")
-@click.option('-adpsi', '--abs_dpsi', type=float, default=0, 
-                help="absulte dpsi threshold value, defualt=0")
-@click.option('-sep', '--sep', "sep", is_flag=True, default=False, 
+@click.option('-o', '--output', required=True, type=click.Path(), help="output directory")
+@click.option('-dpsi', '--dpsi', type=click.FloatRange(min=-1, max=1), default=0, 
+                show_default=True, help="dpsi threshold value")
+@click.option('-p', '--pval', type=click.FloatRange(min=0, max=1), default=0.05, 
+                show_default=True, help="pval threshold value")
+@click.option('-q', '--qval', type=click.FloatRange(min=0, max=1), default=1, 
+                show_default=True, help="qval threshold value")
+@click.option('-adpsi', '--abs_dpsi', type=click.FloatRange(min=0, max=1), default=0, 
+                show_default=True, help="absulte dpsi threshold value")
+@click.option('-sep', '--sep', "sep", is_flag=True, default=False, show_default=True, 
                 help="split file into two files according to dpsi > 0 and dpsi < 0")
-@click.option('-app','--app', required=True, type=click.Choice(["auto", "SUPPA2", "rMATS"]),
-                default="auto", help="the program that generates event file, defualt='auto'")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                default="auto", show_default=True, help="the program that generates event file")
 def sigfilter(*args, **kwargs):
     et.sigfilter(*args, **kwargs)
