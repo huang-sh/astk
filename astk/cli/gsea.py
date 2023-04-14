@@ -11,22 +11,19 @@ from astk.utils import detect_file_info
                 required=True, help="input dpsi files")
 @click.option('-od', '--outdir', default=".", help="outdir")
 @click.option('-n', '--name', default="GSEA", help="output name prefix")
-@click.option('-pval', '--pvalue', type=float, default=0.2, help="pvalue cutoff, defualt=0.2")
-@click.option('-db', '--database', type=click.Choice(['GO']), 
-                default="GO", help="enrich database, defualt='GO'")
-@click.option('-gt', '--geneId', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
-                default="ENSEMBL", help="gene ID type, defualt='ENSEMBL'")                      
-@click.option('-orgdb', '--orgdb', required=True,
-                help="OrgDb for GO annotation, such as: hs for Human, mm for Mouse. \
-                    run 'astk ls -org' to view more ")
-@click.option('-ont', type=click.Choice(['BP', 'MF', 'CC']), 
-                default="BP", help="one of 'BP', 'MF', and 'CC' subontologies.")  
-@click.option('-org', '--keggOrganism', "organism", default = "",
-                help="KEGG organism short alias.This is required if -db is KEGG.\
-                    Organism list in http://www.genome.jp/kegg/catalog/org_list.html")
+@click.option('-pval', '--pvalue', type=float, default=0.2, show_default=True, help="pvalue cutoff")
+@click.option('-db', '--database', type=click.Choice(['GO']), show_default=True, 
+                default="GO", help="enrich database")
+@click.option('-gt', '--gene-id', type=click.Choice(['ENSEMBL', 'ENTREZID', 'SYMBOL']), 
+                default="ENSEMBL", show_default=True, help="gene ID type, defualt='ENSEMBL'") 
+@click.option('-ont', '--ontology', type=click.Choice(['BP', 'MF', 'CC']), show_default=True, 
+                default="BP", help="one of 'BP', 'MF', and 'CC' subontologies, or 'ALL' for all three")  
+@click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True,  help="organism")
+@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]), 
+                help="the software that generates event file")                 
 def gsea_fun(*args, **kwargs):
-    if app := detect_file_info(kwargs["file"])["app"]:
-        raise UsageError("-i/--input only support SUPPA2 output in gsea sub-command")    
+    if kwargs["app"] is None: # it will not run
+        kwargs["app"] = detect_file_info(kwargs["file"])["app"] 
     gsea.gsea_fun(*args, **kwargs)
 
 

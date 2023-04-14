@@ -13,24 +13,35 @@ name <- args[11]
 database <- args[12]
 organism <- args[13]
 dpsi_file <- args[14]
+app <- args[15]
 
 script_path  <- str_split(args[4], "=")[[1]][2]
 source(file.path(dirname(script_path), "utils.R"))
 
 OrgDb <- load_OrgDb(org_db)
 
-dpsi_df <- read_tsv(dpsi_file, 
-                    skip      = 1, 
-                    col_names = F,
-                    col_types = cols("c", "d", "d")) %>% 
-                    drop_na()
+if (app == "SUPPA2"){
+    dpsi_df <- read_tsv(dpsi_file, 
+                        skip      = 1, 
+                        col_names = F,
+                        col_types = cols("c", "d", "d")) %>% 
+                        drop_na()      
+} else if (app == "rMATS"){
+    dpsi_df  <-  read_tsv(dpsi_file) %>%
+                select(GeneID, FDR, IncLevelDifference) %>%
+                drop_na()
+} else if (app == "EventPointer"){
+    dpsi_df  <-  read_csv(dpsi_file) %>%
+                select(Gene, Pvalue, `Delta PSI`) %>%
+                drop_na()  
+}
 
-colnames(dpsi_df) = c("event_id", "dpsi", "pval")
+colnames(dpsi_df) = c("gene", "dpsi", "pval")
 
 if (gene_type == "ENSEMBL"){
-    dpsi_df$gene <- gsub("\\..*", "",  dpsi_df$event_id) 
+    dpsi_df$gene <- gsub("\\..*", "",  dpsi_df$gene) 
 } else {
-    dpsi_df$gene <- gsub(";.*", "",  dpsi_df$event_id)
+    dpsi_df$gene <- gsub(";.*", "",  dpsi_df$gene)
 }
 
 
