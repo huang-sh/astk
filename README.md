@@ -3,6 +3,8 @@ What is ASTK?
 
 **ASTK** is a command-line software for comprehensive alternative splicing analysis including AS event analysis, AS splicing sites sequence feature extraction, AS gene function analysis, RBP motif analysis and epigenetic analysis.
 
+<img src='https://huang-sh.github.io/astk-doc/static/img/workflow.png' alt="workflow.png"></img>
+
 Documentation
 ===============
 
