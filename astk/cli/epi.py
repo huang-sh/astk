@@ -68,18 +68,6 @@ def sc_plot_heatmap(*args, **kwargs):
     draw.plot_signal_heatmap(*args, **kwargs)
 
 
-@click.command(help="epi signal compare")
-@click.argument('file', type=click.Path(exists=True), required=True)
-@click.option('-o', '--output', required=True, help="output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format")
-@click.option('-w', '--width', default=8, help="fig width, default=8 inches")
-@click.option('-h', '--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def sigcmp(*args, **kwargs):
-    epi.sigcmp(*args, **kwargs)
-
-
 @click.command(help = "generate ChromHMM mark file")
 @click.option('-o', '--output', required=True, help="file output path")
 @click.option('-ct', '--cellType', cls=MultiOption, type=str, required=True, help="cell types")
