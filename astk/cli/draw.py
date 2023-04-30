@@ -37,18 +37,16 @@ def upset(*args, **kwargs):
     draw.upset(*args, **kwargs)
 
 
-@cli_fun.command(help="Volcano plot analysis for dPSI; short alias: vol")
+@cli_fun.command(name="volcano", help="Volcano plot analysis for dPSI; short alias: vol")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
                 required=True, help="input psi files")    
-@click.option('-o', '--output', help="output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                default="auto", help="output figure format") 
-@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def volcano(*args, **kwargs):
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
+@click.option('-o', '--output', type=click.Path(), help="output path")
+@click.option('-adpsi', '--adpsi', default=0.1, help="absolute dpsi cut-off value")
+@click.option('-pval', '--pvalue', default=0.05, help="p-value cut-off value")
+@fig_common_options()
+def sc_volcano(*args, **kwargs):
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])       
     draw.volcano(*args, **kwargs)
 
 

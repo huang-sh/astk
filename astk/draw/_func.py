@@ -47,18 +47,29 @@ def upset(files, output, xlabel, dg, fmt, width, height, resolution):
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
-def volcano(file, output, fmt, width, height, resolution):
-    rscript = BASE_DIR / "R" / "volcano.R"
-    param_dic = {
-        "file": file,
-        "fmt": fmt, 
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "output": Path(output).with_suffix(f".{fmt}")
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
+def volcano(file, output, adpsi, pvalue, figfmt, width, height):
+    df = pd.read_csv(file, sep="\t", index_col=0).dropna()
+    df.columns = ["FC", "pval"]
+
+    non_sig = df['pval'] > pvalue
+    pos_sig = (df['FC'] > adpsi) & (df['pval'] < pvalue) # #a4302a
+    neg_sig = (df['FC'] < adpsi) & (df['pval'] < pvalue) # #6e95e6
+
+    plt.scatter(df.loc[non_sig, 'FC'], -np.log10(df.loc[non_sig, 'pval']), s=5, color='#bebebe')
+    plt.scatter(df.loc[pos_sig, 'FC'], -np.log10(df.loc[pos_sig, 'pval']), s=5, color='#a4302a')
+    plt.scatter(df.loc[neg_sig, 'FC'], -np.log10(df.loc[neg_sig, 'pval']), s=5, color='#6e95e6')
+    plt.xlim(-1, 1)
+
+    line_kwargs = {"color": 'black', "linestyle": '--', "linewidth": 1, "alpha": 0.5}
+    plt.axvline(x=adpsi, **line_kwargs)
+    plt.axvline(x=-adpsi, **line_kwargs)
+    plt.axhline(y=-np.log10(pvalue), **line_kwargs)
+
+    # Add axis labels and title
+    plt.xlabel('dPSI')
+    plt.ylabel('-log10(p-value)')
+    plt.title('Volcano Plot')
+    plt.savefig(output)
 
 
 def pca(files, output, fmt, width, height, resolution, groupname):
