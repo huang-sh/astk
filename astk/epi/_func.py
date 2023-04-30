@@ -226,24 +226,6 @@ def epi_sc(event_file, event_label, bam_file, bam_label, width, bin_size,
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
-def epi_profile(file, output, title, ylim, fmt, width, height, resolution):
-
-    rscript = BASE_DIR / "R" / "epiProfile.R"
-    param_dic = {
-        "title": title,
-        "file": file,
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "fmt": fmt,
-        "output": output,
-        "ylim": ylim
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    # print(param_ls)
-    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
-
-
 def extract_signal(
     output: FilePath,        
     coor_dic: Dict,
