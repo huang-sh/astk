@@ -18,6 +18,7 @@ def gseplot(*args, **kwargs):
         kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
     draw.gseplot(*args, **kwargs)
 
+
 @cli_fun.command(help="draw UpSet plots for AS events")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")           
@@ -48,26 +49,6 @@ def sc_volcano(*args, **kwargs):
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])       
     draw.volcano(*args, **kwargs)
-
-
-@cli_fun.command(name="pca1", help="PCA analysis for PSI")
-@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
-                required=True, help="input psi files")
-@click.option('-o', '--output', required=True, help="figure output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                default="auto", help="output figure format") 
-@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-@click.option('-gn', '--groupName', cls=MultiOption, type=str, help="group names")
-def pca(*args, **kwargs):
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
-    if gn := kwargs.get("groupname", False):
-        if len(gn) != len(kwargs["files"]):
-            print("-gn/--groupName values number must be same as -i/--input")
-            exit()
-    draw.pca(*args, **kwargs)
 
 
 @cli_fun.command(name="pca", help="PCA analysis for PSI")

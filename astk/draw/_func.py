@@ -72,25 +72,6 @@ def volcano(file, output, adpsi, pvalue, figfmt, width, height):
     plt.savefig(output)
 
 
-def pca(files, output, fmt, width, height, resolution, groupname):
-
-    if not (pdir:= Path(output).parent).exists():
-        print(f"{pdir} doest not exist")
-        exit()
-    rscript = BASE_DIR / "R" / "pca.R"
-    param_dic = {
-        "file": files,
-        "fmt": fmt, 
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "output": Path(output).with_suffix(f".{fmt}"),
-        "groupname": groupname
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
-
-
 def heatmap(files, output, fmt, colormap, width, height):
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
