@@ -75,7 +75,6 @@ def cmp_value(files, output, test, **kwargs):
         dft["variable_1"] = ss_df[1]
         ss_cols = [["5SS", "5SS"], ["3SS","3SS"]]
     dft.rename(columns={"variable_0": xn, "variable_1": "item", "value": yn}, inplace=True)
-    sns.set_theme()
     pairs = []
     for col in ss_cols:
         for gn_c in combinations(gns, 2):
