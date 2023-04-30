@@ -1,9 +1,15 @@
 import subprocess
 from pathlib import Path
 
-from astk.constant import *
-import astk.utils.func as ul
-from astk.ctypes import *
+from ..constant import *
+from ..utils import func as ul
+from ..ctypes import *
+from ..lazy_loader import LazyLoader
+
+np = LazyLoader("np", globals(), "numpy")
+pd = LazyLoader("pd", globals(), "pandas")
+sns = LazyLoader("sns", globals(), "seaborn")
+plt = LazyLoader("plt", globals(), "matplotlib.pyplot")
 
 
 def gseplot(termid, output, rdata, fmt, width, height, resolution):
@@ -92,20 +98,27 @@ def heatmap(files, output, fmt, colormap, width, height):
     fig.savefig(out, bbox_inches="tight")
     
 
-def barplot(output, files, xlabel, dg, fmt, width, height, resolution):
-    rscript = BASE_DIR / "R" / "barplot.R"
-    param_dic = {
-        "file": files,
-        "name": xlabel,
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "fmt": fmt,
-        "output": output,
-        "dg": dg
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
+def barplot(output, files, xlabel, dg, figfmt, width, height):
+    df_ls = []
+    for idx, file in enumerate(files):
+        file = Path(file)
+        df = pd.read_csv(file, sep="\t", index_col=0)
+        df.columns = ["dPSI", "pval"]  # PSI file's columns are not same 
+        if xlabel is None:
+            df["name"] = file.stem
+        else:
+            df["name"] = xlabel[idx]
+        df["type"] = "u"
+        df.loc[df["dPSI"] < 0, "type"] = "-"
+        df.loc[df["dPSI"] > 0, "type"] = "+"
+        df_ls.append(df)
+    dfm = pd.concat(df_ls, axis=0)
+    palette = sns.color_palette("Set2")
+    if dg:
+        sns.countplot(data=dfm, x="name", hue="type", palette=palette)
+    else:
+        sns.countplot(x=dfm["name"], palette=palette)
+    plt.savefig(output)
 
 
 def plot_signal_heatmap(

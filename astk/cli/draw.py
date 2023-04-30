@@ -130,21 +130,19 @@ def heatmap(*args, **kwargs):
     draw.heatmap(*args, **kwargs)
 
 
-@cli_fun.command(help="barplot ")
+@cli_fun.command(help="barplot")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
-                required=True, help="input psi files")
+                required=True, help="input psi/dpsi files")
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str,
-             help="input dpsi names")
-@click.option('-dg', '--dg', is_flag=True, default = False,
+             help="x tick labels for files")
+@click.option('-dg', '--dg', is_flag=True, default=False,
               help=("AS events can be divided into two groups based on dPSI values \
-                   (group +: dPSI > 0, group -: dPSI < 0)"))   
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                default="auto", help="output figure format")
-@click.option('-fw', '--width', default=8, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=4, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+                   (group +: dPSI > 0, group -: dPSI < 0)"))
+@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2"]), 
+                default="SUPPA2", help="the program that generates event file")                   
+@fig_common_options()
 def barplot(*args, **kwargs):
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
     draw.barplot(*args, **kwargs)
