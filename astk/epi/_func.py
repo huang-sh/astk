@@ -79,30 +79,6 @@ def epi_signal(out, achor_dic, bam_meta, width, binsize):
     dfs.to_csv(out, index=False)
 
 
-
-# def epi_sc(output, metadata, anchor, name, width, binsize):
-
-#     names = name if len(name)==len(anchor) else list(range(1, len(anchor)+1))
-
-#     anchor_dic = dict(zip(names, anchor))
-#     epi_signal(output, anchor_dic, metadata, width, binsize)
-
-
-def epihm(output, files, fmt, width, height, resolution):
-
-    rscript = Path(__file__).parent / "R" / "signalHeatmap.R"
-    param_dic = {
-        "file": files,
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "fmt": fmt,
-        "output": output
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
-
-
 def sigcmp(output, file, fmt, width, height, resolution):
 
     rscript = Path(__file__).parent / "R" / "signalCompare.R"

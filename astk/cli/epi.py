@@ -68,18 +68,6 @@ def sc_plot_heatmap(*args, **kwargs):
     draw.plot_signal_heatmap(*args, **kwargs)
 
 
-@click.command(help="epi signal heatmap")
-@click.argument('files', nargs=-1, type=click.Path(exists=True), required=True)
-@click.option('-o', '--output', required=True, help="output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'pdf', 'pptx']),
-                default="png", help="out figure format")
-@click.option('-w', '--width', default=8, help="fig width, default=8 inches")
-@click.option('-h', '--height', default=4, help="fig height, default=4 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def epihm(*args, **kwargs):
-    epi.epihm(*args, **kwargs)
-
-
 @click.command(help="epi signal compare")
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('-o', '--output', required=True, help="output path")
