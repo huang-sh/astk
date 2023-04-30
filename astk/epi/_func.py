@@ -79,22 +79,6 @@ def epi_signal(out, achor_dic, bam_meta, width, binsize):
     dfs.to_csv(out, index=False)
 
 
-def sigcmp(output, file, fmt, width, height, resolution):
-
-    rscript = Path(__file__).parent / "R" / "signalCompare.R"
-    param_dic = {
-        "file": file,
-        "width": width, 
-        "height": height, 
-        "resolution": resolution,
-        "fmt": fmt,
-        "output": output
-    }
-    param_ls = ul.parse_cmd_r(**param_dic)
-    subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
-
-
-
 def mark(output, celltype, bed, marknum, sep, markindex, markname, stacked):
     from itertools import chain
     import pandas as pd
