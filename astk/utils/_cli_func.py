@@ -5,7 +5,6 @@ import subprocess
 from pathlib import Path
 from typing import Sequence
 
-import astk.ChromHMM as ch
 from astk.constant import *
 from . import func as ulf
 from astk.utils.meta_template import Template
