@@ -81,14 +81,11 @@ def pca(files, output, fmt, width, height, resolution, groupname):
 
 
 def heatmap(files, output, fmt, colormap, width, height):
-    import seaborn as sns
-    from pandas import read_csv, concat
-
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()
-    df_ls = [read_csv(file, sep="\t", index_col=0) for file in files]
-    dfm = concat(df_ls, axis=1, join="inner")
+    df_ls = [pd.read_csv(file, sep="\t", index_col=0) for file in files]
+    dfm = pd.concat(df_ls, axis=1, join="inner")
     sns.set(rc={'figure.facecolor':'white'})
     figsize = (width, height)
     cbar_pos = (1, .35, 0.05, 0.3)
@@ -131,13 +128,7 @@ def plot_signal_heatmap(
     colormap: str,
     fmt: str
 ):
-    import matplotlib.pyplot as plt
-    from numpy import percentile, clip
-    from pandas import read_csv
-    
-
-    df_ls = [read_csv(file, index_col=0) for file in files]
-
+    df_ls = [pd.read_csv(file, index_col=0) for file in files]
     if len({df.shape[1] for df in df_ls}) > 1:
         print("Feature files have different columns!")
         exit()
@@ -152,8 +143,8 @@ def plot_signal_heatmap(
     nbins = df_ls[0].shape[1] // len(cols)
     zmaxs, zmins = [], []
     for df in df_ls:
-        zmins.append(percentile(df, 1.0))
-        zmaxs.append(percentile(df, 98.0))
+        zmins.append(np.percentile(df, 1.0))
+        zmaxs.append(np.percentile(df, 98.0))
 
     for di, df in enumerate(df_ls, 1):
         interpolation = 'bilinear' if df.shape[0] >= 1000 else 'nearest'
@@ -166,7 +157,7 @@ def plot_signal_heatmap(
             # plot heatmap
             ax = axs[di, si]
             im = ax.imshow(
-                    clip(sdf, min(zmins), max(zmaxs)), 
+                    np.clip(sdf, min(zmins), max(zmaxs)), 
                     aspect='auto', 
                     cmap=colormap, 
                     vmax=max(zmaxs), 
@@ -190,11 +181,6 @@ def plot_signal_heatmap(
 
 
 def plot_cor_heatmap(**kwargs):
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
     if (glabels := kwargs["grouplabel"]) is not None:
         df_ls = []
         for idx, file in enumerate(kwargs["files"]):
