@@ -143,7 +143,9 @@ def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
         info.wait()
 
 
-def nease_enrich(nease_input, outdir, n=15, database=['Reactome'], organism='Human', cutoff=0.05):
+def nease_enrich(nease_input, outdir, n=15, database=None, organism='Human', cutoff=0.05):
+    if database is None:
+        database = ['Reactome']
     import nease
     import numpy as np
     import matplotlib.pyplot as plt
