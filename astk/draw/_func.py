@@ -52,13 +52,14 @@ def volcano(file, output, adpsi, pvalue, figfmt, width, height):
     df.columns = ["FC", "pval"]
 
     non_sig = df['pval'] > pvalue
-    pos_sig = (df['FC'] > adpsi) & (df['pval'] < pvalue) # #a4302a
-    neg_sig = (df['FC'] < adpsi) & (df['pval'] < pvalue) # #6e95e6
+    pos_sig = (df['FC'] > 0) & (df['pval'] < pvalue)
+    neg_sig = (df['FC'] < 0) & (df['pval'] < pvalue)
 
-    plt.scatter(df.loc[non_sig, 'FC'], -np.log10(df.loc[non_sig, 'pval']), s=5, color='#bebebe')
-    plt.scatter(df.loc[pos_sig, 'FC'], -np.log10(df.loc[pos_sig, 'pval']), s=5, color='#a4302a')
-    plt.scatter(df.loc[neg_sig, 'FC'], -np.log10(df.loc[neg_sig, 'pval']), s=5, color='#6e95e6')
+    plt.scatter(df.loc[non_sig, 'FC'], -np.log10(df.loc[non_sig, 'pval']), s=5, color='#bebebe', label="Stable")
+    plt.scatter( df.loc[pos_sig, 'FC'], -np.log10(df.loc[pos_sig, 'pval']), s=5, color='#f8766d', label="Up")
+    plt.scatter(df.loc[neg_sig, 'FC'], -np.log10(df.loc[neg_sig, 'pval']), s=5, color='#619cff', label="Down") 
     plt.xlim(-1, 1)
+    plt.legend()
 
     line_kwargs = {"color": 'black', "linestyle": '--', "linewidth": 1, "alpha": 0.5}
     plt.axvline(x=adpsi, **line_kwargs)
@@ -72,7 +73,7 @@ def volcano(file, output, adpsi, pvalue, figfmt, width, height):
     plt.savefig(output)
 
 
-def heatmap(files, output, fmt, colormap, width, height):
+def heatmap(files, output, figfmt, colormap, width, height):
     if not (pdir:= Path(output).parent).exists():
         print(f"{pdir} doest not exist")
         exit()
@@ -83,7 +84,7 @@ def heatmap(files, output, fmt, colormap, width, height):
     cbar_pos = (1, .35, 0.05, 0.3)
     fig = sns.clustermap(dfm, cmap=colormap, cbar_pos=cbar_pos,
                          yticklabels=False, col_cluster=False, figsize=figsize)
-    out = Path(output).with_suffix(f".{fmt}")
+    out = Path(output).with_suffix(f".{figfmt}")
     fig.savefig(out, bbox_inches="tight")
     
 

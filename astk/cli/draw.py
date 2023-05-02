@@ -92,16 +92,15 @@ def sc_pca(*args, **kwargs):
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 required=True, help="input psi files")
 @click.option('-o', '--output', required=True, help="figure output path")  
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
+@click.option('-ff', '--fig-fmt', "figfmt", type=click.Choice(['auto', 'png', 'pdf']),
                  default="auto", help="output figure format")
-@click.option('-cmap', '--colormap', default="crest", help="matplotlib colormap name")                
-@click.option('-fw', '--width', default=6, help="figure width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="figure height, default=6 inches")
+@click.option('-cmap', '--colormap', default="crest", help="matplotlib colormap name")
+@fig_common_options()
 def heatmap(*args, **kwargs):
     from matplotlib.pyplot import colormaps
 
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
     if kwargs["colormap"] not in colormaps():
         msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
         msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
