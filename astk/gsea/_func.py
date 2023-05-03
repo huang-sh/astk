@@ -114,35 +114,6 @@ def enrich_cmp(
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
-def enrich_lc(files, outdir, cluster, merge, database, pvalue, qvalue,
-              gene_id, orgdb, kegg_organism):
-    if not (org_db := ul.select_OrgDb(orgdb)):
-        print(f"{orgdb} is wrong! Please run 'astk ls -orgdb' to view more")
-    if database == "KEGG":
-        ul.check_kegg_RData(kegg_organism)
-        if not kegg_organism:
-            print("Error: --kegg_organism is required!")
-            exit()
-    else:
-        kegg_organism = "0"
-    rscript = BASE_DIR / "R" / "enrichLenCluster.R"
-    Path(outdir).mkdir(exist_ok=True)
-    merge = "1" if merge else "0"
-    for file in files:
-        params = [outdir, str(pvalue), str(qvalue), database, cluster,
-                 org_db, gene_id, kegg_organism, file]
-        info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
-        if database == "KEGG" and not ul.check_kegg_RData(kegg_organism):
-             info.wait()
-    if merge:
-        params = [outdir, str(pvalue), str(qvalue), database, cluster,
-             org_db, gene_id, kegg_organism, *files]
-        merge_info = subprocess.Popen([ul.Rscript_bin(), str(rscript), *params])
-        merge_info.wait()
-    else:
-        info.wait()
-
-
 def nease_enrich(nease_input, outdir, n=15, database=None, organism='Human', cutoff=0.05):
     if database is None:
         database = ['Reactome']
