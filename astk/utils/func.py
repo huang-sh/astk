@@ -393,49 +393,45 @@ def read_fasta(seq):
 
 def detect_file_info(file):
     info_dic = {}
-    with open(file, "r") as f:
-        line1_ls = f.readline().split()
-        ## just simple judgment
-        if line1_ls[:5] == ["ID","GeneID","geneSymbol","chr","strand"]:
-            info_dic["app"] = "rMATS"
-
-            if "riExonStart_0base" in line1_ls:
-                info_dic["etype"] = "RI"
-            elif "2ndExonStart_0base" in line1_ls:
-                info_dic["etype"] = "MXE"
-            elif "exonStart_0base" in line1_ls:
-                info_dic["etype"] = "SE"
-            else:
-                line2_ls = f.readline().split()
-                if line2_ls[4] == "+":
-                    if line2_ls[5] == line2_ls[7]:
-                        info_dic["etype"] = "A5SS"
-                    else:
-                        info_dic["etype"] = "A3SS"
-                else:
-                    if line2_ls[5] == line2_ls[7]:
-                        info_dic["etype"] = "A3SS"
-                    else:
-                        info_dic["etype"] = "A5SS"
+    sep = sniff_file_sep(file)
+    if sep == " ":
+        raise ValueError("The input file separator should not be a single space")
+    df = pd.read_csv(file, sep=sep, index_col=0).dropna()
+    cols = list(df.columns)
+    if cols[:4] == ["GeneID","geneSymbol","chr","strand"]:
+        info_dic["app"] = "rMATS"
+        if "riExonStart_0base" in cols:
+            info_dic["etype"] = "RI"
+        elif "2ndExonStart_0base" in cols:
+            info_dic["etype"] = "MXE"
+        elif "exonStart_0base" in cols:
+            info_dic["etype"] = "SE"
+        elif df.iat[0, 3] == "+":
+            info_dic["etype"] = "A5SS" if df.iat[0, 4] == df.iat[0, 6] else "A3SS"
         else:
-            info_dic["app"] = "SUPPA2"
-            lines = f.readlines()
-            events = [SuppaEventID(line.split()[0]) for line in lines]
-            if len(set([e.AS_type for e in events])) != 1:
-                raise ValueError("input SUPPA2 must contain one AS type!")
-            info_dic["etype"] = events[0].AS_type
-
+            info_dic["etype"] = "A3SS" if df.iat[0, 4] == df.iat[0, 6] else "A5SS"
+    elif cols == ['Gene', 'Event_Type', 'Position', 'Pvalue', 'Zvalue', 'Delta PSI']:
+        info_dic["app"] = "EventPointer"
+        ets = set(df["Event_Type"])
+        info_dic["etype"] = None if len(ets) > 1 else list(ets)[0]
+    else:
+        info_dic["app"] = "SUPPA2"
+        events = [SuppaEventID(eid) for eid in df.index]
+        if len({e.AS_type for e in events}) != 1:
+            raise ValueError("input SUPPA2 must contain one AS type!")
+        info_dic["etype"] = events[0].AS_type
     return info_dic                        
 
 
 def sniff_file_sep(file):
-    """simply check the sep of file
+    """simply check the separator of file
     """
     sep_dic = {}
     with open(file, "r") as f:
         line = f.readline()        
         sep_dic[","] = line.split(",")
         sep_dic["\t"] = line.split("\t")
+        sep_dic[" "] = line.split(" ")
     sep = sorted(sep_dic, key=lambda x: len(sep_dic[x]), reverse=True)[0]
     return sep
 
