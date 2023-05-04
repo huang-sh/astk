@@ -41,12 +41,12 @@ def gsea_fun(*args, **kwargs):
                 default="ENSEMBL", show_default=True, help="gene ID type")
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True, 
                 show_default=True, help="organism")
-@click.option('--simple', is_flag=True, help="simplify GO enrichment")
-@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]), 
-                help="the software that generates event file")
+@click.option('--simple', is_flag=True, default=False, show_default=True, help="simplify GO enrichment")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS", "EventPointer"]), 
+                default="auto", show_default=True, help="the software that generates event file")
 @fig_common_options()          
 def enrich(*args, **kwargs):
-    if kwargs["app"] is None: # it will not run
+    if kwargs["app"] == "auto":
         kwargs["app"] = detect_file_info(kwargs["file"])["app"]
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = "png"
@@ -68,11 +68,12 @@ def enrich(*args, **kwargs):
                 default="ENSEMBL", show_default=True, help="gene ID type")
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True, 
                 show_default=True, help="organism")
-@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]),
-                help="the software that generates event file")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS", "EventPointer"]), 
+                default="auto", show_default=True, help="the software that generates event file")
 @fig_common_options()
 def enrich_cmp(*args, **kwargs):
-    if kwargs["app"] is None:  # it will not run
+    if kwargs["app"] == "auto": 
+        # Assuming that the input files are all in the same format
         kwargs["app"] = detect_file_info(kwargs["files"][0])["app"]
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = "png"
