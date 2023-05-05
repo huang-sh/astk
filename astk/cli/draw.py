@@ -99,7 +99,7 @@ def heatmap(*args, **kwargs):
 
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
-    if kwargs["colormap"] not in colormaps():
+    if kwargs["colormap"] not in colormaps()+["crest"]:
         msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
         msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
         raise BadParameter(msg)

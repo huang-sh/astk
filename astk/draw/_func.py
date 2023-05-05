@@ -88,7 +88,7 @@ def heatmap(files, output, figfmt, colormap, width, height):
     fig.savefig(out, bbox_inches="tight")
     
 
-def barplot(output, files, xlabel, dg, figfmt, width, height):
+def barplot(output, files, xlabel, dg, figfmt, width, height, *args, **kwargs):
     df_ls = []
     for idx, file in enumerate(files):
         file = Path(file)
