@@ -119,7 +119,7 @@ def plot_signal_heatmap(
     width: int,
     height: int,
     colormap: str,
-    fmt: str
+    figfmt: str
 ):
     df_ls = [pd.read_csv(file, index_col=0) for file in files]
     if len({df.shape[1] for df in df_ls}) > 1:
@@ -169,7 +169,7 @@ def plot_signal_heatmap(
     axs[0, len(cols)-1].legend(fontsize=6, frameon=False)
     axs[0, 0].get_shared_y_axes().join(*axs[0, :])
     fig.colorbar(im, ax=axs[1:, :])
-    plt.savefig(output, bbox_inches='tight', pad_inches=0.1, format=fmt)
+    plt.savefig(output, bbox_inches='tight', pad_inches=0.1, format=figfmt)
     plt.close()
 
 

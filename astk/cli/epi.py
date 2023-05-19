@@ -43,24 +43,21 @@ def sc_extract_signal(*args, **kwargs):
 
 @cli_fun.command(name="signalHeatmap", help="Plot signal heatmap; short alias: shm")
 @click.option('-s', '--score', "files", cls=MultiOption, type=click.Path(exists=True),  
-                required=True, help="AS event file")
-@click.option('-o', '--output', required=True, help="output name")
+                required=True, help="AS event signal CSV file")
+@click.option('-o', '--output', type=click.Path(), required=True, help="output path")
 @click.option('-st', '--summaryType', "stype", default="mean", 
                 type=click.Choice(["mean","median","min","max","std","sum"]), 
                 help="""Define the type of statistic that should be plotted in the summary\n\b
                         image above the heatmap, default=mean""")
 @click.option('--label', cls=MultiOption, help="AS event file labels")
-@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
 @click.option('-cmap', '--colormap', default="RdYlBu", help="heatmap color")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf']),
-                default="auto", help="output figure format")                                 
+@fig_common_options()                           
 def sc_plot_heatmap(*args, **kwargs):
     from matplotlib.pyplot import colormaps
-    from astk import draw
+    from . import draw
 
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = ul.sniff_fig_fmt(kwargs["output"])
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = ul.sniff_fig_fmt(kwargs["output"])
     if kwargs["colormap"] not in colormaps():
         msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
         msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
