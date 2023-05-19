@@ -47,14 +47,20 @@ def upset(files, output, xlabel, dg, fmt, width, height, resolution):
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
-def volcano(file, output, adpsi, pvalue, figfmt, width, height):
-    df = pd.read_csv(file, sep="\t", index_col=0).dropna()
-    df.columns = ["FC", "pval"]
+def volcano(file, output, adpsi, pvalue, figfmt, width, height, *args, **kwargs):
+    df = pd.read_csv(file, sep=kwargs["sep"], index_col=0).dropna()
+    dpsi_col, pval_col = kwargs["dpsi_col"], kwargs["pval_col"]
+    if {dpsi_col, pval_col}  == {"1", "2"}:
+        df.columns = ["FC", "pval"]
+    else:
+        df_cols = list(df.columns)        
+        df_cols[df_cols.index(dpsi_col)] = "FC"
+        df_cols[df_cols.index(pval_col)] = "pval"
+        df.columns = df_cols
 
     non_sig = df['pval'] > pvalue
     pos_sig = (df['FC'] > 0) & (df['pval'] < pvalue)
     neg_sig = (df['FC'] < 0) & (df['pval'] < pvalue)
-
     plt.scatter(df.loc[non_sig, 'FC'], -np.log10(df.loc[non_sig, 'pval']), s=5, color='#bebebe', label="Stable")
     plt.scatter( df.loc[pos_sig, 'FC'], -np.log10(df.loc[pos_sig, 'pval']), s=5, color='#f8766d', label="Up")
     plt.scatter(df.loc[neg_sig, 'FC'], -np.log10(df.loc[neg_sig, 'pval']), s=5, color='#619cff', label="Down") 

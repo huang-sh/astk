@@ -40,14 +40,33 @@ def upset(*args, **kwargs):
 
 @cli_fun.command(name="volcano", help="Volcano plot analysis for dPSI; short alias: vol")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
-                required=True, help="input psi files")    
+                required=True, help="input dpsi file")
 @click.option('-o', '--output', type=click.Path(), help="output path")
-@click.option('-adpsi', '--adpsi', default=0.1, help="absolute dpsi cut-off value")
-@click.option('-pval', '--pvalue', default=0.05, help="p-value cut-off value")
+@click.option('-adpsi', '--adpsi', default=0.1, show_default=True, help="absolute dpsi cut-off value")
+@click.option('-pval', '--pvalue', default=0.05, show_default=True, help="p-value cut-off value")
+# @click.option('--dpsi-col', default=1, type=int, show_default=True, help="dpsi column index")
+@click.option('--dpsi-col', default="1", type=click.Choice(["1", "IncLevelDifference", "Delta PSI"]), 
+                show_default=True, help="dpsi column index, 1 for SUPPA2")
+# @click.option('--pval-col', default=2, type=int, show_default=True, help="p-value column index")
+@click.option('--pval-col', default="2", type=click.Choice(["2", "PValue", "FDR", "Pvalue"]), 
+                show_default=True, help="p-value column, 2 for SUPPA2")
+@click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), default=r"\t", show_default=True,
+                help="separator of file content")
 @fig_common_options()
 def sc_volcano(*args, **kwargs):
     if kwargs["figfmt"] == "auto":
-        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])       
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["dpsi_col"] == "1":
+        if kwargs["pval_col"] != "2":
+            raise UsageError("You need to set both --dpsi-col 1 and --pval-col 2 at the same time")
+    if kwargs["dpsi_col"] == "IncLevelDifference":
+        if  kwargs["pval_col"] not in ["PValue", "FDR"]:
+            msg = "You need to set both --dpsi-col IncLevelDifference and --pval-col PValue or FDR at the same time"
+            raise UsageError(msg)
+    if kwargs["dpsi_col"] == "Delta PSI":
+        if kwargs["pval_col"] != "Pvalue":
+            raise UsageError("You need to set both --dpsi-col 'Delta PSI' and --pval-col Pvalue at the same time")
+    kwargs["sep"] = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
     draw.volcano(*args, **kwargs)
 
 
@@ -73,10 +92,7 @@ def sc_pca(*args, **kwargs):
             raise UsageError("-gl/--groupLabel number must be same as -i/--input")
     else:
         gn = [idx for idx, _ in enumerate(kwargs["files"])]
-    if kwargs["sep"] in ("\\t", "t"):
-        sep = "\t"
-    else:
-        sep = kwargs["sep"]
+    sep = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
     axis = 1 if kwargs["groupby"] == "col" else 0
     dfs, labels = [], []
     for idx, file in enumerate(kwargs["files"]):
