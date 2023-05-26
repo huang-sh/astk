@@ -4,7 +4,7 @@ import astk.event as et
 
 @cli_fun.command(name="lenDist", help="length distribution; short alias: ld")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True),
-                required=True,  help='AS ioe file')
+                required=True,  help='AS event file')
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-cl', '--custom_len', 'custom_len', cls=MultiOption, type=int, help="custom length")
 @click.option('-nc', '--cluster', type=int, default=4, help="number of cluster")
