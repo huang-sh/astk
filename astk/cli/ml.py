@@ -85,6 +85,7 @@ def sc_hpo(*args, **kwargs):
         clf = KNeighborsClassifier()
     bps = grid_search(clf, X, y, param_grid, kwargs["cv"],  kwargs["process"])
     for k, v in bps.items():
+        k = k.replace("_", "-")
         print(f"{k}: {v}")
 
 
