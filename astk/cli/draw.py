@@ -47,9 +47,9 @@ def upset(*args, **kwargs):
 # @click.option('--dpsi-col', default=1, type=int, show_default=True, help="dpsi column index")
 @click.option('--dpsi-col', default="1", type=click.Choice(["1", "IncLevelDifference", "Delta PSI"]), 
                 show_default=True, help="dpsi column index, 1 for SUPPA2")
-# @click.option('--pval-col', default=2, type=int, show_default=True, help="p-value column index")
 @click.option('--pval-col', default="2", type=click.Choice(["2", "PValue", "FDR", "Pvalue"]), 
                 show_default=True, help="p-value column, 2 for SUPPA2")
+@click.option('--top-label', default=0, type=int, show_default=True, help="show the top number of AS events' labels")
 @click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), default=r"\t", show_default=True,
                 help="separator of file content")
 @fig_common_options()
@@ -67,6 +67,7 @@ def sc_volcano(*args, **kwargs):
         if kwargs["pval_col"] != "Pvalue":
             raise UsageError("You need to set both --dpsi-col 'Delta PSI' and --pval-col Pvalue at the same time")
     kwargs["sep"] = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
+    print(kwargs)
     draw.volcano(*args, **kwargs)
 
 

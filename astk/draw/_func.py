@@ -61,16 +61,28 @@ def volcano(file, output, adpsi, pvalue, figfmt, width, height, *args, **kwargs)
     non_sig = df['pval'] > pvalue
     pos_sig = (df['FC'] > 0) & (df['pval'] < pvalue)
     neg_sig = (df['FC'] < 0) & (df['pval'] < pvalue)
+
+    fig, ax = plt.subplots(figsize=(width, height))
     plt.scatter(df.loc[non_sig, 'FC'], -np.log10(df.loc[non_sig, 'pval']), s=5, color='#bebebe', label="Stable")
-    plt.scatter( df.loc[pos_sig, 'FC'], -np.log10(df.loc[pos_sig, 'pval']), s=5, color='#f8766d', label="Up")
+    plt.scatter(df.loc[pos_sig, 'FC'], -np.log10(df.loc[pos_sig, 'pval']), s=5, color='#f8766d', label="Up")
     plt.scatter(df.loc[neg_sig, 'FC'], -np.log10(df.loc[neg_sig, 'pval']), s=5, color='#619cff', label="Down") 
     plt.xlim(-1, 1)
-    plt.legend()
 
     line_kwargs = {"color": 'black', "linestyle": '--', "linewidth": 1, "alpha": 0.5}
     plt.axvline(x=adpsi, **line_kwargs)
     plt.axvline(x=-adpsi, **line_kwargs)
     plt.axhline(y=-np.log10(pvalue), **line_kwargs)
+    plt.legend(loc="lower right")
+
+    ## plot scatter dot label
+    pos_sig_df = df.loc[pos_sig, ].sort_values(by=["FC", "pval"], ascending=[False, True])
+    neg_sig_df = df.loc[neg_sig, ].sort_values(by=["FC", "pval"], ascending=[True, True])
+    for i in range(kwargs["top_label"]):
+        pid = pos_sig_df.iloc[i, ]
+        nid = neg_sig_df.iloc[i, ]
+        plabel, nlabel = pid.name.split(";")[0], nid.name.split(";")[0]
+        plt.annotate(plabel, (pid["FC"], -np.log10(pid["pval"])), xytext=(-60, 3), textcoords='offset points')
+        plt.annotate(nlabel, (nid["FC"], -np.log10(nid["pval"])), xytext=(-60, 3), textcoords='offset points')
 
     # Add axis labels and title
     plt.xlabel('dPSI')
