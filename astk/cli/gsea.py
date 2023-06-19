@@ -90,7 +90,11 @@ def enrich_cmp(*args, **kwargs):
                 [PharmGKB|HumanCyc|Wikipathways|Reactome|KEGG|SMPDB|Signalink|NetPath|EHMN|INOH|BioCarta|PID]")
 @click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
                 help="organism")
+@click.option('-app','--app', default="auto", type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                show_default=True, help="the program that generates event file")                
 def nease_sc(*args, **kwargs):
+    if kwargs["app"] == "auto":
+        kwargs["app"] = detect_file_info(kwargs["file"])["app"]
     gsea.nease_sc(*args, **kwargs)
 
 
@@ -110,7 +114,9 @@ def nease_sc(*args, **kwargs):
 @click.option('-ff', '--figFormat', type=click.Choice(['png', 'pdf', 'tiff', 'jpeg']), 
                 default="png", help="output figure format")
 @click.option('-fw', '--width', type=float, default=6, help="figure width, default=6 inches")
-@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")        
+@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")
+@click.option('-app','--app', default="auto", type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                show_default=True, help="the program that generates event file")
 def sc_neasecmp(*args, **kwargs):
     fn = len(kwargs["files"])
     if kwargs["xlabel"] is None:

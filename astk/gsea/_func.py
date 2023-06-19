@@ -6,6 +6,9 @@ from astk.constant import BASE_DIR, PATHWAY_DB_ORG
 import astk.utils.func  as ul
 from astk.ctypes import FilePath
 from astk.event import SuppaEventID
+from astk.lazy_loader import LazyLoader
+
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 def gsea_fun(
@@ -17,7 +20,8 @@ def gsea_fun(
     gene_id: str, 
     ontology: str, 
     organism: str,
-    app: str
+    app: str,
+    **kwargs    
 ):
     Path(outdir).mkdir(exist_ok=True)
     if not (org_db := ul.select_OrgDb(organism)):
@@ -44,7 +48,8 @@ def enrich(
     figfmt: str, 
     width: float, 
     height: float,
-    app: str
+    app: str,
+    **kwargs    
 ) -> None:
     rscript = BASE_DIR / "R" / "enrich.R"
     if not (org_db := ul.select_OrgDb(organism)):
@@ -85,7 +90,8 @@ def enrich_cmp(
     figfmt: str,
     width: float,
     height: float,
-    app: str
+    app: str,
+    **kwargs
 ) -> None:
 
     if not (org_db := ul.select_OrgDb(organism)):
@@ -114,14 +120,14 @@ def enrich_cmp(
     subprocess.run([ul.Rscript_bin(), rscript, *param_ls])
 
 
-def nease_enrich(nease_input, outdir, n=15, database=None, organism='Human', cutoff=0.05):
+def nease_enrich(nease_input, outdir, input_type, n=15, database=None, organism='Human', cutoff=0.05, **kwargs):
     if database is None:
         database = ['Reactome']
     import nease
     import numpy as np
     import matplotlib.pyplot as plt
 
-    events = nease.run(nease_input, organism=organism, p_value_cutoff=cutoff)
+    events = nease.run(nease_input, input_type=input_type, organism=organism, p_value_cutoff=cutoff)
 
     outdir = Path(outdir)
     outdir.mkdir(exist_ok=True)
@@ -145,23 +151,31 @@ def nease_enrich(nease_input, outdir, n=15, database=None, organism='Human', cut
         plt.savefig(enrich_bar_pdf, format='pdf',bbox_inches='tight')
 
 
-def nease_sc(file, outdir, pvalue, database, organism):
-    nease_input = ul.shift2nease(file)
-    nease_enrich(nease_input, outdir, database=database, organism=organism, cutoff=pvalue)
+def nease_sc(file, outdir, pvalue, database, organism, **kwargs):
+    if kwargs["app"] == "SUPPA2":
+        df = ul.shift2nease(file)
+        input_type = "Standard"
+    elif kwargs["app"] == "rMATS":
+        df = pd.read_table(file)
+        input_type = "rmats"
+    nease_enrich(df, outdir, input_type, database=database, organism=organism, cutoff=pvalue, **kwargs)
 
 
-def neasecmp(files, outdir, num, qvalue, database, organism, xlabel, figformat, width, height):
+def neasecmp(files, outdir, num, qvalue, database, organism, xlabel, figformat, width, height, **kwargs):
     import nease
-    import pandas as pd
     import seaborn as sns
     import matplotlib.pyplot as plt
 
-    def _nease_func(file):
-        df = ul.shift2nease(file)
-        nr = nease.run(df, organism=organism, p_value_cutoff=0.2)
+    res_ls = []
+    for file in files:
+        if kwargs["app"] == "SUPPA2":
+            df = ul.shift2nease(file)            
+            nr = nease.run(df, organism=organism, p_value_cutoff=0.2, input_type="Standard")
+        elif kwargs["app"] == "rMATS":
+            df = pd.read_table(file)
+            nr = nease.run(df, organism=organism, p_value_cutoff=0.2, input_type="rmats")
         res = nr.enrich(database=database)
-        return res
-    res_ls = list(map(_nease_func, files))
+        res_ls.append(res)
     pathways = []
     top_res_ls = []
     outdir = Path(outdir)
