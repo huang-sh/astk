@@ -68,7 +68,7 @@ def intersect(*args, **kwargs):
 @cli_fun.command(name="sigFilter", help="filter significant result; short alias: sf")
 @click.option('-i', '--input', "file", required=True, type=click.Path(exists=True),
                 help="input dpsi file")
-@click.option('-o', '--output', required=True, type=click.Path(), help="output directory")
+@click.option('-o', '--output', required=True, type=click.Path(), help="output path")
 @click.option('-dpsi', '--dpsi', type=click.FloatRange(min=-1, max=1), default=0, 
                 show_default=True, help="dpsi threshold value")
 @click.option('-p', '--pval', type=click.FloatRange(min=0, max=1), default=0.05, 
