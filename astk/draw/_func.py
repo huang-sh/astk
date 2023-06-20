@@ -110,22 +110,40 @@ def barplot(output, files, xlabel, dg, figfmt, width, height, *args, **kwargs):
     df_ls = []
     for idx, file in enumerate(files):
         file = Path(file)
-        df = pd.read_csv(file, sep="\t", index_col=0)
-        df.columns = ["dPSI", "pval"]  # PSI file's columns are not same 
+        df = pd.read_csv(file, sep=kwargs["sep"], index_col=0).dropna()
+        dpsi_col, pval_col = kwargs["dpsi_col"], kwargs["pval_col"]
+        if {dpsi_col, pval_col}  == {"1", "2"}:
+            df.columns = ["dPSI", "pval"]
+        else:
+            df_cols = list(df.columns)        
+            df_cols[df_cols.index(dpsi_col)] = "dPSI"
+            df_cols[df_cols.index(pval_col)] = "pval"
+            df.columns = df_cols
+
         if xlabel is None:
-            df["name"] = file.stem
+            if kwargs["fn_split"] is not None:
+                split_param = kwargs["fn_split"]
+                ssym, sidx = split_param[0], split_param[1:]
+                fn = file.stem
+                df["name"] = "_".join([fn.split(ssym)[int(i)] for i in sidx])
+            else:
+                df["name"] = file.stem
         else:
             df["name"] = xlabel[idx]
         df["type"] = "u"
         df.loc[df["dPSI"] < 0, "type"] = "-"
         df.loc[df["dPSI"] > 0, "type"] = "+"
-        df_ls.append(df)
-    dfm = pd.concat(df_ls, axis=0)
+        if df.shape[0] > kwargs["count_cutoff"]:
+            df_ls.append(df)
+    dfm = pd.concat(df_ls, axis=0)    
+    fig, ax = plt.subplots(figsize=(width, height))
     palette = sns.color_palette("Set2")
     if dg:
-        sns.countplot(data=dfm, x="name", hue="type", palette=palette)
+        sns.countplot(data=dfm, x="name", hue="type", hue_order=["+", "-"], palette=palette)
     else:
         sns.countplot(x=dfm["name"], palette=palette)
+    plt.xticks(rotation=kwargs["x_rotation"], fontsize=kwargs["x_fontsize"])
+    plt.tight_layout()
     plt.savefig(output)
 
 

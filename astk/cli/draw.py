@@ -67,7 +67,6 @@ def sc_volcano(*args, **kwargs):
         if kwargs["pval_col"] != "Pvalue":
             raise UsageError("You need to set both --dpsi-col 'Delta PSI' and --pval-col Pvalue at the same time")
     kwargs["sep"] = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
-    print(kwargs)
     draw.volcano(*args, **kwargs)
 
 
@@ -133,9 +132,22 @@ def heatmap(*args, **kwargs):
               help=("AS events can be divided into two groups based on dPSI values \
                    (group +: dPSI > 0, group -: dPSI < 0)"))
 @click.option('-app','--app', required=True, type=click.Choice(["SUPPA2"]), 
-                default="SUPPA2", help="the program that generates event file")                   
+                default="SUPPA2", help="the program that generates event file")
+@click.option('--dpsi-col', default="1", type=click.Choice(["1", "IncLevelDifference", "Delta PSI"]), 
+                show_default=True, help="dpsi column index, 1 for SUPPA2")
+@click.option('--pval-col', default="2", type=click.Choice(["2", "PValue", "FDR", "Pvalue"]), 
+                show_default=True, help="p-value column, 2 for SUPPA2")
+@click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), default=r"\t", show_default=True,
+                help="separator of file content")
+@click.option('--fn-split', cls=MultiOption, type=str, help="file name split symbol and index")
+@click.option('--count-cutoff', default=0, type=int, show_default=True,
+                help="Choose values that exceed the cutoff to display")
 @fig_common_options()
 def barplot(*args, **kwargs):
+    nlabel = len(kwargs["files"]) if kwargs["xlabel"] is None else len(kwargs["xlabel"])
+    if nlabel != len(kwargs["files"]):
+        raise UsageError("-i/--input values number must be same as -xl/--xlabel")
     if kwargs["figfmt"] == "auto":
-        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])        
+    kwargs["sep"] = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
     draw.barplot(*args, **kwargs)
