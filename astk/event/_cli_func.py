@@ -4,20 +4,24 @@ import astk.utils.func  as ul
 import astk.utils.select as sl
 from astk.ctypes import FilePath
 from .eid import SuppaEventID
+from ..lazy_loader import LazyLoader
+from .. import utils as uls
+from ..constant import ALT_IDX
+
+
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len, fmt):
-    import pandas as pd
-
-    if not (pdir:= Path(output).parent).exists():
-        print(f"{pdir} doest not exist")
-        exit()
-    edf = pd.read_csv(infile, sep="\t", index_col=0)
-    ae_lens = [SuppaEventID(eid).alter_element_len for eid in edf.index]
+    einfo = uls.detect_file_info(infile)
+    app, etype = einfo["app"], einfo["etype"]
+    coori = uls.get_event_coord(infile, app)
+    df_ss = coori.df_ss
+    a1, a2 = ALT_IDX[app][etype][:2]
+    ae_lens = df_ss.iloc[:, a2] - df_ss.iloc[:, a1] + 1
     counts, bin_edges = ul.len_hist(ae_lens, width, max_len)
     cluster_ls = []
     clens = [0] + list(custom_len)
-    print(clens)
     for i in range(1, len(clens)):
         print( clens[i-1], clens[i])
         subset = [l for l in  ae_lens if clens[i-1] < l <= clens[i]]
@@ -106,8 +110,8 @@ def sigfilter(file, output, dpsi, pval, qval, abs_dpsi, sep, app):
             pos_out = output = Path(file).with_suffix(f".sig+{Path(file).suffix}")
             neg_out = output = Path(file).with_suffix(f".sig-{Path(file).suffix}")
     elif sep:
-        pos_out = Path(output).with_suffix(f".sig+{Path(output).suffix}")
-        neg_out = Path(output).with_suffix(f".sig-{Path(output).suffix}")
+        pos_out = Path(output).with_suffix(f".d+{Path(output).suffix}")
+        neg_out = Path(output).with_suffix(f".d-{Path(output).suffix}")
 
     df_fil.to_csv(output, sep="\t")
     if sep and abs_dpsi:

@@ -14,6 +14,8 @@ import astk.event as et
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'jpeg', 'pdf', 'tiff']), 
                 default="png", help="output figure format")
 def len_dist(*args, **kwargs):
+    if not (pdir:= Path(kwargs["output"]).parent).exists():
+        raise BadParameter(f"-te/--tevent: Path {pdir} doest not exist")
     et.len_dist(*args, **kwargs)
 
 
@@ -77,7 +79,7 @@ def intersect(*args, **kwargs):
                 show_default=True, help="qval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=click.FloatRange(min=0, max=1), default=0, 
                 show_default=True, help="absulte dpsi threshold value")
-@click.option('-sep', '--sep', "sep", is_flag=True, default=False, show_default=True, 
+@click.option('--sig-sep', '--sep', "sep", is_flag=True, default=False, show_default=True, 
                 help="split file into two files according to dpsi > 0 and dpsi < 0")
 @click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS"]),
                 default="auto", show_default=True, help="the program that generates event file")
