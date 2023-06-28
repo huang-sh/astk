@@ -1,11 +1,9 @@
 from pathlib import Path
 
-import astk.utils.func  as ul
-import astk.utils.select as sl
-from astk.ctypes import FilePath
+from ..ctypes import FilePath
 from .eid import SuppaEventID
 from ..lazy_loader import LazyLoader
-from .. import utils as uls
+from .. import utils as ul
 from ..constant import ALT_IDX
 
 
@@ -13,9 +11,9 @@ pd = LazyLoader("pd", globals(), "pandas")
 
 
 def len_dist(infile, output, custom_len, cluster, width, len_weight, max_len, fmt):
-    einfo = uls.detect_file_info(infile)
+    einfo = ul.detect_file_info(infile)
     app, etype = einfo["app"], einfo["etype"]
-    coori = uls.get_event_coord(infile, app)
+    coori = ul.get_event_coord(infile, app)
     df_ss = coori.df_ss
     a1, a2 = ALT_IDX[app][etype][:2]
     ae_lens = df_ss.iloc[:, a2] - df_ss.iloc[:, a1] + 1
@@ -83,7 +81,7 @@ def _sigfilter(files, outdir, dpsi, pval, abs_dpsi, psifile1, psifile2, fmt):
         else:
             psifiles = ()
             
-        sf = sl.SigFilter(dpsi_file, outdir, dpsi, pval, abs_dpsi, psifiles, fmt)
+        sf = ul.igFilter(dpsi_file, outdir, dpsi, pval, abs_dpsi, psifiles, fmt)
         sf.run()
 
 
@@ -99,11 +97,11 @@ def sigfilter(file, output, dpsi, pval, qval, abs_dpsi, sep, app):
         dpsi_col = old_col[0]
         dpsi_df.columns = ["dpsi", "pval"]
         kwargs.pop("qval")
-        df_fil = sl.sig_filter(dpsi_df, **kwargs)
+        df_fil = ul.sig_filter(dpsi_df, **kwargs)
         df_fil.columns = old_col
     elif app == "rMATS":
         dpsi_col = "IncLevelDifference"
-        df_fil = sl.sig_filter(dpsi_df, **kwargs)
+        df_fil = ul.sig_filter(dpsi_df, **kwargs)
     if not output:
         output = Path(file).with_suffix(f".sig{Path(file).suffix}")
         if sep:
