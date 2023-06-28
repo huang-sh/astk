@@ -4,10 +4,10 @@ import json
 from pathlib import Path
 from functools import partial
 
-from astk.ctypes import FilePath
-from astk.event import SuppaEventID
-from astk.lazy_loader import LazyLoader
-from astk.constant import OrgDb_dic, BASE_DIR, SSN, RBP_sp_dic
+from ..constant import *
+from ..ctypes import FilePath
+from ..event import SuppaEventID
+from ..lazy_loader import LazyLoader
 
 
 np = LazyLoader("np", globals(), "numpy")
@@ -40,7 +40,7 @@ class RunConfigure:
             json.dump(self.rc_dic, f, indent=4)
      
 
-def Rscript_bin():
+def Rscript_bin(): 
     rc = RunConfigure()
     path = rc.rc_dic.get("Rscript", "Rscript")
     return path
@@ -323,17 +323,6 @@ def sep_name(name, sep, *idx):
     str_ls = name.split(sep)
     name_ls = [str_ls[int(i)-1] for i in idx]
     return ".".join(name_ls)
-
-
-def df_len_select(infile, outfile, s, e):
-    AS_len = lambda x: SuppaEventID(x).alter_element_len
-    sep = sniff_file_sep(infile)
-    df = pd.read_csv(infile, sep=sep, index_col=0)
-    cols = df.columns
-    df["event_id"] = df.index
-    df["len"] = df["event_id"].apply(AS_len)
-    pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
-    pdf.to_csv(outfile, index=True, sep=sep, na_rep="nan", index_label=False)
 
 
 def get_num_lines(file_path):
