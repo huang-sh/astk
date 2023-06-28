@@ -165,11 +165,15 @@ def fig_common_options(width=6, height=6):
         options = [
             optgroup.group("Figure setting parameters"),
             optgroup.option('-ff', '--fig-fmt', "figfmt", type=click.Choice(['auto', 'png', 'pdf', 'tiff', 'jpeg']),
-                                default="auto", show_default=True, help="output figure format") ,
+                            default="auto", show_default=True, help="output figure format"),
             optgroup.option('-fw', '--width', type=float, default=width, show_default=True, 
-                                help="figure width (inch)"),
+                            help="figure width (inch)"),
             optgroup.option('-fh', '--height', type=float, default=height, show_default=True, 
-                            help="figure height (inch)")
+                            help="figure height (inch)"),
+            optgroup.option('--x-rotation', type=int, default=0, show_default=True, 
+                            help="x ticks rotation"),
+            optgroup.option('--x-fontsize', type=int, show_default=True, 
+                            help="x ticks fontsize")
         ]
         for option in reversed(options):
             func = option(func)
