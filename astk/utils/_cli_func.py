@@ -8,6 +8,11 @@ from typing import Sequence
 from astk.constant import *
 from . import func as ulf
 from astk.utils.meta_template import Template
+from ._coord import get_event_coord
+from ..lazy_loader import LazyLoader
+
+
+pd = LazyLoader("pd", globals(), "pandas")
 
 
 def meta(
@@ -128,3 +133,19 @@ def getgene(file, output, unique):
     gene_df.to_csv(output, index=False, header=False, sep="\t")
 
     
+def df_len_select(infile, outfile, s, e):
+    einfo = ulf.detect_file_info(infile)
+    app, etype = einfo["app"], einfo["etype"]
+    coori = get_event_coord(infile, app)
+    df_ss = coori.df_ss
+    a1, a2 = ALT_IDX[app][etype][:2]
+    ae_lens = df_ss.iloc[:, a2] - df_ss.iloc[:, a1] + 1
+
+    # AS_len = lambda x: SuppaEventID(x).alter_element_len
+    sep = ulf.sniff_file_sep(infile)
+    df = pd.read_csv(infile, sep=sep, index_col=0)
+    cols = df.columns
+    df["event_id"] = df.index
+    df["len"] = df_ss.iloc[:, a2] - df_ss.iloc[:, a1] + 1
+    pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
+    pdf.to_csv(outfile, index=True, sep=sep, na_rep="nan", index_label=False)
