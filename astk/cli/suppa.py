@@ -15,8 +15,8 @@ from astk.constant import AS_TYPE
                 default="ALL", help="AS event Type")
 @click.option('-o', '--output', required=True, 
                 help="name of the output file without any extension")
-@click.option('--id-type', default="SUPPA2", type=click.Choice(["SUPPA2"]), 
-                help="output event ID type, default='SUPPA2'") 
+@click.option('--id-type', "idtype", default="SUPPA2", type=click.Choice(["SUPPA2"]), 
+                show_default=True, help="output event ID type") 
 @click.option('-ep','--event-pos', type=click.Choice(['body', 'FT', 'LT']), 
                 help="AS event exon that overlapping the transcript first or last \
                         terminal exon startCodon and stopCodon will save separately")
