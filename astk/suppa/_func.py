@@ -49,12 +49,16 @@ def diff_splice(
     exp_files: Sequence[FilePath],
     reference: FilePath,
     output: FilePath,
-    method: str
+    method: str,
+    tpm_threshold: float,
+    gene_correction: bool,
+    adpsi_threshold: float
 ):
     if str(output).endswith(".dpsi"):
         output = str(output)[:-5]
-    mca(method, psi_files, exp_files, reference, 1000, 0, 
-        False, True, 0.05, True, False, False, 0, 0, str(output))                 
+    mca(method, psi_files, exp_files, reference, 1000, 
+        adpsi_threshold, False, gene_correction, 0.05, 
+        True, False, False, tpm_threshold, 0, str(output))                 
 
 
 def read_tpm(file, colname="sample", tpm_col=4):

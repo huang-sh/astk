@@ -5,7 +5,7 @@ This module provide cli api for suppa2 function
 """
 
 from .config import *
-from astk.suppa import *
+from ..suppa import *
 from astk.constant import AS_TYPE
 
 
@@ -52,8 +52,16 @@ def generatePsi(*args, **kwargs):
 @click.option('-ref', '--reference', type=click.Path(exists=True),
                 help="ioe reference file")
 @click.option('-o', '--output', help="output directory")
-@click.option('-m', '--method', type=click.Choice(['empirical', 'classical']), default="empirical",
-                help="The method to calculate the significance, default=empirical")
+@click.option('-m', '--method', type=click.Choice(['empirical', 'classical']), show_default=True,
+                default="empirical", help="The method to calculate the significance")
+@click.option('-th', '--tpm-threshold', type=float, default=0, show_default=True,
+                help="Minimum expression to be included in the analysis.")
+@click.option('-gc', '--gene-correction', is_flag=True, default=False, show_default=True,
+                help="Correction of the p-values by gene.")
+@click.option('-adpsi', '--adpsi-threshold', type=float, default=0, show_default=True,
+                help="cut-off for the absolute delta PSI value to test for significance. \
+                Events with less than this delta PSI will not be tested. (Note: it is only \
+                implemented in the empirical method.)")
 def diffSplice(*args, **kwargs):
     diff_splice(*args, **kwargs)
 
