@@ -146,6 +146,6 @@ def df_len_select(infile, outfile, s, e):
     df = pd.read_csv(infile, sep=sep, index_col=0)
     cols = df.columns
     df["event_id"] = df.index
-    df["len"] = df_ss.iloc[:, a2] - df_ss.iloc[:, a1] + 1
+    df["len"] = abs(df_ss.iloc[:, a2] - df_ss.iloc[:, a1]) + 1
     pdf = df.loc[(s <= df["len"]) & ( df["len"] < e), cols]
     pdf.to_csv(outfile, index=True, sep=sep, na_rep="nan", index_label=False)
