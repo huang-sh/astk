@@ -12,7 +12,7 @@ import astk.motif as mo
                  default="CISBP-RNA", help="RBP motif database default=CISBP-RNA")
 @click.option('-org', '--organism', help="RBP organism")
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
-                help="Input FASTA file. if set, the fasta sequence will be extracted")
+                help="Input FASTA file.")
 @click.option('-m', '--method', type=click.Choice(['centrimo', 'ame']),
                  default="centrimo", help="Motif enrichment method, default=centrimo")
 # @click.option('-mm', '--meme', type=click.Path(exists=True), 
@@ -40,7 +40,7 @@ def motif_enrich(*args, **kwargs):
 @click.option('-maxw', '--maxw', type=int, default=15,
                  help="maximal motifs width, default=15")
 @click.option('-fi', 'fasta', type=click.Path(exists=True), 
-                help="Input FASTA file. if set, the fasta sequence will be extracted")
+                help="Input FASTA file.")
 @click.option('-mcmp', '--motifcmp', is_flag=True, 
                 default = False, help="motif similarity comparision")
 def motif_find(*args, **kwargs):

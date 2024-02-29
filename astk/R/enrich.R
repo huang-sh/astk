@@ -45,7 +45,10 @@ if (app == "SUPPA2"){
     genes <- gsub("\\..*", "",  df$GeneID)   
 } else if (app == "EventPointer"){
     df  <-  read_csv(dpsi_file)
-    genes <- gsub("\\..*", "",  df$Gene)   
+    if (! "Gene" %in% colnames(df)){
+        df  <-  read.table(dpsi_file)  
+    }
+    genes <- gsub("\\..*", "",  df$Gene) 
 }
 
 
