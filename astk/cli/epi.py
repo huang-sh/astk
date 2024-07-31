@@ -70,7 +70,7 @@ def signal_profile2(*args, **kwargs):
                 help="AS event file")
 @click.option('-bw', '--bigwig', type=click.Path(exists=True), help="bigwig file")
 @click.option('-st', '--signalType', "stype", default="max", show_default=True,
-                type=click.Choice(["mean", "min", "max", "coverage", "std"]), 
+                type=click.Choice(["mean", "min", "max", "coverage", "std", "sum"]), 
                 help="bigwig bin signal extraction type")
 @click.option('-si', '--siteIndex', "sites", cls=MultiOption, type=int, 
                 default=[], help="splice site index, 1-index")
