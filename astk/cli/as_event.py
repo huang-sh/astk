@@ -4,7 +4,7 @@ import astk.event as et
 
 @cli_fun.command(name="lenDist", help="length distribution; short alias: ld")
 @click.option('-i', '--input', 'infile', type=click.Path(exists=True),
-                required=True,  help='AS ioe file')
+                required=True,  help='AS event file')
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-cl', '--custom_len', 'custom_len', cls=MultiOption, type=int, help="custom length")
 @click.option('-nc', '--cluster', type=int, default=4, help="number of cluster")
@@ -14,6 +14,8 @@ import astk.event as et
 @click.option('-fmt', '--format', "fmt", type=click.Choice(['png', 'jpeg', 'pdf', 'tiff']), 
                 default="png", help="output figure format")
 def len_dist(*args, **kwargs):
+    if not (pdir:= Path(kwargs["output"]).parent).exists():
+        raise BadParameter(f"-te/--tevent: Path {pdir} doest not exist")
     et.len_dist(*args, **kwargs)
 
 
@@ -68,7 +70,7 @@ def intersect(*args, **kwargs):
 @cli_fun.command(name="sigFilter", help="filter significant result; short alias: sf")
 @click.option('-i', '--input', "file", required=True, type=click.Path(exists=True),
                 help="input dpsi file")
-@click.option('-o', '--output', required=True, type=click.Path(), help="output directory")
+@click.option('-o', '--output', required=True, type=click.Path(), help="output path")
 @click.option('-dpsi', '--dpsi', type=click.FloatRange(min=-1, max=1), default=0, 
                 show_default=True, help="dpsi threshold value")
 @click.option('-p', '--pval', type=click.FloatRange(min=0, max=1), default=0.05, 
@@ -77,7 +79,7 @@ def intersect(*args, **kwargs):
                 show_default=True, help="qval threshold value")
 @click.option('-adpsi', '--abs_dpsi', type=click.FloatRange(min=0, max=1), default=0, 
                 show_default=True, help="absulte dpsi threshold value")
-@click.option('-sep', '--sep', "sep", is_flag=True, default=False, show_default=True, 
+@click.option('--sig-sep', '--sep', "sep", is_flag=True, default=False, show_default=True, 
                 help="split file into two files according to dpsi > 0 and dpsi < 0")
 @click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS"]),
                 default="auto", show_default=True, help="the program that generates event file")

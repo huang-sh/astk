@@ -29,3 +29,10 @@ def test_detect_file_info(shared_datadir):
     assert SE_suapp2 == {"app": "SUPPA2", "etype": "SE"}
     assert AF_suapp2 == {"app": "SUPPA2", "etype": "AF"}
     assert AL_suapp2 == {"app": "SUPPA2", "etype": "AL"}
+
+
+    neg_ep_csv = detect_file_info(f"{shared_datadir}/se.event.sig.neg.csv")
+    neg_ep_tsv = detect_file_info(f"{shared_datadir}/se.event.sig.neg.tsv")
+
+    assert neg_ep_csv == {"app": "EventPointer", "etype": "Cassette Exon"}
+    assert neg_ep_tsv == {"app": "EventPointer", "etype": "Cassette Exon"}

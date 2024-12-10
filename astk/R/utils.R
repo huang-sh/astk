@@ -74,7 +74,7 @@ enrichGOSep <- function(
                                       guide   = guide_colorbar(reverse=TRUE, order=1)) +
                 guides(size = guide_legend(override.aes=list(shape=1))) +
                 theme(panel.grid.major.y = element_line(linetype='dotted', color='#808080'),
-                      panel.grid.major.x = element_blank())                          
+                      panel.grid.major.x = element_blank()) + scale_y_discrete(labels=function(x) str_wrap(x, width=40))                 
 
       if (simple){
           simple.ego <- clusterProfiler::simplify(ego, cutoff=0.7, by="p.adjust", select_fun=min)

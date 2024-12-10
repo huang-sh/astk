@@ -41,12 +41,12 @@ def gsea_fun(*args, **kwargs):
                 default="ENSEMBL", show_default=True, help="gene ID type")
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True, 
                 show_default=True, help="organism")
-@click.option('--simple', is_flag=True, help="simplify GO enrichment")
-@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]), 
-                help="the software that generates event file")
+@click.option('--simple', is_flag=True, default=False, show_default=True, help="simplify GO enrichment")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS", "EventPointer"]), 
+                default="auto", show_default=True, help="the software that generates event file")
 @fig_common_options()          
 def enrich(*args, **kwargs):
-    if kwargs["app"] is None: # it will not run
+    if kwargs["app"] == "auto":
         kwargs["app"] = detect_file_info(kwargs["file"])["app"]
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = "png"
@@ -68,11 +68,12 @@ def enrich(*args, **kwargs):
                 default="ENSEMBL", show_default=True, help="gene ID type")
 @click.option('-org', '--organism', type=click.Choice(['hs', 'mm']), required=True, 
                 show_default=True, help="organism")
-@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2", "rMATS", "EventPointer"]),
-                help="the software that generates event file")
+@click.option('-app','--app', type=click.Choice(["auto", "SUPPA2", "rMATS", "EventPointer"]), 
+                default="auto", show_default=True, help="the software that generates event file")
 @fig_common_options()
 def enrich_cmp(*args, **kwargs):
-    if kwargs["app"] is None:  # it will not run
+    if kwargs["app"] == "auto": 
+        # Assuming that the input files are all in the same format
         kwargs["app"] = detect_file_info(kwargs["files"][0])["app"]
     if kwargs["figfmt"] == "auto":
         kwargs["figfmt"] = "png"
@@ -89,7 +90,11 @@ def enrich_cmp(*args, **kwargs):
                 [PharmGKB|HumanCyc|Wikipathways|Reactome|KEGG|SMPDB|Signalink|NetPath|EHMN|INOH|BioCarta|PID]")
 @click.option('-org', '--organism', default='Human', type=click.Choice(['Human']),
                 help="organism")
+@click.option('-app','--app', default="auto", type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                show_default=True, help="the program that generates event file")                
 def nease_sc(*args, **kwargs):
+    if kwargs["app"] == "auto":
+        kwargs["app"] = detect_file_info(kwargs["file"])["app"]
     gsea.nease_sc(*args, **kwargs)
 
 
@@ -109,7 +114,9 @@ def nease_sc(*args, **kwargs):
 @click.option('-ff', '--figFormat', type=click.Choice(['png', 'pdf', 'tiff', 'jpeg']), 
                 default="png", help="output figure format")
 @click.option('-fw', '--width', type=float, default=6, help="figure width, default=6 inches")
-@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")        
+@click.option('-fh', '--height', type=float, default=6, help="figure height, default=6 inches")
+@click.option('-app','--app', default="auto", type=click.Choice(["auto", "SUPPA2", "rMATS"]),
+                show_default=True, help="the program that generates event file")
 def sc_neasecmp(*args, **kwargs):
     fn = len(kwargs["files"])
     if kwargs["xlabel"] is None:

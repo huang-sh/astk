@@ -30,24 +30,24 @@ pd = LazyLoader("pd", globals(), "pandas")
                  type=click.Choice(["linear", "poly", "rbf","sigmoid"]), show_default=True, 
                  help="kernel type to be used in SVM")
 @optgroup.group("Random Forest classifier parameters")
-@optgroup.option("--n_estimators", type=(int, int, int),
+@optgroup.option("--n-estimators", type=(int, int, int),
                  help="the number of trees in the forest.")
 @optgroup.option('--criterion', cls=GroupedMultiOption, default=("gini", "entropy"), 
                     type=click.Choice(["gini", "entropy", "log_loss"]), show_default=True,
                  help="the criterion to measure the quality of a split")
-@optgroup.option('--max_features', cls=GroupedMultiOption, type=click.Choice(["sqrt", "log2"]), 
+@optgroup.option('--max-features', cls=GroupedMultiOption, type=click.Choice(["sqrt", "log2"]), 
                  default=("sqrt", "log2"), show_default=True,
                  help="the number of features to consider when looking for the best split")
-@optgroup.option('--max_depth', type=(int, int, int), help="the maximum depth of the tree.")
+@optgroup.option('--max-depth', type=(int, int, int), help="the maximum depth of the tree.")
 @optgroup.group(" K-nearest neighbors classifier parameters")
-@optgroup.option("--n_neighbors", type=(int, int, int), help="number of neighbors to use")
+@optgroup.option("--n-neighbors", type=(int, int, int), help="number of neighbors to use")
 @optgroup.option('--weights', cls=GroupedMultiOption, default=("uniform", "distance"), 
                 type=click.Choice(["uniform", "distance"]), show_default=True,
                 help="weight function used in prediction.")
 @optgroup.option('--algorithm', cls=GroupedMultiOption, 
                  default=("auto", "ball_tree", "kd_tree", "brute"), show_default=True, 
                  help="algorithm used to compute the nearest neighbors")
-@optgroup.option('--leaf_size', type=(int, int, int), help="Leaf size passed to BallTree or KDTree.")
+@optgroup.option('--leaf-size', type=(int, int, int), help="Leaf size passed to BallTree or KDTree.")
 @optgroup.option('--metric', cls=GroupedMultiOption, 
                  type=click.Choice(["minkowski", "cityblock", "euclidean", "manhattan"]), 
                  help="metric to use for distance computation. ")
@@ -85,6 +85,7 @@ def sc_hpo(*args, **kwargs):
         clf = KNeighborsClassifier()
     bps = grid_search(clf, X, y, param_grid, kwargs["cv"],  kwargs["process"])
     for k, v in bps.items():
+        k = k.replace("_", "-")
         print(f"{k}: {v}")
 
 

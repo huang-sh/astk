@@ -59,8 +59,11 @@ gene_ls <- lapply(dpsi_files, function(file){
         df  <-  read_tsv(file)
         genes <- gsub("\\..*", "",  df$GeneID)   
     } else if (app == "EventPointer"){
-        df  <-  read_csv(file)
-        genes <- gsub("\\..*", "",  df$Gene)   
+    df  <-  read_csv(file)
+    if (! "Gene" %in% colnames(df)){
+        df  <-  read.table(file) 
+    }
+        genes <- gsub("\\..*", "",  df$Gene) 
     }
     return(genes)
 })

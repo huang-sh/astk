@@ -248,7 +248,7 @@ def get_all_ss_distance(event_file, mode, app):
     else:
         for idx in range(ncol):
             df_len[idx] = abs(df_ss.iloc[:, idx+1] - df_ss.iloc[:, idx])
-    return df_len
+    return df_len + 1
 
 
 def get_ss_range(

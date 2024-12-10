@@ -1,13 +1,21 @@
 from setuptools import setup
 from setuptools import find_packages
 
+
+with open("README.md", "r") as fh:
+    description = fh.read()
+
+
 setup(
     name="astk",
-    version="0.1.2",
+    version="0.1.2b",
     url='https://github.com/huang-sh/astk/',
     author='huangsh',
     author_email='hsh-me@outlook.com',
-    packages=find_packages(),    
+    packages=find_packages(), 
+    description="A comprehensive toolkit for alternative splicing analysis",
+    long_description=description,
+    long_description_content_type="text/markdown",
     include_package_data=True,
     package_data = {
     '': ['data/motif/*/*.meme', "data/motif/ELM/*", "data/maxent/*", "cli/aliases.ini"],
@@ -27,7 +35,6 @@ setup(
         "nease",
         "biopython",
         "pyecharts",
-        "deeptools",
         "click_option_group"
     ],
     entry_points={

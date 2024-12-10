@@ -49,12 +49,16 @@ def diff_splice(
     exp_files: Sequence[FilePath],
     reference: FilePath,
     output: FilePath,
-    method: str
+    method: str,
+    tpm_threshold: float,
+    gene_correction: bool,
+    adpsi_threshold: float
 ):
     if str(output).endswith(".dpsi"):
         output = str(output)[:-5]
-    mca(method, psi_files, exp_files, reference, 1000, 0, 
-        False, True, 0.05, True, False, False, 0, 0, str(output))                 
+    mca(method, psi_files, exp_files, reference, 1000, 
+        adpsi_threshold, False, gene_correction, 0.05, 
+        True, False, False, tpm_threshold, 0, str(output))                 
 
 
 def read_tpm(file, colname="sample", tpm_col=4):
@@ -161,14 +165,15 @@ def ds_flow(
             ctrl_psi.to_csv(ctrl_psi_file, sep="\t")
             case_psi.to_csv(case_psi_file, sep="\t")
             psi_files = [ctrl_psi_file, case_psi_file]
-            exp_files = [ctrl_tpm_file, case_tpm_file]
-            dpsi_out = dpsi_dir / f"{gn}_{et}"
+            exp_files = [ctrl_tpm_file, case_tpm_file]            
+            name = f"{gn}_{et}"
+            dpsi_out = dpsi_dir / f"{name}.a"  # add pseudo suffix .a for keeping full string
             mca(method, psi_files, exp_files, ioe, 1000, 0, 
-                False, True, 0.05, True, False, False, tpm_threshold, 0, str(dpsi_out))
-            sig_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig.dpsi")
-            sig_pos_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig+.dpsi")
-            sig_neg_dpsi_out = (sig_dir / dpsi_out.name).with_suffix(".sig-.dpsi")
-            kwargs = {"abs_dpsi": abs_dpsi, "pval": pval, "app": "SUPPA2"}
+                False, True, 0.05, True, False, False, tpm_threshold, 0, str(dpsi_dir/name))
+            sig_dpsi_out = (sig_dir / name).with_suffix(".sig.dpsi")
+            sig_pos_dpsi_out = (sig_dir / name).with_suffix(".sig+.dpsi")
+            sig_neg_dpsi_out = (sig_dir / name).with_suffix(".sig-.dpsi")
+            kwargs = {"abs_dpsi": abs_dpsi, "pval": pval, "app": "SUPPA2"}                        
             dpsi_df = pd.read_csv(dpsi_out.with_suffix(".dpsi"), sep="\t", index_col=0).dropna()
             old_col = dpsi_df.columns
             dpsi_df.columns = ["dpsi", "pval"]

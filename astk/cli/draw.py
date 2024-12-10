@@ -18,6 +18,7 @@ def gseplot(*args, **kwargs):
         kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
     draw.gseplot(*args, **kwargs)
 
+
 @cli_fun.command(help="draw UpSet plots for AS events")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 help="input psi files")           
@@ -37,39 +38,36 @@ def upset(*args, **kwargs):
     draw.upset(*args, **kwargs)
 
 
-@cli_fun.command(help="Volcano plot analysis for dPSI; short alias: vol")
+@cli_fun.command(name="volcano", help="Volcano plot analysis for dPSI; short alias: vol")
 @click.option('-i', '--input', "file", type=click.Path(exists=True),
-                required=True, help="input psi files")    
-@click.option('-o', '--output', help="output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                default="auto", help="output figure format") 
-@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-def volcano(*args, **kwargs):
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])       
+                required=True, help="input dpsi file")
+@click.option('-o', '--output', type=click.Path(), help="output path")
+@click.option('-adpsi', '--adpsi', default=0.1, show_default=True, help="absolute dpsi cut-off value")
+@click.option('-pval', '--pvalue', default=0.05, show_default=True, help="p-value cut-off value")
+# @click.option('--dpsi-col', default=1, type=int, show_default=True, help="dpsi column index")
+@click.option('--dpsi-col', default="1", type=click.Choice(["1", "IncLevelDifference", "Delta PSI"]), 
+                show_default=True, help="dpsi column index, 1 for SUPPA2")
+@click.option('--pval-col', default="2", type=click.Choice(["2", "PValue", "FDR", "Pvalue"]), 
+                show_default=True, help="p-value column, 2 for SUPPA2")
+@click.option('--top-label', default=0, type=int, show_default=True, help="show the top number of AS events' labels")
+@click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), default=r"\t", show_default=True,
+                help="separator of file content")
+@fig_common_options()
+def sc_volcano(*args, **kwargs):
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["dpsi_col"] == "1":
+        if kwargs["pval_col"] != "2":
+            raise UsageError("You need to set both --dpsi-col 1 and --pval-col 2 at the same time")
+    if kwargs["dpsi_col"] == "IncLevelDifference":
+        if  kwargs["pval_col"] not in ["PValue", "FDR"]:
+            msg = "You need to set both --dpsi-col IncLevelDifference and --pval-col PValue or FDR at the same time"
+            raise UsageError(msg)
+    if kwargs["dpsi_col"] == "Delta PSI":
+        if kwargs["pval_col"] != "Pvalue":
+            raise UsageError("You need to set both --dpsi-col 'Delta PSI' and --pval-col Pvalue at the same time")
+    kwargs["sep"] = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
     draw.volcano(*args, **kwargs)
-
-
-@cli_fun.command(name="pca1", help="PCA analysis for PSI")
-@click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
-                required=True, help="input psi files")
-@click.option('-o', '--output', required=True, help="figure output path")
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                default="auto", help="output figure format") 
-@click.option('-fw', '--width', default=6, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
-@click.option('-gn', '--groupName', cls=MultiOption, type=str, help="group names")
-def pca(*args, **kwargs):
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
-    if gn := kwargs.get("groupname", False):
-        if len(gn) != len(kwargs["files"]):
-            print("-gn/--groupName values number must be same as -i/--input")
-            exit()
-    draw.pca(*args, **kwargs)
 
 
 @cli_fun.command(name="pca", help="PCA analysis for PSI")
@@ -94,10 +92,7 @@ def sc_pca(*args, **kwargs):
             raise UsageError("-gl/--groupLabel number must be same as -i/--input")
     else:
         gn = [idx for idx, _ in enumerate(kwargs["files"])]
-    if kwargs["sep"] in ("\\t", "t"):
-        sep = "\t"
-    else:
-        sep = kwargs["sep"]
+    sep = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
     axis = 1 if kwargs["groupby"] == "col" else 0
     dfs, labels = [], []
     for idx, file in enumerate(kwargs["files"]):
@@ -112,39 +107,47 @@ def sc_pca(*args, **kwargs):
 @cli_fun.command(help="Heatmap plot for PSI; short alias: hm")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
                 required=True, help="input psi files")
-@click.option('-o', '--output', required=True, help="figure output path")  
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                 default="auto", help="output figure format")
-@click.option('-cmap', '--colormap', default="crest", help="matplotlib colormap name")                
-@click.option('-fw', '--width', default=6, help="figure width, default=6 inches")
-@click.option('-fh', '--height', default=6, help="figure height, default=6 inches")
+@click.option('-o', '--output', type=click.Path(), required=True, help="figure output path")
+@click.option('-cmap', '--colormap', default="crest", help="matplotlib colormap name")
+@fig_common_options()
 def heatmap(*args, **kwargs):
     from matplotlib.pyplot import colormaps
 
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
-    if kwargs["colormap"] not in colormaps():
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])
+    if kwargs["colormap"] not in colormaps()+["crest"]:
         msg  = f"'{kwargs['colormap']}' is not a valid value for colormap name"
         msg += f"; supported values are {', '.join(map(repr, colormaps()))}"        
-        BadParameter(msg)
+        raise BadParameter(msg)
     draw.heatmap(*args, **kwargs)
 
 
-@cli_fun.command(help="barplot ")
+@cli_fun.command(help="barplot")
 @click.option('-i', '--input', "files", cls=MultiOption, type=click.Path(exists=True),
-                required=True, help="input psi files")
+                required=True, help="input psi/dpsi files")
 @click.option('-o', '--output', required=True, help="output path")
 @click.option('-xl', '--xlabel', cls=MultiOption, type=str,
-             help="input dpsi names")
-@click.option('-dg', '--dg', is_flag=True, default = False,
+             help="x tick labels for files")
+@click.option('-dg', '--dg', is_flag=True, default=False,
               help=("AS events can be divided into two groups based on dPSI values \
-                   (group +: dPSI > 0, group -: dPSI < 0)"))   
-@click.option('-fmt', '--format', "fmt", type=click.Choice(['auto', 'png', 'pdf', 'pptx']),
-                default="auto", help="output figure format")
-@click.option('-fw', '--width', default=8, help="fig width, default=6 inches")
-@click.option('-fh', '--height', default=4, help="fig height, default=6 inches")
-@click.option('-res', '--resolution', default=72, help="resolution, default=72 ppi")
+                   (group +: dPSI > 0, group -: dPSI < 0)"))
+@click.option('-app','--app', required=True, type=click.Choice(["SUPPA2"]), 
+                default="SUPPA2", help="the program that generates event file")
+@click.option('--dpsi-col', default="1", type=click.Choice(["1", "IncLevelDifference", "Delta PSI"]), 
+                show_default=True, help="dpsi column index, 1 for SUPPA2")
+@click.option('--pval-col', default="2", type=click.Choice(["2", "PValue", "FDR", "Pvalue"]), 
+                show_default=True, help="p-value column, 2 for SUPPA2")
+@click.option('-sep', '--sep', type=click.Choice([",", r"\t"]), default=r"\t", show_default=True,
+                help="separator of file content")
+@click.option('--fn-split', cls=MultiOption, type=str, help="file name split symbol and index")
+@click.option('--count-cutoff', default=0, type=int, show_default=True,
+                help="Choose values that exceed the cutoff to display")
+@fig_common_options()
 def barplot(*args, **kwargs):
-    if kwargs["fmt"] == "auto":
-        kwargs["fmt"] = sniff_fig_fmt(kwargs["output"])
+    nlabel = len(kwargs["files"]) if kwargs["xlabel"] is None else len(kwargs["xlabel"])
+    if nlabel != len(kwargs["files"]):
+        raise UsageError("-i/--input values number must be same as -xl/--xlabel")
+    if kwargs["figfmt"] == "auto":
+        kwargs["figfmt"] = sniff_fig_fmt(kwargs["output"])        
+    kwargs["sep"] = "\t" if kwargs["sep"] in ("\\t", "t") else kwargs["sep"]
     draw.barplot(*args, **kwargs)
