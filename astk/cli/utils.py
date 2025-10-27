@@ -130,8 +130,8 @@ def getcoor(*args, **kwargs):
     output = kwargs.pop("output")
     interval_idx = kwargs.pop("interval")
     fasta = kwargs.pop("fasta")
-    if kwargs["site_idx"]:
-        sites = [kwargs["site_idx"] - 1]
+    if kwargs["ss_idx"]:
+        sites = [kwargs["ss_idx"] - 1]
     elif all(interval_idx):
         sites = [i-1 for i in sorted(interval_idx)]
 
