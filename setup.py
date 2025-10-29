@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="astk",
-    version="0.1.2b",
+    version="0.1.4",
     url='https://github.com/huang-sh/astk/',
     author='huangsh',
     author_email='hsh-me@outlook.com',
@@ -25,7 +25,7 @@ setup(
         "pandas>=1.3.0",
         "matplotlib>=3.4.0",
         "scikit-learn>=0.24.0",
-        "statsmodels>= 0.12.0",
+        "statsmodels>=0.12.0",
         "gseapy==0.10.8",  ## Temporarily specified version, the latest version has bugs when install 
         "statannotations",
         "seaborn",
