@@ -138,17 +138,20 @@ def ds_flow(
             case_tpm_ls = []
             ctrl_psi_ls = []
             case_psi_ls = []
-            for (cf, cn), (tf, tn) in zip(gn_dic["ctrl"], gn_dic["case"]):
+            
+            for cf, cn in gn_dic["ctrl"]:
                 cdf = read_tpm(cf, cn, tpm_col)
-                tdf = read_tpm(tf, tn, tpm_col)
                 ctrl_tpm_ls.append(cdf)
-                case_tpm_ls.append(tdf)
 
                 cpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, cdf, tpm_th=tpm_threshold), 
                         columns=cdf.columns, index=ioe_df["event_id"])
+                ctrl_psi_ls.append(cpsi_df)
+
+            for tf, tn in gn_dic["case"]:
+                tdf = read_tpm(tf, tn, tpm_col)
+                case_tpm_ls.append(tdf)
                 tpsi_df = pd.DataFrame(get_ioe_psi(ioe_df, tdf, tpm_th=tpm_threshold), 
                         columns=tdf.columns, index=ioe_df["event_id"])
-                ctrl_psi_ls.append(cpsi_df)
                 case_psi_ls.append(tpsi_df)
 
             ctrl_tpm = pd.concat(ctrl_tpm_ls, axis=1)
